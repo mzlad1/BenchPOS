@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+    />
+
+    <link rel="stylesheet" href="../styles/billing.css" />
+
+    <title>Create Invoice - Shop Billing System</title>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-left">
+          <button
+            class="btn back-btn"
+            onclick="window.location.href='../index.html'"
+          >
+            Back
+          </button>
+          <h1>New Sale</h1>
+        </div>
+
+        <div class="header-right">
+          <div class="connection-status">
+            <div id="connection-indicator" class="indicator offline"></div>
+            <span id="connection-text">Offline Mode</span>
+          </div>
+          <span id="current-date"></span>
+        </div>
+      </header>
+
+      <main>
+        <div class="billing-container">
+          <div class="product-selection">
+            <h2>Products</h2>
+            <div class="search-bar">
+              <input
+                type="text"
+                id="product-search"
+                placeholder="Search products..."
+              />
+            </div>
+            <div id="products-list" class="products-grid">
+              <!-- Products will be loaded here dynamically -->
+              <div class="loading">Loading products...</div>
+            </div>
+          </div>
+
+          <div class="invoice-panel">
+            <h2>Current Invoice</h2>
+            <div class="invoice-details">
+              <div class="invoice-header">
+                <div class="invoice-id">
+                  <label>Invoice #:</label>
+                  <span id="invoice-id">Auto-generated</span>
+                </div>
+                <div class="invoice-date">
+                  <label>Date:</label>
+                  <span id="invoice-date"></span>
+                </div>
+              </div>
+
+              <div class="customer-info">
+                <label for="customer-name">Customer:</label>
+                <input
+                  type="text"
+                  id="customer-name"
+                  placeholder="Customer name (optional)"
+                />
+              </div>
+
+              <div class="cart-items">
+                <table id="cart-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Price</th>
+                      <th>Qty</th>
+                      <th>Total</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cart-items">
+                    <!-- Cart items will be added here -->
+                    <tr class="empty-cart">
+                      <td colspan="5">No items added yet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="invoice-summary">
+                <div class="summary-row">
+                  <span>Subtotal:</span>
+                  <span id="subtotal">$0.00</span>
+                </div>
+                <div class="summary-row">
+                  <span>Tax (0):</span>
+                  <span id="tax">$0.00</span>
+                </div>
+                <div class="summary-row total">
+                  <span>Total:</span>
+                  <span id="total">$0.00</span>
+                </div>
+              </div>
+
+              <div class="payment-actions">
+                <button id="clear-invoice" class="btn secondary-btn">
+                  Clear
+                </button>
+                <button id="complete-sale" class="btn primary-btn" disabled>
+                  Complete Sale
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div id="receipt-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Receipt</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div id="receipt-container" class="receipt">
+          <!-- Receipt content will be generated here -->
+        </div>
+        <div class="modal-footer">
+          <button id="print-receipt" class="btn primary-btn">
+            Print Receipt
+          </button>
+          <button id="email-receipt" class="btn secondary-btn">
+            Email Receipt
+          </button>
+          <button id="new-sale" class="btn">New Sale</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../scripts/billing.js"></script>
+  </body>
+</html>

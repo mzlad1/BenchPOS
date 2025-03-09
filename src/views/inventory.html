@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+    />
+    <link rel="stylesheet" href="../styles/main.css" />
+    <title>Inventory - Shop Billing System</title>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-left">
+          <button
+            class="btn back-btn"
+            onclick="window.location.href='../index.html'"
+          >
+            Back
+          </button>
+          <h1>Inventory Management</h1>
+        </div>
+        <div class="header-right">
+          <div class="connection-status">
+            <div id="connection-indicator" class="indicator offline"></div>
+            <span id="connection-text">Offline Mode</span>
+          </div>
+          <span id="current-date"></span>
+        </div>
+      </header>
+
+      <main>
+        <div class="inventory-container">
+          <!-- Inventory Stats -->
+          <div class="inventory-stats">
+            <div class="stat-card">
+              <h3>Total Products</h3>
+              <p id="total-products">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Inventory Value</h3>
+              <p id="inventory-value">$0.00</p>
+            </div>
+            <div class="stat-card">
+              <h3>Low Stock Items</h3>
+              <p id="low-stock-count">0</p>
+            </div>
+          </div>
+
+          <!-- Reorganized Inventory Actions -->
+          <div class="inventory-controls">
+            <!-- Primary Actions Row -->
+            <div class="primary-actions">
+              <button id="add-new-btn" class="btn primary-btn">
+                <i class="icon">✚</i> Add New Product
+              </button>
+              <div class="action-group">
+                <button id="export-csv-btn" class="btn secondary-btn">
+                  <i class="icon">📤</i> Export CSV
+                </button>
+                <button id="import-csv-btn" class="btn secondary-btn">
+                  <i class="icon">📥</i> Import CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Search & Filters Row -->
+            <div class="search-filter-row">
+              <div class="search-bar">
+                <!-- Enhanced search will be inserted here by JavaScript -->
+                <input
+                  type="text"
+                  id="product-search"
+                  placeholder="Search products..."
+                />
+              </div>
+            </div>
+
+            <!-- Bulk Actions Container - will be populated by JavaScript -->
+            <div
+              class="bulk-actions-container"
+              id="bulk-actions-container"
+            ></div>
+          </div>
+
+          <!-- Products Table -->
+          <div class="table-container">
+            <table id="products-table">
+              <thead>
+                <tr>
+                  <th class="select-all-cell">
+                    <input type="checkbox" id="select-all-checkbox" />
+                  </th>
+                  <th>SKU</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Selling Price</th>
+                  <th>Cost</th>
+                  <th>Profit</th>
+                  <th>Stock</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products-table-body">
+                <!-- Products will be loaded here dynamically -->
+                <tr>
+                  <td colspan="9">Loading products...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination will be added here by JavaScript -->
+          <div id="pagination-container" class="pagination"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div id="product-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="product-form-title">Add New Product</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form id="add-product-form">
+            <div class="form-group">
+              <label for="product-name">Product Name</label>
+              <input
+                type="text"
+                id="product-name"
+                name="product-name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="product-sku">SKU</label>
+              <input type="text" id="product-sku" name="product-sku" />
+            </div>
+            <div class="form-group">
+              <label for="product-category">Category</label>
+              <input
+                type="text"
+                id="product-category"
+                name="product-category"
+              />
+            </div>
+            <div class="form-group">
+              <label for="product-price">Selling Price ($)</label>
+              <input
+                type="number"
+                id="product-price"
+                name="product-price"
+                step="0.01"
+                min="0"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="product-cost">Purchase Cost ($)</label>
+              <input
+                type="number"
+                id="product-cost"
+                name="product-cost"
+                step="0.01"
+                min="0"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="product-stock">Stock Quantity</label>
+              <input
+                type="number"
+                id="product-stock"
+                name="product-stock"
+                min="0"
+                required
+              />
+            </div>
+            <div class="form-actions">
+              <button
+                type="button"
+                class="btn secondary-btn"
+                onclick="document.getElementById('product-modal').style.display='none'"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn primary-btn">
+                Save Product
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="../scripts/inventory.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async function () {
+        try {
+          const user = await window.api.getCurrentUser();
+          if (!user) {
+            window.location.href = "login.html";
+            return;
+          }
+
+          // Check role-based access
+          if (user.role === "cashier") {
+            alert("You do not have permission to access the Inventory page.");
+            window.location.href = "../index.html";
+            return;
+          }
+
+          // If we reach here, continue loading the page normally
+          console.log("User authorized to access Inventory page");
+        } catch (error) {
+          console.error("Access control error:", error);
+          window.location.href = "login.html";
+        }
+      });
+    </script>
+  </body>
+</html>

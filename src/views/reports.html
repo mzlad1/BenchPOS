@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+    />
+    <link rel="stylesheet" href="../styles/main.css" />
+    <title>Reports - Shop Billing System</title>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-left">
+          <button
+            class="btn back-btn"
+            onclick="window.location.href='../index.html'"
+          >
+            Back
+          </button>
+          <h1>Reports</h1>
+        </div>
+        <div class="header-right">
+          <div class="connection-status">
+            <div id="connection-indicator" class="indicator offline"></div>
+            <span id="connection-text">Offline Mode</span>
+          </div>
+          <span id="current-date"></span>
+        </div>
+      </header>
+
+      <main>
+        <div class="reports-container">
+          <!-- Sales Report -->
+          <div class="report-section">
+            <h2>Sales Report</h2>
+            <div id="sales-report" class="report-content">
+              <div class="loading">Loading sales data...</div>
+            </div>
+          </div>
+
+          <!-- Product Report -->
+          <div class="report-section">
+            <h2>Product Report</h2>
+            <div id="product-report" class="report-content">
+              <div class="loading">Loading product data...</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../scripts/reports.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async function () {
+        try {
+          const user = await window.api.getCurrentUser();
+          if (!user) {
+            window.location.href = "login.html";
+            return;
+          }
+
+          // Check role-based access
+          if (user.role === "cashier" || user.role === "manager") {
+            alert("You do not have permission to access the Reports page.");
+            window.location.href = "../index.html";
+            return;
+          }
+
+          // If we reach here, continue loading the page normally
+          console.log("User authorized to access Reports page");
+        } catch (error) {
+          console.error("Access control error:", error);
+          window.location.href = "login.html";
+        }
+      });
+    </script>
+  </body>
+</html>

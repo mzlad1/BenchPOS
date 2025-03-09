@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+    <title>Shop Billing System</title>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-right">
+          <div class="user-info">
+            <span class="user-icon">👤</span>
+            <span id="current-user-name">Not logged in</span>
+            <button id="logout-btn" class="btn">Logout</button>
+          </div>
+        </div>
+        <h1>Shop Billing System</h1>
+        <p>Offline-ready POS and Inventory Management</p>
+      </header>
+
+      <main>
+        <div class="dashboard">
+          <div class="card" onclick="window.location.href='views/billing.html'">
+            <div class="card-icon">💵</div>
+            <h2>New Sale</h2>
+            <p>Create a new invoice and receipt</p>
+          </div>
+
+          <div
+            class="card"
+            onclick="window.location.href='views/inventory.html'"
+          >
+            <div class="card-icon">📦</div>
+            <h2>Inventory</h2>
+            <p>Manage products and stock</p>
+          </div>
+
+          <div class="card" onclick="window.location.href='views/reports.html'">
+            <div class="card-icon">📊</div>
+            <h2>Reports</h2>
+            <p>View sales and inventory reports</p>
+          </div>
+        </div>
+
+        <div class="status-section">
+          <div class="connection-status">
+            <div class="connection-indicator indicator offline"></div>
+            <span class="connection-text">Offline Mode</span>
+          </div>
+          <div class="sync-status">
+            <span id="last-sync">Last sync: Never</span>
+            <button id="sync-button" class="btn">Sync Data</button>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <p>Shop Billing System v1.0.0</p>
+      </footer>
+    </div>
+    <script>
+      // Keep only one DOMContentLoaded listener that does everything
+      // Keep only one DOMContentLoaded listener that does everything
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          // Now check general auth - keep users on index page but apply role-based UI restrictions
+          const user = await window.api.getCurrentUser();
+          if (!user) {
+            window.location.href = "views/login.html";
+            return;
+          }
+
+          // Continue with the rest of your initialization
+          console.log("DOM loaded, setting up app");
+          document.getElementById("current-user-name").textContent = user.name;
+
+          // Apply role-based UI restrictions
+          applyRoleBasedAccess(user);
+
+          // Set up event listeners
+          document
+            .getElementById("logout-btn")
+            .addEventListener("click", handleLogout);
+          document
+            .getElementById("sync-button")
+            .addEventListener("click", syncData);
+
+          // Set up connection and other features
+          checkConnectionStatus();
+          setupOnlineListeners();
+
+          console.log("App setup complete");
+        } catch (error) {
+          console.error("Auth check error:", error);
+          window.location.href = "./views/login.html";
+        }
+      });
+
+      // Function to apply role-based access restrictions
+      function applyRoleBasedAccess(user) {
+        const inventoryCard = document.querySelector(
+          '.card[onclick*="inventory.html"]'
+        );
+        const reportsCard = document.querySelector(
+          '.card[onclick*="reports.html"]'
+        );
+
+        // Add CSS for disabled cards if not already in your styles
+        const style = document.createElement("style");
+        style.textContent = `
+          .disabled-card {
+            opacity: 0.5;
+            cursor: not-allowed;
+            position: relative;
+          }
+          .disabled-card::after {
+            content: "🔒";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+          }
+          .disabled-card:hover {
+            box-shadow: none;
+            transform: none;
+          }
+        `;
+        document.head.appendChild(style);
+
+        if (user.role === "cashier") {
+          // Cashiers can only access billing
+          if (inventoryCard) {
+            inventoryCard.classList.add("disabled-card");
+            inventoryCard.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              alert("You do not have permission to access Inventory.");
+            };
+          }
+
+          if (reportsCard) {
+            reportsCard.classList.add("disabled-card");
+            reportsCard.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              alert("You do not have permission to access Reports.");
+            };
+          }
+        } else if (user.role === "manager") {
+          // Managers can access billing and inventory but not reports
+          if (reportsCard) {
+            reportsCard.classList.add("disabled-card");
+            reportsCard.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              alert("You do not have permission to access Reports.");
+            };
+          }
+        }
+        // Admins can access everything (no restrictions)
+
+        console.log(`Applied access restrictions for role: ${user.role}`);
+      }
+
+      // Rest of your JavaScript functions
+    </script>
+    <script>
+      // Check if API is available
+      function isApiAvailable() {
+        return window.api !== undefined && window.api !== null;
+      }
+
+      // Check if user is logged in
+      async function checkAuth() {
+        try {
+          const user = await window.api.getCurrentUser();
+          if (!user) {
+            window.location.href = "login.html";
+            return false;
+          }
+
+          // Display user name
+          document.getElementById("current-user-name").textContent = user.name;
+          return true;
+        } catch (error) {
+          console.error("Auth check error:", error);
+          window.location.href = "login.html";
+          return false;
+        }
+      }
+
+      // Handle logout
+      async function handleLogout() {
+        try {
+          await window.api.logoutUser();
+          window.location.href = "views/login.html";
+        } catch (error) {
+          console.error("Logout error:", error);
+        }
+      }
+
+      // Check connection status and register for updates
+      async function checkConnectionStatus() {
+        try {
+          // First check if API is available
+          if (!isApiAvailable()) {
+            console.warn("API not available, using browser online status");
+            updateConnectionUI(navigator.onLine);
+            return;
+          }
+
+          if (typeof window.api.getOnlineStatus === "function") {
+            console.log("Calling getOnlineStatus API function");
+            const isOnline = await window.api.getOnlineStatus();
+            console.log("Online status from API:", isOnline);
+            updateConnectionUI(isOnline);
+          } else {
+            console.warn(
+              "getOnlineStatus function not available, using browser online status"
+            );
+            updateConnectionUI(navigator.onLine);
+          }
+        } catch (error) {
+          console.error("Error checking online status:", error);
+          // Default to navigator.onLine if API fails
+          updateConnectionUI(navigator.onLine);
+        }
+      }
+
+      // Update UI based on connection status
+      function updateConnectionUI(isOnline) {
+        console.log("Updating connection UI:", isOnline);
+
+        // Get elements by ID/class - both in header and status section
+        const headerIndicator = document.querySelector(
+          ".header-right #header-connection-indicator"
+        );
+        const headerText = document.querySelector(
+          ".header-right #header-connection-text"
+        );
+        const statusIndicator = document.querySelector(
+          ".status-section .connection-indicator"
+        );
+        const statusText = document.querySelector(
+          ".status-section .connection-text"
+        );
+        const syncButton = document.getElementById("sync-button");
+
+        if (isOnline) {
+          // Update header area elements
+          if (headerIndicator) {
+            headerIndicator.classList.remove("offline");
+            headerIndicator.classList.add("online");
+          }
+          if (headerText) {
+            headerText.textContent = "Online Mode";
+          }
+
+          // Update status section elements
+          if (statusIndicator) {
+            statusIndicator.classList.remove("offline");
+            statusIndicator.classList.add("online");
+          }
+          if (statusText) {
+            statusText.textContent = "Online Mode";
+          }
+
+          if (syncButton) syncButton.disabled = false;
+        } else {
+          // Handle offline state
+          if (headerIndicator) {
+            headerIndicator.classList.remove("online");
+            headerIndicator.classList.add("offline");
+          }
+          if (headerText) {
+            headerText.textContent = "Offline Mode";
+          }
+
+          if (statusIndicator) {
+            statusIndicator.classList.remove("online");
+            statusIndicator.classList.add("offline");
+          }
+          if (statusText) {
+            statusText.textContent = "Offline Mode";
+          }
+
+          if (syncButton) syncButton.disabled = true;
+        }
+      }
+
+      // Set up listeners for online status changes
+      function setupOnlineListeners() {
+        // First check if API is available
+        if (!isApiAvailable()) {
+          console.warn(
+            "API not available, using browser online/offline events"
+          );
+          window.addEventListener("online", () => updateConnectionUI(true));
+          window.addEventListener("offline", () => updateConnectionUI(false));
+          return;
+        }
+
+        // Register for online status change notifications if function is available
+        if (typeof window.api.onOnlineStatusChanged === "function") {
+          console.log("Setting up API online status changed listener");
+          window.api.onOnlineStatusChanged((isOnline) => {
+            console.log("Online status changed:", isOnline);
+            updateConnectionUI(isOnline);
+          });
+        } else {
+          console.warn(
+            "onOnlineStatusChanged function not available, using browser events"
+          );
+          window.addEventListener("online", () => updateConnectionUI(true));
+          window.addEventListener("offline", () => updateConnectionUI(false));
+        }
+      }
+
+      // Sync data with server
+      async function syncData() {
+        try {
+          const syncButton = document.getElementById("sync-button");
+          syncButton.disabled = true;
+          syncButton.textContent = "Syncing...";
+
+          // Check if API is available
+          if (!isApiAvailable()) {
+            console.warn("API not available, sync functionality disabled");
+            alert("Sync functionality is not available in this version.");
+            return;
+          }
+
+          // Check if sync function exists
+          if (typeof window.api.syncData === "function") {
+            console.log("Calling syncData API function");
+            const success = await window.api.syncData();
+            console.log("Sync result:", success);
+
+            if (success) {
+              document.getElementById("last-sync").textContent =
+                "Last sync: " + new Date().toLocaleString();
+              alert("Data synced successfully with Firebase!");
+            } else {
+              alert(
+                "Sync failed. Please check your connection and Firebase configuration."
+              );
+            }
+          } else {
+            console.warn("syncData function not available");
+            alert("Sync functionality is not available in this version.");
+          }
+        } catch (error) {
+          console.error("Sync error:", error);
+          alert("Error syncing data: " + (error.message || "Unknown error"));
+        } finally {
+          const syncButton = document.getElementById("sync-button");
+          syncButton.disabled = false;
+          syncButton.textContent = "Sync Data";
+        }
+      }
+
+      async function checkDashboardPermission() {
+        try {
+          const user = await window.api.getCurrentUser();
+          if (!user) {
+            // Not logged in - redirect to login
+            window.location.href = "views/login.html";
+            return false;
+          }
+
+          // Only admins can access the dashboard
+          if (user.role !== "admin") {
+            // Redirect based on role
+            if (user.role === "manager") {
+              window.location.href = "views/inventory.html";
+            } else {
+              window.location.href = "views/billing.html";
+            }
+            return false;
+          }
+
+          return true;
+        } catch (error) {
+          console.error("Permission check error:", error);
+          window.location.href = "views/login.html";
+          return false;
+        }
+      }
+    </script>
+  </body>
+</html>

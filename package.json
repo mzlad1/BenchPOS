@@ -1,0 +1,66 @@
+{
+  "name": "shop-billing-app",
+  "version": "1.0.0",
+  "description": "Offline-ready shop billing and inventory management system",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "dev:inspect": "electron . --inspect",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "keywords": [
+    "billing",
+    "inventory",
+    "pos",
+    "offline",
+    "electron",
+    "firebase"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "electron-store": "^8.1.0",
+    "firebase": "^10.7.0",
+    "moment": "^2.29.4",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "electron": "^24.0.0",
+    "electron-builder": "^24.0.0",
+    "electron-reload": "^1.5.0"
+  },
+  "build": {
+    "appId": "com.yourdomain.shopbillingapp",
+    "productName": "Shop Billing App",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "src/assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "src/assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  }
+}

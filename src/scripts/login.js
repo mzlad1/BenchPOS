@@ -1,0 +1,221 @@
+let isOnline = false;
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize the page
+  initPage();
+
+  // Set up event listeners
+  document.getElementById("login-form").addEventListener("submit", handleLogin);
+  document
+    .getElementById("create-account-link")
+    .addEventListener("click", showRegisterModal);
+  document
+    .getElementById("register-form")
+    .addEventListener("submit", handleRegister);
+  document
+    .getElementById("cancel-register")
+    .addEventListener("click", hideRegisterModal);
+  document.querySelector(".close").addEventListener("click", hideRegisterModal);
+
+  // Close modal when clicking outside
+  window.addEventListener("click", (event) => {
+    if (event.target === document.getElementById("register-modal")) {
+      hideRegisterModal();
+    }
+  });
+});
+
+async function initPage() {
+  // Check if already logged in
+  try {
+    const currentUser = await window.api.getCurrentUser();
+    if (currentUser && currentUser.id) {
+      // User is already logged in, redirect to appropriate page
+      if (currentUser.role === "admin") {
+        window.location.href = "../index.html";
+      } else if (currentUser.role === "manager") {
+        window.location.href = "reports.html";
+      } else {
+        window.location.href = "billing.html";
+      }
+      return;
+    }
+  } catch (error) {
+    console.error("Error checking user:", error);
+  }
+
+  // Check connection status
+  await checkConnectionStatus();
+}
+
+async function checkConnectionStatus() {
+  try {
+    console.log("Checking connection status");
+
+    // Try a direct network test
+    if (window.api && typeof window.api.getOnlineStatus === "function") {
+      isOnline = await window.api.getOnlineStatus();
+      console.log("Online status from API:", isOnline);
+    } else {
+      isOnline = navigator.onLine;
+      console.log("API not available, using navigator.onLine:", isOnline);
+    }
+
+    // Update UI with whatever we determined
+    updateConnectionUI(isOnline);
+
+    // Register for status updates
+    if (window.api && typeof window.api.onOnlineStatusChanged === "function") {
+      console.log("Setting up online status listener");
+      window.api.onOnlineStatusChanged((status) => {
+        console.log("Online status update received:", status);
+        isOnline = status;
+        updateConnectionUI(status);
+      });
+    }
+  } catch (error) {
+    console.error("Error checking connection status:", error);
+    updateConnectionUI(false);
+  }
+}
+
+function updateConnectionUI(online) {
+  const indicator = document.getElementById("connection-indicator");
+  const statusText = document.getElementById("connection-text");
+  const connectionStatus = document.getElementById("connection-status");
+
+  if (online) {
+    indicator.classList.remove("offline");
+    indicator.classList.add("online");
+    statusText.textContent = "Online Mode";
+    connectionStatus.classList.remove("offline");
+  } else {
+    indicator.classList.remove("online");
+    indicator.classList.add("offline");
+    statusText.textContent = "Offline Mode";
+    connectionStatus.classList.add("offline");
+  }
+}
+
+// Update the handleLogin function in login.js
+async function handleLogin(event) {
+  event.preventDefault();
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const loginButton = document.getElementById("login-button");
+
+  if (!email || !password) {
+    showError("Please enter both email and password");
+    return;
+  }
+
+  try {
+    loginButton.disabled = true;
+    loginButton.textContent = "Logging in...";
+
+    const result = await window.api.loginUser({ email, password, isOnline });
+
+    if (result.success) {
+      // Modified to always redirect to index.html regardless of user role
+      window.location.href = "../index.html";
+    } else {
+      showError(
+        result.message || "Login failed. Please check your credentials."
+      );
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    showError("An error occurred during login. Please try again.");
+  } finally {
+    loginButton.disabled = false;
+    loginButton.textContent = "Login";
+  }
+}
+
+function showError(message) {
+  const errorEl = document.getElementById("error-message");
+  errorEl.textContent = message;
+  errorEl.style.display = "block";
+
+  // Hide error after 5 seconds
+  setTimeout(() => {
+    errorEl.style.display = "none";
+  }, 5000);
+}
+
+function showRegisterModal() {
+  if (!isOnline) {
+    showError(
+      "Account creation requires internet connection. Please connect and try again."
+    );
+    return;
+  }
+
+  document.getElementById("register-modal").style.display = "block";
+}
+
+function hideRegisterModal() {
+  document.getElementById("register-modal").style.display = "none";
+  document.getElementById("register-form").reset();
+}
+
+async function handleRegister(event) {
+  event.preventDefault();
+
+  if (!isOnline) {
+    showError(
+      "Account creation requires internet connection. Please connect and try again."
+    );
+    return;
+  }
+
+  const name = document.getElementById("register-name").value;
+  const email = document.getElementById("register-email").value;
+  const password = document.getElementById("register-password").value;
+  const role = document.getElementById("register-role").value;
+  const registerButton = document.getElementById("register-button");
+
+  if (!name || !email || !password) {
+    showError("Please fill all required fields");
+    return;
+  }
+
+  try {
+    // Disable register button
+    registerButton.disabled = true;
+    registerButton.textContent = "Creating account...";
+
+    // Try to register
+    const result = await window.api.registerUser({
+      name,
+      email,
+      password,
+      role,
+    });
+
+    if (result.success) {
+      // Registration successful
+      hideRegisterModal();
+
+      // Pre-fill login form with registered email
+      document.getElementById("email").value = email;
+      document.getElementById("password").value = "";
+
+      showError("Account created successfully! You can now login.");
+      document.getElementById("error-message").style.backgroundColor =
+        "#e7f9e7";
+      document.getElementById("error-message").style.color = "#2ecc71";
+    } else {
+      // Registration failed
+      showError(result.message || "Account creation failed. Please try again.");
+    }
+  } catch (error) {
+    console.error("Registration error:", error);
+    showError("An error occurred during account creation. Please try again.");
+  } finally {
+    // Re-enable register button
+    registerButton.disabled = false;
+    registerButton.textContent = "Create Account";
+  }
+}
