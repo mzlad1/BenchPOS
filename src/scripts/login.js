@@ -3,7 +3,9 @@ let isOnline = false;
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize the page
   initPage();
-
+  if (typeof window.initLoginSyncDialog === "function") {
+    window.initLoginSyncDialog();
+  }
   // Set up event listeners
   document.getElementById("login-form").addEventListener("submit", handleLogin);
   document
@@ -114,15 +116,31 @@ async function handleLogin(event) {
     loginButton.disabled = true;
     loginButton.textContent = "Logging in...";
 
-    const result = await window.api.loginUser({ email, password, isOnline });
+    // Add debugging
+    console.log("Attempting login with:", { email, online: isOnline });
 
-    if (result.success) {
+    let result;
+    try {
+      result = await window.api.loginUser({ email, password, isOnline });
+      console.log("Login result:", result);
+    } catch (loginError) {
+      console.error("Error from loginUser:", loginError);
+      throw loginError;
+    }
+
+    // Add null/undefined check before accessing properties
+    if (result && result.success) {
       // Modified to always redirect to index.html regardless of user role
       window.location.href = "../index.html";
     } else {
-      showError(
-        result.message || "Login failed. Please check your credentials."
-      );
+      // Handle null or undefined result
+      if (!result) {
+        showError("Login failed - no response from server");
+      } else {
+        showError(
+          result.message || "Login failed. Please check your credentials."
+        );
+      }
     }
   } catch (error) {
     console.error("Login error:", error);

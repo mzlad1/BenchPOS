@@ -3,82 +3,93 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
-    />
+    <title>Shop Billing App - Login</title>
     <link rel="stylesheet" href="../styles/login.css" />
-    <title>Login - Shop Billing System</title>
   </head>
   <body>
     <div class="container">
       <div class="login-container">
-        <div class="app-logo">
-          <!-- Add your logo here -->
-          <h1>📊</h1>
+        <div class="app-info">
+          <h1>Shop Billing App</h1>
+          <p>
+            Complete solution for managing your small business inventory and
+            sales
+          </p>
         </div>
 
-        <h2 class="login-title">Shop Billing System</h2>
-
-        <div id="connection-status" class="login-mode">
-          <div class="connection-status">
-            <div id="connection-indicator" class="indicator offline"></div>
-            <span id="connection-text">Checking connection...</span>
-          </div>
-        </div>
-
-        <div id="error-message" class="error-message"></div>
-
-        <form id="login-form">
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" required />
+        <div class="login-form-container">
+          <div class="connection-status" id="connection-status">
+            <div class="indicator online" id="connection-indicator"></div>
+            <span id="connection-text">Online Mode</span>
           </div>
 
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required />
-          </div>
+          <h2>Login</h2>
 
-          <div class="form-actions">
-            <button
-              type="submit"
-              id="login-button"
-              class="btn primary-btn"
-              style="width: 100%"
-            >
+          <div id="error-message" class="error-message"></div>
+
+          <form id="login-form">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            <button type="submit" id="login-button" class="btn primary-btn">
               Login
             </button>
-          </div>
-        </form>
 
-        <a href="#" id="create-account-link" class="create-account-link"
-          >Create new account</a
-        >
-
-        <div class="login-footer">
-          <p>Login with your account credentials</p>
+            <div class="form-actions">
+              <p>
+                Don't have an account?
+                <a href="#" id="create-account-link">Create Account</a>
+              </p>
+            </div>
+          </form>
         </div>
       </div>
     </div>
 
-    <!-- Registration Modal -->
+    <!-- Register Modal -->
     <div id="register-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Create Account</h2>
+          <h2>Create New Account</h2>
           <span class="close">&times;</span>
         </div>
         <div class="modal-body">
           <form id="register-form">
             <div class="form-group">
               <label for="register-name">Full Name</label>
-              <input type="text" id="register-name" name="name" required />
+              <input
+                type="text"
+                id="register-name"
+                placeholder="Enter your name"
+                required
+              />
             </div>
 
             <div class="form-group">
               <label for="register-email">Email</label>
-              <input type="email" id="register-email" name="email" required />
+              <input
+                type="email"
+                id="register-email"
+                placeholder="Enter your email"
+                required
+              />
             </div>
 
             <div class="form-group">
@@ -86,16 +97,14 @@
               <input
                 type="password"
                 id="register-password"
-                name="password"
+                placeholder="Create a password"
                 required
-                minlength="6"
               />
-              <small>Password must be at least 6 characters</small>
             </div>
 
             <div class="form-group">
               <label for="register-role">Role</label>
-              <select id="register-role" name="role">
+              <select id="register-role">
                 <option value="cashier">Cashier</option>
                 <option value="manager">Manager</option>
                 <option value="admin">Admin</option>
@@ -105,15 +114,15 @@
             <div class="form-actions">
               <button
                 type="button"
-                class="btn secondary-btn"
                 id="cancel-register"
+                class="btn secondary-btn"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                class="btn primary-btn"
                 id="register-button"
+                class="btn primary-btn"
               >
                 Create Account
               </button>
@@ -123,6 +132,267 @@
       </div>
     </div>
 
-    <script src="../scripts/login.js"></script>
+    <script src="../services/login-sync-dialog.js"></script>
+    <script>
+      let isOnline = false;
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Initialize the page
+        initPage();
+
+        // Initialize sync dialog if available
+        if (typeof window.initLoginSyncDialog === "function") {
+          window.initLoginSyncDialog();
+        }
+
+        // Set up event listeners
+        document
+          .getElementById("login-form")
+          .addEventListener("submit", handleLogin);
+        document
+          .getElementById("create-account-link")
+          .addEventListener("click", showRegisterModal);
+        document
+          .getElementById("register-form")
+          .addEventListener("submit", handleRegister);
+        document
+          .getElementById("cancel-register")
+          .addEventListener("click", hideRegisterModal);
+        document
+          .querySelector(".close")
+          .addEventListener("click", hideRegisterModal);
+
+        // Close modal when clicking outside
+        window.addEventListener("click", (event) => {
+          if (event.target === document.getElementById("register-modal")) {
+            hideRegisterModal();
+          }
+        });
+      });
+
+      async function initPage() {
+        // Check if already logged in
+        try {
+          const currentUser = await window.api.getCurrentUser();
+          if (currentUser && currentUser.id) {
+            // User is already logged in, redirect to appropriate page
+            if (currentUser.role === "admin") {
+              window.location.href = "../index.html";
+            } else if (currentUser.role === "manager") {
+              window.location.href = "reports.html";
+            } else {
+              window.location.href = "billing.html";
+            }
+            return;
+          }
+        } catch (error) {
+          console.error("Error checking user:", error);
+        }
+
+        // Check connection status
+        await checkConnectionStatus();
+      }
+
+      async function checkConnectionStatus() {
+        try {
+          console.log("Checking connection status");
+
+          // Try a direct network test
+          if (window.api && typeof window.api.getOnlineStatus === "function") {
+            isOnline = await window.api.getOnlineStatus();
+            console.log("Online status from API:", isOnline);
+          } else {
+            isOnline = navigator.onLine;
+            console.log("API not available, using navigator.onLine:", isOnline);
+          }
+
+          // Update UI with whatever we determined
+          updateConnectionUI(isOnline);
+
+          // Register for status updates
+          if (
+            window.api &&
+            typeof window.api.onOnlineStatusChanged === "function"
+          ) {
+            console.log("Setting up online status listener");
+            window.api.onOnlineStatusChanged((status) => {
+              console.log("Online status update received:", status);
+              isOnline = status;
+              updateConnectionUI(status);
+            });
+          }
+        } catch (error) {
+          console.error("Error checking connection status:", error);
+          updateConnectionUI(false);
+        }
+      }
+
+      function updateConnectionUI(online) {
+        const indicator = document.getElementById("connection-indicator");
+        const statusText = document.getElementById("connection-text");
+        const connectionStatus = document.getElementById("connection-status");
+
+        if (online) {
+          indicator.classList.remove("offline");
+          indicator.classList.add("online");
+          statusText.textContent = "Online Mode";
+          connectionStatus.classList.remove("offline");
+        } else {
+          indicator.classList.remove("online");
+          indicator.classList.add("offline");
+          statusText.textContent = "Offline Mode";
+          connectionStatus.classList.add("offline");
+        }
+      }
+
+      async function handleLogin(event) {
+        event.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const loginButton = document.getElementById("login-button");
+
+        if (!email || !password) {
+          showError("Please enter both email and password");
+          return;
+        }
+
+        try {
+          loginButton.disabled = true;
+          loginButton.textContent = "Logging in...";
+
+          // Add debugging
+          console.log("Attempting login with:", { email, online: isOnline });
+
+          let result;
+          try {
+            // Pass online status to login function
+            result = await window.api.loginUser({ email, password, isOnline });
+            console.log("Login result:", result);
+          } catch (loginError) {
+            console.error("Error from loginUser:", loginError);
+            throw loginError;
+          }
+
+          // Add null/undefined check before accessing properties
+          if (result && result.success) {
+            // Redirect based on user role
+            if (result.user && result.user.role === "admin") {
+              window.location.href = "../index.html";
+            } else if (result.user && result.user.role === "manager") {
+              window.location.href = "inventory.html";
+            } else {
+              window.location.href = "billing.html";
+            }
+          } else {
+            // Handle null or undefined result
+            if (!result) {
+              showError("Login failed - no response from server");
+            } else {
+              showError(
+                result.message || "Login failed. Please check your credentials."
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          showError("An error occurred during login. Please try again.");
+        } finally {
+          loginButton.disabled = false;
+          loginButton.textContent = "Login";
+        }
+      }
+
+      function showError(message) {
+        const errorEl = document.getElementById("error-message");
+        errorEl.textContent = message;
+        errorEl.style.display = "block";
+
+        // Hide error after 5 seconds
+        setTimeout(() => {
+          errorEl.style.display = "none";
+        }, 5000);
+      }
+
+      function showRegisterModal() {
+        if (!isOnline) {
+          showError(
+            "Account creation requires internet connection. Please connect and try again."
+          );
+          return;
+        }
+
+        document.getElementById("register-modal").style.display = "block";
+      }
+
+      function hideRegisterModal() {
+        document.getElementById("register-modal").style.display = "none";
+        document.getElementById("register-form").reset();
+      }
+
+      async function handleRegister(event) {
+        event.preventDefault();
+
+        if (!isOnline) {
+          showError(
+            "Account creation requires internet connection. Please connect and try again."
+          );
+          return;
+        }
+
+        const name = document.getElementById("register-name").value;
+        const email = document.getElementById("register-email").value;
+        const password = document.getElementById("register-password").value;
+        const role = document.getElementById("register-role").value;
+        const registerButton = document.getElementById("register-button");
+
+        if (!name || !email || !password) {
+          showError("Please fill all required fields");
+          return;
+        }
+
+        try {
+          // Disable register button
+          registerButton.disabled = true;
+          registerButton.textContent = "Creating account...";
+
+          // Try to register
+          const result = await window.api.registerUser({
+            name,
+            email,
+            password,
+            role,
+          });
+
+          if (result.success) {
+            // Registration successful
+            hideRegisterModal();
+
+            // Pre-fill login form with registered email
+            document.getElementById("email").value = email;
+            document.getElementById("password").value = "";
+
+            showError("Account created successfully! You can now login.");
+            document.getElementById("error-message").style.backgroundColor =
+              "#e7f9e7";
+            document.getElementById("error-message").style.color = "#2ecc71";
+          } else {
+            // Registration failed
+            showError(
+              result.message || "Account creation failed. Please try again."
+            );
+          }
+        } catch (error) {
+          console.error("Registration error:", error);
+          showError(
+            "An error occurred during account creation. Please try again."
+          );
+        } finally {
+          // Re-enable register button
+          registerButton.disabled = false;
+          registerButton.textContent = "Create Account";
+        }
+      }
+    </script>
   </body>
 </html>

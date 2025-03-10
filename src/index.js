@@ -1,45 +1,14 @@
-// Load Firebase service if available
-// Add this at the very top of your script section in index.html
-
-// Remove the other DOMContentLoaded event listeners since we've merged them
 const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const Store = require("electron-store");
+const localStore = new Store({
+  name: "shop-billing-local-data",
+});
+
+// Initialize Firebase service
 let firebaseService = null;
-let isOnline = false;
 try {
-  // First check if the services directory and firebase.js exist
-  const servicesDir = path.join(__dirname, "services");
-  const firebasePath = path.join(servicesDir, "firebase.js");
-
-  if (!fs.existsSync(servicesDir)) {
-    console.log("Services directory not found, creating it...");
-    fs.mkdirSync(servicesDir, { recursive: true });
-  }
-
-  if (!fs.existsSync(firebasePath)) {
-    console.log("Firebase service not found, creating placeholder...");
-
-    // Create a simple placeholder to avoid crashes
-    const placeholderContent = `
-      module.exports = {
-        initializeFirebase: async () => false,
-        updateOnlineStatus: () => {},
-        registerSyncListener: () => () => {},
-        syncData: async () => false,
-        getAll: async () => [],
-        getById: async () => null,
-        add: async (_, item) => item.id || Date.now().toString(),
-        update: async () => false,
-        remove: async () => false,
-        createInvoice: async (invoice) => invoice.id || Date.now().toString(),
-        getLastSyncTime: () => null
-      };
-    `;
-
-    fs.writeFileSync(firebasePath, placeholderContent);
-  }
-
   firebaseService = require("./services/firebase");
   console.log("Firebase service loaded successfully");
 } catch (error) {
@@ -49,7 +18,6 @@ try {
   firebaseService = {
     initializeFirebase: async () => false,
     updateOnlineStatus: () => {},
-    registerSyncListener: () => () => {},
     syncData: async () => false,
     getAll: async () => [],
     getById: async () => null,
@@ -60,6 +28,58 @@ try {
     getLastSyncTime: () => null,
   };
 }
+
+// Initialize sync service
+let syncService = null;
+try {
+  syncService = require("./services/simplified-sync");
+  console.log("Sync service loaded successfully");
+} catch (error) {
+  console.error("Failed to load sync service:", error);
+
+  // Create a dummy service to avoid crashes
+  syncService = {
+    updateOnlineStatus: () => false,
+    checkUnsyncedData: async () => ({
+      success: false,
+      message: "Service not available",
+    }),
+    performSync: async () => ({
+      success: false,
+      message: "Service not available",
+    }),
+    getLastSyncTime: () => null,
+    setupIpcHandlers: () => {},
+  };
+}
+
+// Load auth service
+let authService = null;
+try {
+  authService = require("./services/auth");
+  console.log("Auth service loaded successfully");
+} catch (error) {
+  console.error("Failed to load auth service:", error);
+
+  // Create a dummy service to avoid crashes
+  authService = {
+    loginUser: async () => ({
+      success: false,
+      message: "Authentication service not available",
+    }),
+    registerUser: async () => ({
+      success: false,
+      message: "Authentication service not available",
+    }),
+    getCurrentUser: () => null,
+    logoutUser: async () => ({ success: true }),
+    checkPermission: () => false,
+  };
+}
+
+// Variables for tracking status
+let isOnline = false;
+let db = null;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 try {
@@ -82,30 +102,28 @@ const createWindow = () => {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.resolve(__dirname, "preload.js"), // Use path.resolve instead of path.join
       webSecurity: true,
       allowRunningInsecureContent: false,
-      contextIsolation: true,
-      nodeIntegration: false,
       worldSafeExecuteJavaScript: true,
-      // Add this line:
-      additionalArguments: ["--disable-web-security"],
     },
   });
 
+  // Set Content-Security-Policy
   mainWindow.webContents.session.webRequest.onHeadersReceived(
     (details, callback) => {
       callback({
         responseHeaders: {
           ...details.responseHeaders,
           "Content-Security-Policy": [
-            "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; connect-src 'self';",
+            "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:;",
           ],
         },
       });
     }
   );
-  // Load the index.html of the app
+
+  // Load the login page first
   mainWindow.loadFile(path.join(__dirname, "./views/login.html"));
 
   // Build menu from template
@@ -124,10 +142,28 @@ const createWindow = () => {
   } else {
     console.log("Firebase service not available, running in local-only mode");
   }
-
-  // Open DevTools (comment out in production)
-  // mainWindow.webContents.openDevTools();
 };
+
+app.on("ready", async () => {
+  console.log("App is ready, creating window...");
+  createWindow();
+
+  // Initialize Firebase directly here, remove from createWindow()
+  if (
+    firebaseService &&
+    typeof firebaseService.initializeFirebase === "function"
+  ) {
+    const result = await initializeFirebase();
+    console.log("Firebase initialization result:", result);
+
+    // Only set up sync handlers if Firebase initialized successfully
+    if (result && syncService && db) {
+      syncService.setupIpcHandlers(db);
+    }
+  } else {
+    console.log("Firebase service not available, running in local-only mode");
+  }
+});
 
 // Check online status
 const checkOnlineStatus = () => {
@@ -191,11 +227,16 @@ const checkOnlineStatus = () => {
       isOnline = online;
       console.log(`Connection status: ${isOnline ? "Online" : "Offline"}`);
 
+      // Update services with online status
       if (
         firebaseService &&
         typeof firebaseService.updateOnlineStatus === "function"
       ) {
         firebaseService.updateOnlineStatus(isOnline);
+      }
+
+      if (syncService) {
+        syncService.updateOnlineStatus(isOnline);
       }
 
       if (mainWindow && !mainWindow.isDestroyed()) {
@@ -219,6 +260,10 @@ const checkOnlineStatus = () => {
             firebaseService.updateOnlineStatus(isOnline);
           }
 
+          if (syncService) {
+            syncService.updateOnlineStatus(isOnline);
+          }
+
           if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.webContents.send("online-status-changed", isOnline);
 
@@ -233,42 +278,12 @@ const checkOnlineStatus = () => {
           }
         }
       });
-    }, 5000); // Check every 5 seconds
+    }, 30000); // Check every 30 seconds
   } catch (error) {
     console.error("Error checking online status:", error);
     isOnline = false;
   }
 };
-
-ipcMain.handle("update-invoice", async (event, invoice) => {
-  try {
-    // Use your database module to update the invoice
-    // For example, if using the firebaseService:
-    if (firebaseService && typeof firebaseService.update === "function") {
-      return await firebaseService.update("invoices", invoice);
-    } else {
-      // Fallback to local storage
-      const invoices = localStore.get("invoices") || [];
-      const index = invoices.findIndex((inv) => inv.id === invoice.id);
-
-      if (index !== -1) {
-        invoices[index] = {
-          ...invoices[index],
-          ...invoice,
-          updatedAt: new Date().toISOString(),
-        };
-
-        localStore.set("invoices", invoices);
-        return true;
-      }
-      return false;
-    }
-  } catch (error) {
-    console.error("Error updating invoice:", error);
-    return false;
-  }
-});
-// Add event listener to the logout button
 
 // Initialize Firebase
 const initializeFirebase = async () => {
@@ -280,6 +295,18 @@ const initializeFirebase = async () => {
       console.log("Initializing Firebase...");
       const result = await firebaseService.initializeFirebase();
       console.log("Firebase initialization result:", result);
+
+      // Add this line to initialize the db variable
+      if (result) {
+        // Import db from auth module after initialization is complete
+        const authModule = require("./services/auth");
+        db = authModule.db || null;
+
+        // Now set up the sync service if db is available
+        if (db && syncService) {
+          syncService.setupIpcHandlers(db);
+        }
+      }
 
       if (result && isOnline) {
         // Initial sync if online
@@ -360,13 +387,6 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-app.on("ready", () => {
-  console.log("App is ready, creating window...");
-  createWindow();
-});
-
 // Quit when all windows are closed, except on macOS
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -383,293 +403,391 @@ app.on("activate", () => {
 });
 
 // Initialize local storage
-const Store = require("electron-store");
-const localStore = new Store({
-  name: "shop-billing-local-data",
-});
-
 if (!localStore.has("invoices")) {
   localStore.set("invoices", []);
 }
 
-// IPC handlers for online status and sync
-// IPC handlers for online status and sync
-ipcMain.handle("get-online-status", () => {
-  console.log("IPC: get-online-status called, returning:", isOnline);
-  return isOnline;
-});
-
-// Update the sync-data handler with:
-ipcMain.handle("sync-data", async () => {
-  console.log("IPC: sync-data called, online status:", isOnline);
-  if (!isOnline) {
-    console.log("Not online, cannot sync");
-    return false;
-  }
-
-  try {
-    if (firebaseService && typeof firebaseService.syncData === "function") {
-      console.log("Calling firebaseService.syncData()");
-      const result = await firebaseService.syncData();
-      console.log("Sync result:", result);
-      return result;
-    } else {
-      console.log("Firebase sync not available, running in local-only mode");
-      return false;
-    }
-  } catch (error) {
-    console.error("Error during sync:", error);
-    return false;
-  }
-});
-
-// Update the get-last-sync-time handler with:
-ipcMain.handle("get-last-sync-time", () => {
-  console.log("IPC: get-last-sync-time called");
-  if (
-    firebaseService &&
-    typeof firebaseService.getLastSyncTime === "function"
-  ) {
-    const time = firebaseService.getLastSyncTime();
-    console.log("Last sync time:", time);
-    return time;
-  } else {
-    console.log("Firebase getLastSyncTime not available");
-    return null;
-  }
-});
-
-// IPC handlers for database operations
-ipcMain.handle("add-product", async (event, product) => {
-  try {
-    // Use Firebase if available, otherwise use local storage
-    if (firebaseService && typeof firebaseService.add === "function") {
-      return await firebaseService.add("products", product);
-    } else {
-      throw new Error("Firebase service not available");
-    }
-  } catch (error) {
-    console.log("Using local storage for add-product:", error.message);
-
-    // Fallback to local storage
-    const products = localStore.get("products") || [];
-    const newProduct = {
-      ...product,
-      id: product.id || Date.now().toString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    products.push(newProduct);
-    localStore.set("products", products);
-
-    return newProduct.id;
-  }
-});
-
-// Load auth service
-let authService = null;
-try {
-  authService = require("./services/auth");
-  console.log("Auth service loaded successfully");
-} catch (error) {
-  console.error("Failed to load auth service:", error);
-
-  // Create a dummy service to avoid crashes
-  authService = {
-    loginUser: async () => ({
-      success: false,
-      message: "Authentication service not available",
-    }),
-    registerUser: async () => ({
-      success: false,
-      message: "Authentication service not available",
-    }),
-    getCurrentUser: () => null,
-    logoutUser: async () => ({ success: true }),
-    checkPermission: () => false,
-  };
+if (!localStore.has("products")) {
+  localStore.set("products", []);
 }
 
-// Add these IPC handlers:
+// Set up IPC handlers
+setupIpcHandlers();
 
-// Login user
-ipcMain.handle("login-user", async (event, credentials) => {
-  try {
-    return await authService.loginUser(credentials);
-  } catch (error) {
-    console.error("Error during login:", error);
-    return { success: false, message: "Authentication error" };
-  }
-});
+function setupIpcHandlers() {
+  // Online status and sync handlers
+  ipcMain.handle("get-online-status", () => {
+    console.log("IPC: get-online-status called, returning:", isOnline);
+    return isOnline;
+  });
 
-// Register user
-ipcMain.handle("register-user", async (event, userData) => {
-  try {
-    return await authService.registerUser(userData);
-  } catch (error) {
-    console.error("Error during registration:", error);
-    return { success: false, message: "Registration error" };
-  }
-});
-
-// Get current user
-ipcMain.handle("get-current-user", () => {
-  try {
-    return authService.getCurrentUser();
-  } catch (error) {
-    console.error("Error getting current user:", error);
-    return null;
-  }
-});
-
-// Logout user
-ipcMain.handle("logout-user", async () => {
-  try {
-    return await authService.logoutUser();
-  } catch (error) {
-    console.error("Error during logout:", error);
-    return { success: false, message: "Logout error" };
-  }
-});
-
-// Check permission
-ipcMain.handle("check-permission", (event, permission) => {
-  try {
-    return authService.checkPermission(permission);
-  } catch (error) {
-    console.error("Error checking permission:", error);
-    return false;
-  }
-});
-
-ipcMain.handle("get-products", async () => {
-  try {
-    // Use Firebase if available, otherwise use local storage
-    if (firebaseService && typeof firebaseService.getAll === "function") {
-      return await firebaseService.getAll("products");
-    } else {
-      throw new Error("Firebase service not available");
+  ipcMain.handle("sync-data", async () => {
+    console.log("IPC: sync-data called, online status:", isOnline);
+    if (!isOnline) {
+      console.log("Not online, cannot sync");
+      return { success: false, message: "Device is offline" };
     }
-  } catch (error) {
-    console.log("Using local storage for get-products:", error.message);
-    return localStore.get("products") || [];
-  }
-});
 
-ipcMain.handle("update-product", async (event, product) => {
-  try {
-    // Use Firebase if available, otherwise use local storage
-    if (firebaseService && typeof firebaseService.update === "function") {
-      return await firebaseService.update("products", product);
-    } else {
-      throw new Error("Firebase service not available");
+    try {
+      if (firebaseService && typeof firebaseService.syncData === "function") {
+        console.log("Calling firebaseService.syncData()");
+        const result = await firebaseService.syncData();
+        console.log("Sync result:", result);
+        return result;
+      } else {
+        console.log("Firebase sync not available, running in local-only mode");
+        return { success: false, message: "Sync service not available" };
+      }
+    } catch (error) {
+      console.error("Error during sync:", error);
+      return { success: false, message: error.message };
     }
-  } catch (error) {
-    console.log("Using local storage for update-product:", error.message);
+  });
 
-    // Fallback to local storage
-    const products = localStore.get("products") || [];
-    const index = products.findIndex((p) => p.id === product.id);
+  ipcMain.handle("get-last-sync-time", () => {
+    console.log("IPC: get-last-sync-time called");
+    if (
+      firebaseService &&
+      typeof firebaseService.getLastSyncTime === "function"
+    ) {
+      const time = firebaseService.getLastSyncTime();
+      console.log("Last sync time:", time);
+      return time;
+    } else {
+      console.log("Firebase getLastSyncTime not available");
+      return null;
+    }
+  });
 
-    if (index !== -1) {
-      products[index] = {
-        ...products[index],
+  // Check unsynced data
+  ipcMain.handle("check-unsynced-data", async () => {
+    if (syncService && db) {
+      return await syncService.checkUnsyncedData(db);
+    } else {
+      return {
+        success: false,
+        message: "Sync service or database not available",
+      };
+    }
+  });
+
+  // Perform manual sync
+  ipcMain.handle("perform-sync", async () => {
+    if (syncService && db) {
+      const result = await syncService.performSync(db);
+
+      // Notify renderer of the result
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send("sync-completed", result);
+      }
+
+      return result;
+    } else {
+      return {
+        success: false,
+        message: "Sync service or database not available",
+      };
+    }
+  });
+
+  // Product management
+  ipcMain.handle("add-product", async (event, product) => {
+    try {
+      if (firebaseService && typeof firebaseService.add === "function") {
+        return await firebaseService.add("products", product);
+      } else {
+        throw new Error("Firebase service not available");
+      }
+    } catch (error) {
+      console.log("Using local storage for add-product:", error.message);
+
+      // Fallback to local storage
+      const products = localStore.get("products") || [];
+      const newProduct = {
         ...product,
+        id: product.id || Date.now().toString(),
         updatedAt: new Date().toISOString(),
       };
 
+      products.push(newProduct);
       localStore.set("products", products);
-      return true;
+
+      return newProduct.id;
     }
+  });
 
-    return false;
-  }
-});
-
-ipcMain.handle("delete-product", async (event, productId) => {
-  try {
-    // Use Firebase if available, otherwise use local storage
-    if (firebaseService && typeof firebaseService.remove === "function") {
-      return await firebaseService.remove("products", productId);
-    } else {
-      throw new Error("Firebase service not available");
+  ipcMain.handle("get-products", async () => {
+    try {
+      if (firebaseService && typeof firebaseService.getAll === "function") {
+        return await firebaseService.getAll("products");
+      } else {
+        throw new Error("Firebase service not available");
+      }
+    } catch (error) {
+      console.log("Using local storage for get-products:", error.message);
+      return localStore.get("products") || [];
     }
-  } catch (error) {
-    console.log("Using local storage for delete-product:", error.message);
+  });
 
-    // Fallback to local storage
-    const products = localStore.get("products") || [];
-    const newProducts = products.filter((p) => p.id !== productId);
+  ipcMain.handle("update-product", async (event, product) => {
+    try {
+      if (firebaseService && typeof firebaseService.update === "function") {
+        return await firebaseService.update("products", product);
+      } else {
+        throw new Error("Firebase service not available");
+      }
+    } catch (error) {
+      console.log("Using local storage for update-product:", error.message);
 
-    if (newProducts.length !== products.length) {
-      localStore.set("products", newProducts);
-      return true;
-    }
-
-    return false;
-  }
-});
-
-ipcMain.handle("create-invoice", async (event, invoice) => {
-  try {
-    // Use Firebase if available, otherwise use local storage
-    if (
-      firebaseService &&
-      typeof firebaseService.createInvoice === "function"
-    ) {
-      return await firebaseService.createInvoice(invoice);
-    } else {
-      throw new Error("Firebase service not available");
-    }
-  } catch (error) {
-    console.log("Using local storage for create-invoice:", error.message);
-
-    // Fallback to local storage
-    const invoices = localStore.get("invoices") || [];
-    const newInvoice = {
-      ...invoice,
-      id: invoice.id || Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      status: invoice.status || "completed",
-    };
-
-    invoices.push(newInvoice);
-    localStore.set("invoices", invoices);
-
-    // Update product stock
-    if (invoice.items && invoice.items.length > 0) {
+      // Fallback to local storage
       const products = localStore.get("products") || [];
+      const index = products.findIndex((p) => p.id === product.id);
 
-      invoice.items.forEach((item) => {
-        const productIndex = products.findIndex((p) => p.id === item.id);
-        if (productIndex !== -1) {
-          products[productIndex].stock -= item.quantity;
-          if (products[productIndex].stock < 0) {
-            products[productIndex].stock = 0;
+      if (index !== -1) {
+        products[index] = {
+          ...products[index],
+          ...product,
+          updatedAt: new Date().toISOString(),
+        };
+
+        localStore.set("products", products);
+        return true;
+      }
+
+      return false;
+    }
+  });
+
+  ipcMain.handle("delete-product", async (event, productId) => {
+    try {
+      if (firebaseService && typeof firebaseService.remove === "function") {
+        return await firebaseService.remove("products", productId);
+      } else {
+        throw new Error("Firebase service not available");
+      }
+    } catch (error) {
+      console.log("Using local storage for delete-product:", error.message);
+
+      // Fallback to local storage
+      const products = localStore.get("products") || [];
+      const newProducts = products.filter((p) => p.id !== productId);
+
+      if (newProducts.length !== products.length) {
+        localStore.set("products", newProducts);
+        return true;
+      }
+
+      return false;
+    }
+  });
+
+  // Invoice management
+  ipcMain.handle("create-invoice", async (event, invoice) => {
+    try {
+      if (
+        firebaseService &&
+        typeof firebaseService.createInvoice === "function"
+      ) {
+        return await firebaseService.createInvoice(invoice);
+      } else {
+        throw new Error("Firebase service not available");
+      }
+    } catch (error) {
+      console.log("Using local storage for create-invoice:", error.message);
+
+      // Fallback to local storage
+      const invoices = localStore.get("invoices") || [];
+      const newInvoice = {
+        ...invoice,
+        id: invoice.id || Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        status: invoice.status || "completed",
+      };
+
+      invoices.push(newInvoice);
+      localStore.set("invoices", invoices);
+
+      // Update product stock
+      if (invoice.items && invoice.items.length > 0) {
+        const products = localStore.get("products") || [];
+
+        invoice.items.forEach((item) => {
+          const productIndex = products.findIndex((p) => p.id === item.id);
+          if (productIndex !== -1) {
+            products[productIndex].stock -= item.quantity;
+            if (products[productIndex].stock < 0) {
+              products[productIndex].stock = 0;
+            }
+          }
+        });
+
+        localStore.set("products", products);
+      }
+
+      return newInvoice.id;
+    }
+  });
+
+  ipcMain.handle("get-invoices", async () => {
+    try {
+      if (firebaseService && typeof firebaseService.getAll === "function") {
+        return await firebaseService.getAll("invoices");
+      } else {
+        throw new Error("Firebase service not available");
+      }
+    } catch (error) {
+      console.log("Using local storage for get-invoices:", error.message);
+      return localStore.get("invoices") || [];
+    }
+  });
+
+  ipcMain.handle("update-invoice", async (event, invoice) => {
+    try {
+      if (firebaseService && typeof firebaseService.update === "function") {
+        return await firebaseService.update("invoices", invoice);
+      } else {
+        throw new Error("Firebase service not available");
+      }
+    } catch (error) {
+      console.log("Using local storage for update-invoice:", error.message);
+
+      // Fallback to local storage
+      const invoices = localStore.get("invoices") || [];
+      const index = invoices.findIndex((inv) => inv.id === invoice.id);
+
+      if (index !== -1) {
+        invoices[index] = {
+          ...invoices[index],
+          ...invoice,
+          updatedAt: new Date().toISOString(),
+        };
+
+        localStore.set("invoices", invoices);
+        return true;
+      }
+
+      return false;
+    }
+  });
+
+  // Authentication handlers
+  ipcMain.handle("login-user", async (event, credentials) => {
+    try {
+      // Add online status to credentials
+      credentials.isOnline = isOnline;
+
+      const result = await authService.loginUser(credentials);
+
+      if (result.success) {
+        // If login successful, tell the renderer we're logged in
+        event.sender.send("login-success", result.user);
+
+        // Check for unsynced data if we're online
+        if (isOnline && syncService && db) {
+          try {
+            // Check for unsynced data
+            const unsyncedData = await syncService.checkUnsyncedData(db);
+
+            if (unsyncedData.success && unsyncedData.hasUnsyncedData) {
+              // Send unsynced data information to renderer
+              event.sender.send("unsynced-data-available", unsyncedData);
+            }
+          } catch (syncError) {
+            console.error(
+              "Error checking for unsynced data after login:",
+              syncError
+            );
           }
         }
-      });
+      }
 
-      localStore.set("products", products);
+      return result;
+    } catch (error) {
+      console.error("Error during login:", error);
+      return { success: false, message: "Authentication error" };
     }
+  });
 
-    return newInvoice.id;
-  }
-});
-
-ipcMain.handle("get-invoices", async () => {
-  try {
-    // Use Firebase if available, otherwise use local storage
-    if (firebaseService && typeof firebaseService.getAll === "function") {
-      return await firebaseService.getAll("invoices");
-    } else {
-      throw new Error("Firebase service not available");
+  ipcMain.handle("register-user", async (event, userData) => {
+    try {
+      return await authService.registerUser(userData);
+    } catch (error) {
+      console.error("Error during registration:", error);
+      return { success: false, message: "Registration error" };
     }
-  } catch (error) {
-    console.log("Using local storage for get-invoices:", error.message);
-    return localStore.get("invoices") || [];
-  }
-});
+  });
+
+  ipcMain.handle("get-current-user", () => {
+    try {
+      return authService.getCurrentUser();
+    } catch (error) {
+      console.error("Error getting current user:", error);
+      return null;
+    }
+  });
+
+  ipcMain.handle("logout-user", async () => {
+    try {
+      return await authService.logoutUser();
+    } catch (error) {
+      console.error("Error during logout:", error);
+      return { success: false, message: "Logout error" };
+    }
+  });
+
+  ipcMain.handle("check-permission", (event, permission) => {
+    try {
+      return authService.checkPermission(permission);
+    } catch (error) {
+      console.error("Error checking permission:", error);
+      return false;
+    }
+  });
+
+  // Receipt printing
+  ipcMain.handle("print-receipt", async (event, invoiceData) => {
+    const receiptPath = path.join(
+      app.getPath("temp"),
+      `receipt-${invoiceData.id}.pdf`
+    );
+
+    const printWindow = new BrowserWindow({
+      width: 400,
+      height: 600,
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: path.join(__dirname, "preload.js"),
+      },
+    });
+
+    await printWindow.loadFile(
+      path.join(__dirname, "views/receipt-template.html")
+    );
+    await printWindow.webContents.executeJavaScript(`
+      document.getElementById('receipt-container').innerHTML = ${JSON.stringify(
+        invoiceData.receiptHtml
+      )};
+    `);
+
+    const pdfData = await printWindow.webContents.printToPDF({
+      printBackground: true,
+      pageSize: "A4",
+      margins: {
+        top: 20,
+        bottom: 20,
+        left: 20,
+        right: 20,
+      },
+    });
+
+    fs.writeFileSync(receiptPath, pdfData);
+    printWindow.close();
+
+    return receiptPath;
+  });
+}
 
 // Set online status when network connectivity changes
 app.on("web-contents-created", (event, contents) => {
@@ -716,6 +834,10 @@ app.on("web-contents-created", (event, contents) => {
               firebaseService.updateOnlineStatus(isOnline);
             }
 
+            if (syncService) {
+              syncService.updateOnlineStatus(isOnline);
+            }
+
             if (mainWindow && !mainWindow.isDestroyed()) {
               mainWindow.webContents.send("online-status-changed", isOnline);
 
@@ -735,48 +857,4 @@ app.on("web-contents-created", (event, contents) => {
       }
     }
   );
-});
-
-// IPC handlers for printing receipts
-ipcMain.handle("print-receipt", async (event, invoiceData) => {
-  const receiptPath = path.join(
-    app.getPath("temp"),
-    `receipt-${invoiceData.id}.pdf`
-  );
-
-  const printWindow = new BrowserWindow({
-    width: 400,
-    height: 600,
-    show: false,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, "preload.js"),
-    },
-  });
-
-  await printWindow.loadFile(
-    path.join(__dirname, "views/receipt-template.html")
-  );
-  await printWindow.webContents.executeJavaScript(`
-    document.getElementById('receipt-container').innerHTML = ${JSON.stringify(
-      invoiceData.receiptHtml
-    )};
-  `);
-
-  const pdfData = await printWindow.webContents.printToPDF({
-    printBackground: true,
-    pageSize: "A4",
-    margins: {
-      top: 20,
-      bottom: 20,
-      left: 20,
-      right: 20,
-    },
-  });
-
-  fs.writeFileSync(receiptPath, pdfData);
-  printWindow.close();
-
-  return receiptPath;
 });

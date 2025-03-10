@@ -37,6 +37,10 @@ contextBridge.exposeInMainWorld("api", {
     console.log("Preload: Calling get-invoices");
     return await safeIpcInvoke("get-invoices");
   },
+  updateInvoice: async (invoice) => {
+    console.log("Preload: Calling update-invoice", invoice.id);
+    return await safeIpcInvoke("update-invoice", invoice);
+  },
 
   // Online/Offline and sync functions
   getOnlineStatus: async () => {
@@ -54,7 +58,7 @@ contextBridge.exposeInMainWorld("api", {
       return await safeIpcInvoke("sync-data");
     } catch (error) {
       console.error("Error syncing data:", error);
-      return false;
+      return { success: false, message: error.message };
     }
   },
   getLastSyncTime: async () => {
@@ -66,6 +70,26 @@ contextBridge.exposeInMainWorld("api", {
       return null;
     }
   },
+  checkUnsyncedData: async () => {
+    console.log("Preload: Calling check-unsynced-data");
+    try {
+      return await safeIpcInvoke("check-unsynced-data");
+    } catch (error) {
+      console.error("Error checking unsynced data:", error);
+      return { success: false, message: error.message };
+    }
+  },
+  performSync: async () => {
+    console.log("Preload: Calling perform-sync");
+    try {
+      return await safeIpcInvoke("perform-sync");
+    } catch (error) {
+      console.error("Error performing sync:", error);
+      return { success: false, message: error.message };
+    }
+  },
+
+  // Event listeners for online status and sync events
   onOnlineStatusChanged: (callback) => {
     console.log("Preload: Setting up online-status-changed listener");
     const subscription = (event, status) => {
@@ -83,82 +107,105 @@ contextBridge.exposeInMainWorld("api", {
     };
   },
 
-  // IPC operations
+  onUnsyncedDataAvailable: (callback) => {
+    const subscription = (event, data) => callback(data);
+    ipcRenderer.on("unsynced-data-available", subscription);
+    return () =>
+      ipcRenderer.removeListener("unsynced-data-available", subscription);
+  },
+
+  onSyncStarted: (callback) => {
+    const subscription = () => callback();
+    ipcRenderer.on("sync-started", subscription);
+    return () => ipcRenderer.removeListener("sync-started", subscription);
+  },
+
+  onSyncProgress: (callback) => {
+    const subscription = (event, data) => callback(data);
+    ipcRenderer.on("sync-progress", subscription);
+    return () => ipcRenderer.removeListener("sync-progress", subscription);
+  },
+
+  onSyncCompleted: (callback) => {
+    const subscription = (event, data) => callback(data);
+    ipcRenderer.on("sync-completed", subscription);
+    return () => ipcRenderer.removeListener("sync-completed", subscription);
+  },
+
+  // User authentication
+  loginUser: async (credentials) => {
+    console.log("Preload: Calling login-user");
+    return await safeIpcInvoke("login-user", credentials);
+  },
+  registerUser: async (userData) => {
+    console.log("Preload: Calling register-user");
+    return await safeIpcInvoke("register-user", userData);
+  },
+  getCurrentUser: async () => {
+    console.log("Preload: Calling get-current-user");
+    return await safeIpcInvoke("get-current-user");
+  },
+  logoutUser: async () => {
+    console.log("Preload: Calling logout-user");
+    try {
+      // Clear browser localStorage
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_name");
+      localStorage.removeItem("device_name");
+
+      // Then call the main process logout
+      return await safeIpcInvoke("logout-user");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      return { success: false, message: error.message };
+    }
+  },
+  checkPermission: async (permission) => {
+    console.log("Preload: Calling check-permission", permission);
+    return await safeIpcInvoke("check-permission", permission);
+  },
+
+  // Utility functions
   printReceipt: async (invoiceData) => {
     console.log("Preload: Calling print-receipt");
     return await safeIpcInvoke("print-receipt", invoiceData);
   },
-
-  // Current date and time
   getCurrentDate: () => {
     return new Date().toISOString();
   },
-
-  getCurrentUser: () => {
-    return {
-      id: localStorage.getItem("user_id") || `user_${Date.now()}`,
-      name: localStorage.getItem("user_name") || "Unknown User",
-      device: localStorage.getItem("device_name") || require("os").hostname(),
-    };
-  },
-
   setCurrentUser: (userData) => {
     localStorage.setItem("user_id", userData.id);
     localStorage.setItem("user_name", userData.name);
     localStorage.setItem("device_name", userData.device);
     return true;
   },
-
-  subscribeToUpdates: (collectionName, callback) => {
-    if (typeof window.api.subscribeToCollection === "function") {
-      return window.api.subscribeToCollection(collectionName, callback);
-    }
-    return () => {}; // Return empty unsubscribe function
-  },
-
-  loginUser: async (credentials) => {
-    console.log("Preload: Calling login-user");
-    return await safeIpcInvoke("login-user", credentials);
-  },
-
-  registerUser: async (userData) => {
-    console.log("Preload: Calling register-user");
-    return await safeIpcInvoke("register-user", userData);
-  },
-  updateInvoice: async (invoice) => {
-    console.log("Preload: Calling update-invoice", invoice.id);
-    try {
-      return await safeIpcInvoke("update-invoice", invoice);
-    } catch (error) {
-      console.error("Error updating invoice:", error);
-      // You'll also need to add a corresponding handler in your main process
-      return false;
-    }
-  },
-  getCurrentUser: async () => {
-    console.log("Preload: Calling get-current-user");
-    return await safeIpcInvoke("get-current-user");
-  },
-
-  logoutUser: async () => {
-    console.log("Preload: Calling logout-user");
-    return await safeIpcInvoke("logout-user");
-  },
-
-  checkPermission: async (permission) => {
-    console.log("Preload: Calling check-permission", permission);
-    return await safeIpcInvoke("check-permission", permission);
-  },
 });
 
 // Log when preload script has loaded
 console.log("Preload script initialized successfully");
+
+// Logout handler (moved from inline function to proper export)
 async function handleLogout() {
   try {
-    await window.api.logoutUser();
-    // Redirect to login.html in the views folder
-    window.location.href = "views/login.html";
+    console.log("Logging out...");
+    const result = await window.api.logoutUser();
+    console.log("Logout result:", result);
+
+    if (result && result.success) {
+      // Force redirect to login page
+      window.location.href = "login.html";
+    } else {
+      console.error("Logout failed:", result);
+      alert("Logout failed. Please try again.");
+    }
   } catch (error) {
     console.error("Logout error:", error);
+    alert("An error occurred during logout.");
   }
 }
+
+// Make sure this is connected to your logout button
+document.getElementById("logout-btn").addEventListener("click", handleLogout);
+
+// Export the logout handler if needed elsewhere
+window.handleLogout = handleLogout;

@@ -1,12 +1,90 @@
 // Global variables
 let invoices = [];
 let products = [];
+// Add this to your renderer JS files (e.g., inventory.js, billing.js)
 
-// DOM Elements
-document.addEventListener("DOMContentLoaded", () => {
-  // Initialize page
-  initPage();
-});
+// Create or find sync status element
+// let syncStatusEl = document.getElementById("sync-status");
+// if (!syncStatusEl) {
+//   syncStatusEl = document.createElement("div");
+//   syncStatusEl.id = "sync-status";
+//   syncStatusEl.classList.add("sync-status");
+//   document.body.appendChild(syncStatusEl);
+// }
+
+// // Listen for sync events
+// window.api.onBackgroundSyncStarted(() => {
+//   syncStatusEl.textContent = "Syncing data...";
+//   syncStatusEl.classList.remove("hidden", "success", "error");
+//   syncStatusEl.classList.add("active");
+// });
+
+// window.api.onBackgroundSyncCompleted((data) => {
+//   if (data.success) {
+//     syncStatusEl.textContent = `Sync completed at ${new Date(
+//       data.timestamp
+//     ).toLocaleTimeString()}`;
+//     syncStatusEl.classList.remove("active", "error");
+//     syncStatusEl.classList.add("success");
+
+//     // Hide after a few seconds
+//     setTimeout(() => {
+//       syncStatusEl.classList.add("hidden");
+//     }, 3000);
+//   } else {
+//     syncStatusEl.textContent = "Sync failed. Will retry later.";
+//     syncStatusEl.classList.remove("active", "success");
+//     syncStatusEl.classList.add("error");
+//   }
+// });
+// window.api.onBackgroundSyncStarted(() => {
+//   // Show sync indicator (small spinner in corner of screen)
+//   const syncIndicator =
+//     document.getElementById("sync-indicator") || document.createElement("div");
+
+//   syncIndicator.id = "sync-indicator";
+//   syncIndicator.innerHTML = `
+//     <div class="spinner"></div>
+//     <div class="sync-text">Syncing data...</div>
+//   `;
+
+//   if (!syncIndicator.parentNode) {
+//     syncIndicator.style.position = "fixed";
+//     syncIndicator.style.bottom = "10px";
+//     syncIndicator.style.right = "10px";
+//     syncIndicator.style.background = "rgba(0,0,0,0.7)";
+//     syncIndicator.style.color = "white";
+//     syncIndicator.style.padding = "8px 12px";
+//     syncIndicator.style.borderRadius = "4px";
+//     syncIndicator.style.fontSize = "12px";
+//     syncIndicator.style.zIndex = "9999";
+//     document.body.appendChild(syncIndicator);
+//   }
+// });
+
+// window.api.onBackgroundSyncCompleted((data) => {
+//   // Update or hide the indicator when sync completes
+//   const syncIndicator = document.getElementById("sync-indicator");
+//   if (syncIndicator) {
+//     if (data.success) {
+//       syncIndicator.innerHTML = `<div class="sync-text">Sync completed ✓</div>`;
+//       setTimeout(() => {
+//         syncIndicator.style.opacity = "0";
+//         setTimeout(() => {
+//           if (syncIndicator.parentNode) {
+//             syncIndicator.parentNode.removeChild(syncIndicator);
+//           }
+//         }, 300);
+//       }, 2000);
+//     } else {
+//       syncIndicator.innerHTML = `<div class="sync-text">Sync failed ✗</div>`;
+//     }
+//   }
+// });
+// window.api.onBackgroundSyncProgress((data) => {
+//   syncStatusEl.textContent = `Syncing ${data.collection}: ${data.processed}/${data.total}`;
+// });
+
 // Add this to billing.js, inventory.js, and reports.js
 async function handleLogout() {
   try {
@@ -19,9 +97,10 @@ async function handleLogout() {
 
 // In each page's initialization
 document.addEventListener("DOMContentLoaded", () => {
-  // Other initialization code...
-
-  // Add logout button listener
+  initPage();
+  if (typeof window.initSyncUI === "function") {
+    window.initSyncUI();
+  }
   document.getElementById("logout-btn").addEventListener("click", handleLogout);
 });
 // Initialize the page

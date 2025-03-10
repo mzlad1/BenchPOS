@@ -22,8 +22,56 @@ const receiptContainerEl = document.getElementById("receipt-container");
 const printReceiptBtn = document.getElementById("print-receipt");
 const emailReceiptBtn = document.getElementById("email-receipt");
 const newSaleBtn = document.getElementById("new-sale");
+// Add this to your renderer JS files (e.g., inventory.js, billing.js)
 
+// // Create or find sync status element
+// let syncStatusEl = document.getElementById("sync-status");
+// if (!syncStatusEl) {
+//   syncStatusEl = document.createElement("div");
+//   syncStatusEl.id = "sync-status";
+//   syncStatusEl.classList.add("sync-status");
+//   document.body.appendChild(syncStatusEl);
+// }
+
+// // Listen for sync events
+// window.api.onBackgroundSyncStarted(() => {
+//   syncStatusEl.textContent = "Syncing data...";
+//   syncStatusEl.classList.remove("hidden", "success", "error");
+//   syncStatusEl.classList.add("active");
+// });
+
+// window.api.onBackgroundSyncCompleted((data) => {
+//   if (data.success) {
+//     syncStatusEl.textContent = `Sync completed at ${new Date(
+//       data.timestamp
+//     ).toLocaleTimeString()}`;
+//     syncStatusEl.classList.remove("active", "error");
+//     syncStatusEl.classList.add("success");
+
+//     // Hide after a few seconds
+//     setTimeout(() => {
+//       syncStatusEl.classList.add("hidden");
+//     }, 3000);
+//   } else {
+//     syncStatusEl.textContent = "Sync failed. Will retry later.";
+//     syncStatusEl.classList.remove("active", "success");
+//     syncStatusEl.classList.add("error");
+//   }
+// });
+
+// window.api.onBackgroundSyncProgress((data) => {
+//   syncStatusEl.textContent = `Syncing ${data.collection}: ${data.processed}/${data.total}`;
+// });
 // Initialize the page
+
+// Add this near the beginning of your billing.js initialization
+if (window.api.subscribeToCollection) {
+  // Subscribe to invoice changes
+  window.api.subscribeToCollection("invoices", (changes) => {
+    // Refresh all invoices when changes occur
+    loadAllInvoices();
+  });
+}
 async function initPage() {
   const hasPermission = await checkPermission();
   if (!hasPermission) return;
@@ -54,6 +102,16 @@ async function initPage() {
   newSaleBtn.addEventListener("click", () => {
     receiptModal.style.display = "none";
     clearCart();
+
+    // Update navigation status
+    isViewingInvoice = false;
+    isEditingInvoice = false;
+
+    // Remove invoice view indicator if it exists
+    const indicator = document.getElementById("invoice-view-indicator");
+    if (indicator) {
+      indicator.remove();
+    }
   });
 
   // Close modal when clicking outside
@@ -342,6 +400,7 @@ function clearCart() {
 }
 
 // Complete sale
+// Fix for the completeSale function to update the invoices array
 async function completeSale() {
   if (cart.length === 0) return;
 
@@ -358,7 +417,19 @@ async function completeSale() {
     // Save invoice to database
     const invoiceId = await window.api.createInvoice(invoiceData);
 
-    // Update products stock (would be implemented in a real app)
+    // *** Add this code to update the in-memory invoices array ***
+    const newInvoice = {
+      ...invoiceData,
+      id: invoiceId,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Add the new invoice to the allInvoices array
+    allInvoices.unshift(newInvoice); // Add to beginning (newest first)
+
+    // Reset the current index to point to the new invoice
+    currentInvoiceIndex = 0;
+    // *** End of new code ***
 
     // Generate receipt HTML
     const receiptHtml = generateReceiptHtml({
@@ -874,8 +945,9 @@ function initKeyboardShortcuts() {
 
 // Handle keyboard shortcuts
 // Handle keyboard shortcuts
+// Handle keyboard shortcuts
 function handleKeyboardShortcut(event) {
-  // Special case for F11 and F12 (invoice navigation)
+  // Special case for F11 and F12 (invoice navigation) - these always work
   if (event.key === "F11" || event.key === "F12") {
     event.preventDefault();
     if (event.key === "F11") {
@@ -893,6 +965,37 @@ function handleKeyboardShortcut(event) {
 
   console.log("Key pressed:", event.key, event.code);
 
+  // Check if viewing (but not editing) an invoice - block action shortcuts
+  if (isViewingInvoice && !isEditingInvoice) {
+    // Allow F6 (show product details) as it's read-only
+    if (event.key === "F6") {
+      event.preventDefault();
+      showProductDetails();
+      return;
+    }
+
+    // For all other shortcuts that modify the invoice, show alert
+    switch (event.key) {
+      case "F1":
+      case "F2":
+      case "F3":
+      case "F5":
+      case "F7":
+      case "F9":
+      case "F10":
+      case "Delete":
+      case "d":
+        event.preventDefault();
+        // Stop event propagation to prevent other handlers from running
+        event.stopImmediatePropagation();
+        alert("Please click 'Edit' first before making changes.");
+        return false; // Explicitly return false to prevent default
+    }
+
+    return; // Exit early if viewing but not editing
+  }
+
+  // Process shortcuts normally if not viewing or if in edit mode
   switch (event.key) {
     case "F1":
       event.preventDefault();
@@ -901,12 +1004,7 @@ function handleKeyboardShortcut(event) {
 
     case "F2":
       event.preventDefault();
-      // Add this check before calling processReturn
-      if (isViewingInvoice && !isEditingInvoice) {
-        alert("Please click 'Edit' first before processing a refund.");
-      } else {
-        processReturn();
-      }
+      processReturn();
       break;
 
     case "F3":
@@ -957,6 +1055,13 @@ function handleKeyboardShortcut(event) {
     case "/":
       event.preventDefault();
       document.getElementById("product-search").focus();
+      break;
+
+    case "d":
+      if (!event.ctrlKey && !event.altKey && !event.shiftKey) {
+        event.preventDefault();
+        showDiscountModal();
+      }
       break;
   }
 }
@@ -1677,6 +1782,14 @@ function initDiscountFeature() {
       event.key === "d" &&
       !(event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA")
     ) {
+      // First check if we're viewing an invoice without being in edit mode
+      if (isViewingInvoice && !isEditingInvoice) {
+        event.preventDefault();
+        alert("Please click 'Edit' first before making changes.");
+        return;
+      }
+
+      // Otherwise proceed normally
       event.preventDefault();
       showDiscountModal();
     }
@@ -4483,7 +4596,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Check for API support
   checkInvoiceUpdateSupport();
-
+  if (typeof window.initSyncUI === "function") {
+    window.initSyncUI();
+  }
   // Focus barcode input after all initialization is complete
   setTimeout(() => {
     const barcodeInput = document.getElementById("barcode-input");
@@ -4516,6 +4631,50 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
     initDiscountFeature();
   }, 100);
+
+  //   window.api.onBackgroundSyncCompleted((data) => {
+  //     // Update or hide the indicator when sync completes
+  //     const syncIndicator = document.getElementById("sync-indicator");
+  //     if (syncIndicator) {
+  //       if (data.success) {
+  //         syncIndicator.innerHTML = `<div class="sync-text">Sync completed ✓</div>`;
+  //         setTimeout(() => {
+  //           syncIndicator.style.opacity = "0";
+  //           setTimeout(() => {
+  //             if (syncIndicator.parentNode) {
+  //               syncIndicator.parentNode.removeChild(syncIndicator);
+  //             }
+  //           }, 300);
+  //         }, 2000);
+  //       } else {
+  //         syncIndicator.innerHTML = `<div class="sync-text">Sync failed ✗</div>`;
+  //       }
+  //     }
+  //   });
+  // });
+  // window.api.onBackgroundSyncStarted(() => {
+  //   // Show sync indicator (small spinner in corner of screen)
+  //   const syncIndicator =
+  //     document.getElementById("sync-indicator") || document.createElement("div");
+
+  //   syncIndicator.id = "sync-indicator";
+  //   syncIndicator.innerHTML = `
+  //     <div class="spinner"></div>
+  //     <div class="sync-text">Syncing data...</div>
+  //   `;
+
+  //   if (!syncIndicator.parentNode) {
+  //     syncIndicator.style.position = "fixed";
+  //     syncIndicator.style.bottom = "10px";
+  //     syncIndicator.style.right = "10px";
+  //     syncIndicator.style.background = "rgba(0,0,0,0.7)";
+  //     syncIndicator.style.color = "white";
+  //     syncIndicator.style.padding = "8px 12px";
+  //     syncIndicator.style.borderRadius = "4px";
+  //     syncIndicator.style.fontSize = "12px";
+  //     syncIndicator.style.zIndex = "9999";
+  //     document.body.appendChild(syncIndicator);
+  //   }
 });
 
 // Remove the other DOMContentLoaded event listeners

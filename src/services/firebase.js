@@ -1,3 +1,4 @@
+// services/firebase.js
 const { initializeApp } = require("firebase/app");
 const {
   getFirestore,
@@ -12,64 +13,52 @@ const {
   where,
   onSnapshot,
   enableIndexedDbPersistence,
-  enableMultiTabIndexedDbPersistence,
+  CACHE_SIZE_UNLIMITED,
+  initializeFirestore,
 } = require("firebase/firestore");
-const { getAuth, signInAnonymously } = require("firebase/auth");
+
+const { getAuth } = require("firebase/auth");
 const ElectronStore = require("electron-store");
 const localStore = new ElectronStore({ name: "shop-billing-local-data" });
+const { firebaseConfig, isFirebaseConfigured } = require("../config");
 
-// Your web app's Firebase configuration
-// Replace with your actual Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyC6z4Ci0QvHlLtonZLDAlyJHH7Km0B_PI0",
-  authDomain: "shop-d44bb.firebaseapp.com",
-  projectId: "shop-d44bb",
-  storageBucket: "shop-d44bb.firebasestorage.app",
-  messagingSenderId: "624712206371",
-  appId: "1:624712206371:web:3e93f2354ed96164804996",
-};
-
-// Check if the Firebase config has been updated
-const isFirebaseConfigured = () => {
-  return (
-    firebaseConfig.apiKey !== "YOUR_API_KEY" &&
-    firebaseConfig.projectId !== "YOUR_PROJECT_ID"
-  );
-};
-
+// Variables for tracking status
+let isSyncing = false;
+let isOnline = false;
+let lastSyncTime = null;
+let firebaseInitialized = false;
+let syncListeners = [];
 // Initialize Firebase
 let app;
 let db;
 let auth;
 
 try {
-  app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
-  auth = getAuth(app);
-  console.log("Firebase app initialized");
+  if (isFirebaseConfigured()) {
+    app = initializeApp(firebaseConfig);
+
+    // Use initializeFirestore instead of getFirestore and settings
+    db = initializeFirestore(app, {
+      cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+    });
+
+    auth = getAuth(app);
+    console.log("Firebase app initialized with custom settings");
+  } else {
+    console.warn("Firebase not properly configured, using local storage only");
+  }
 } catch (error) {
   console.error("Error initializing Firebase app:", error);
 }
 
-// Variables for tracking status
-let isSyncing = false;
-let isOnline = false;
-let syncListeners = [];
-let lastSyncTime = null;
-let firebaseInitialized = false;
-
-// Get last sync time
-const getLastSyncTime = () => {
-  return lastSyncTime;
-};
-
+// Initialize Firebase with offline persistence
 // Initialize Firebase with offline persistence
 const initializeFirebase = async () => {
   try {
-    // Check if Firebase config has been updated from placeholder values
+    // Check if Firebase config has been properly set
     if (!isFirebaseConfigured()) {
       console.error(
-        "Firebase not properly configured. Please update the configuration in firebase.js"
+        "Firebase not properly configured. Please update the configuration."
       );
       return false;
     }
@@ -82,13 +71,13 @@ const initializeFirebase = async () => {
 
     // Enable offline persistence
     try {
-      enableIndexedDbPersistence(db).catch((err) => {
+      await enableIndexedDbPersistence(db).catch((err) => {
         console.warn(
           `Persistence couldn't be enabled: ${err.code}. Using memory cache instead.`
         );
         // Continue without persistence - the app will still work
       });
-      console.log("Attempting to enable offline persistence");
+      console.log("Offline persistence enabled");
     } catch (err) {
       if (err.code === "failed-precondition") {
         console.warn(
@@ -103,27 +92,7 @@ const initializeFirebase = async () => {
       }
     }
 
-    // Handle authentication
-    try {
-      // Check if auth is initialized before trying to sign in
-      if (auth) {
-        await signInAnonymously(auth).catch((err) => {
-          console.warn(
-            "Anonymous auth failed, continuing without authentication:",
-            err.message
-          );
-          // Don't fail the whole initialization process for this
-        });
-        console.log("Signed in anonymously or continued without auth");
-      } else {
-        console.warn("Auth not initialized, continuing without authentication");
-      }
-    } catch (err) {
-      console.error("Error in auth process:", err);
-      // Don't fail the whole initialization for auth issues
-    }
-
-    // Consider initialization successful even if some parts fail
+    // Consider initialization successful
     firebaseInitialized = true;
     console.log("Firebase initialized with best available features");
     return true;
@@ -158,26 +127,50 @@ const notifySyncListeners = () => {
   syncListeners.forEach((listener) => listener(status));
 };
 
+// Get last sync time
+const getLastSyncTime = () => {
+  return lastSyncTime;
+};
+
 // Sync data between Firebase and local storage
 const syncData = async () => {
-  if (!isOnline || isSyncing || !firebaseInitialized) return;
+  if (!isOnline || isSyncing || !firebaseInitialized) {
+    return {
+      success: false,
+      message:
+        "Cannot sync: Offline, already syncing, or Firebase not initialized",
+    };
+  }
+
+  // Check if user is authenticated
+  if (!auth.currentUser) {
+    console.log("Cannot sync: No authenticated user");
+    return { success: false, message: "Authentication required for sync" };
+  }
 
   isSyncing = true;
   notifySyncListeners();
 
   try {
-    // Sync products
-    await syncCollection("products");
+    const results = {};
 
-    // Sync invoices
-    await syncCollection("invoices");
+    // Sync collections
+    for (const collectionName of ["products", "invoices"]) {
+      const result = await syncCollection(collectionName);
+      results[collectionName] = result;
+    }
 
     lastSyncTime = new Date().toISOString();
     console.log("Data sync completed at", lastSyncTime);
-    return true;
+
+    return {
+      success: true,
+      timestamp: lastSyncTime,
+      results,
+    };
   } catch (error) {
     console.error("Error syncing data:", error);
-    return false;
+    return { success: false, message: error.message };
   } finally {
     isSyncing = false;
     notifySyncListeners();
@@ -191,12 +184,12 @@ const syncCollection = async (collectionName) => {
       console.error(
         `Cannot sync ${collectionName}: Firebase not properly configured`
       );
-      return false;
+      return { success: false, message: "Firebase not configured" };
     }
 
     if (!firebaseInitialized) {
       console.error(`Cannot sync ${collectionName}: Firebase not initialized`);
-      return false;
+      return { success: false, message: "Firebase not initialized" };
     }
 
     console.log(`Starting sync for collection: ${collectionName}`);
@@ -206,192 +199,92 @@ const syncCollection = async (collectionName) => {
     console.log(`Local ${collectionName} count:`, localData.length);
 
     // Get cloud data
-    try {
-      const querySnapshot = await getDocs(collection(db, collectionName));
-      const cloudData = querySnapshot.docs.map((doc) => doc.data());
-      console.log(`Cloud ${collectionName} count:`, cloudData.length);
+    const querySnapshot = await getDocs(collection(db, collectionName));
+    const cloudData = querySnapshot.docs.map((doc) => doc.data());
+    console.log(`Cloud ${collectionName} count:`, cloudData.length);
 
-      // Create a map for easier comparison
-      const localMap = new Map(localData.map((item) => [item.id, item]));
-      const cloudMap = new Map(cloudData.map((item) => [item.id, item]));
+    // Create maps for easier comparison
+    const localMap = new Map(localData.map((item) => [item.id, item]));
+    const cloudMap = new Map(cloudData.map((item) => [item.id, item]));
 
-      // Items that only exist locally (need to be uploaded)
-      const localOnlyItems = localData.filter((item) => !cloudMap.has(item.id));
+    // Track sync results
+    const result = {
+      uploaded: 0,
+      downloaded: 0,
+      conflicts: 0,
+      resolved: 0,
+    };
 
-      // Items that only exist in cloud (need to be downloaded)
-      const cloudOnlyItems = cloudData.filter((item) => !localMap.has(item.id));
+    // 1. Items that only exist locally (need to be uploaded)
+    const localOnlyItems = localData.filter((item) => !cloudMap.has(item.id));
+    console.log(`${localOnlyItems.length} items to upload`);
 
-      // Items that exist in both places (need field-level merging)
-      const itemsInBoth = localData.filter((item) => cloudMap.has(item.id));
-
-      console.log(
-        `${localOnlyItems.length} items to upload, ${cloudOnlyItems.length} items to download, ${itemsInBoth.length} items to merge`
-      );
-
-      // Upload items that only exist locally
-      for (const item of localOnlyItems) {
-        try {
-          await setDoc(doc(db, collectionName, item.id), item);
-          console.log(`Uploaded new ${collectionName} item:`, item.id);
-        } catch (error) {
-          console.error(`Error uploading ${collectionName}/${item.id}:`, error);
-        }
-      }
-
-      // Download items that only exist in cloud
-      for (const item of cloudOnlyItems) {
-        localMap.set(item.id, item);
-        console.log(`Downloaded new ${collectionName} item:`, item.id);
-      }
-
-      // Merge items that exist in both places
-      for (const localItem of itemsInBoth) {
-        const cloudItem = cloudMap.get(localItem.id);
-
-        // Create a merged item with the latest version of each field
-        const mergedItem = { ...localItem }; // Start with local copy
-
-        // Loop through all fields from cloud item
-        for (const [key, value] of Object.entries(cloudItem)) {
-          // Skip id field
-          if (key === "id") continue;
-
-          // Use cloud value if:
-          // 1. Field doesn't exist locally, or
-          // 2. Cloud version is newer
-          if (
-            // Field doesn't exist locally
-            localItem[key] === undefined ||
-            // Cloud update is newer than local update
-            (cloudItem.updatedAt &&
-              localItem.updatedAt &&
-              new Date(cloudItem.updatedAt) > new Date(localItem.updatedAt))
-          ) {
-            mergedItem[key] = value;
-          }
-        }
-
-        // Update both cloud and local with merged item
-        try {
-          // Add a timestamp for this merge
-          mergedItem.updatedAt = new Date().toISOString();
-
-          // Update in Firestore
-          await setDoc(doc(db, collectionName, mergedItem.id), mergedItem);
-
-          // Update in local map for later storage update
-          localMap.set(mergedItem.id, mergedItem);
-
-          console.log(`Merged ${collectionName} item:`, mergedItem.id);
-        } catch (error) {
-          console.error(
-            `Error merging ${collectionName}/${mergedItem.id}:`,
-            error
-          );
-        }
-      }
-
-      // Save all updated data to local storage
-      localStore.set(collectionName, Array.from(localMap.values()));
-      console.log(`Sync completed for ${collectionName}`);
-
-      return true;
-    } catch (error) {
-      console.error(`Error getting cloud data for ${collectionName}:`, error);
-      return false;
+    for (const item of localOnlyItems) {
+      await setDoc(doc(db, collectionName, item.id), item);
+      result.uploaded++;
     }
+
+    // 2. Items that only exist in cloud (need to be downloaded)
+    const cloudOnlyItems = cloudData.filter((item) => !localMap.has(item.id));
+    console.log(`${cloudOnlyItems.length} items to download`);
+
+    for (const item of cloudOnlyItems) {
+      localMap.set(item.id, item);
+      result.downloaded++;
+    }
+
+    // 3. Items that exist in both places (need field-level merging)
+    const itemsInBoth = localData.filter((item) => cloudMap.has(item.id));
+    console.log(`${itemsInBoth.length} items to merge`);
+
+    for (const localItem of itemsInBoth) {
+      const cloudItem = cloudMap.get(localItem.id);
+
+      // Check if they're different
+      const localUpdated = localItem.updatedAt
+        ? new Date(localItem.updatedAt)
+        : new Date(0);
+      const cloudUpdated = cloudItem.updatedAt
+        ? new Date(cloudItem.updatedAt)
+        : new Date(0);
+
+      if (localUpdated.getTime() !== cloudUpdated.getTime()) {
+        result.conflicts++;
+
+        // Create a merged item with the latest version
+        let mergedItem;
+
+        if (localUpdated > cloudUpdated) {
+          // Local is newer
+          mergedItem = { ...localItem };
+          await setDoc(doc(db, collectionName, localItem.id), mergedItem);
+        } else {
+          // Cloud is newer
+          mergedItem = { ...cloudItem };
+          localMap.set(mergedItem.id, mergedItem);
+        }
+
+        result.resolved++;
+      }
+    }
+
+    // Save all updated data to local storage
+    localStore.set(collectionName, Array.from(localMap.values()));
+    console.log(`Sync completed for ${collectionName}`);
+
+    return {
+      success: true,
+      uploaded: result.uploaded,
+      downloaded: result.downloaded,
+      conflicts: result.conflicts,
+      resolved: result.resolved,
+    };
   } catch (error) {
     console.error(`Error syncing ${collectionName}:`, error);
-    return false;
-  }
-};
-const lockItem = async (collectionName, itemId, userId) => {
-  try {
-    const lockRef = doc(db, "locks", `${collectionName}_${itemId}`);
-    const lockSnap = await getDoc(lockRef);
-
-    if (lockSnap.exists()) {
-      const lock = lockSnap.data();
-      // If lock is older than 5 minutes, consider it stale
-      if (lock.userId !== userId && Date.now() - lock.timestamp < 300000) {
-        return { success: false, lockedBy: lock.userName };
-      }
-    }
-
-    // Set new lock
-    await setDoc(lockRef, {
-      userId: userId,
-      userName: userName,
-      timestamp: Date.now(),
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error locking item:", error);
-    return { success: true }; // Fall back to local mode if locking fails
+    return { success: false, message: error.message };
   }
 };
 
-const unlockItem = async (collectionName, itemId, userId) => {
-  try {
-    const lockRef = doc(db, "locks", `${collectionName}_${itemId}`);
-    const lockSnap = await getDoc(lockRef);
-
-    if (lockSnap.exists()) {
-      const lock = lockSnap.data();
-      if (lock.userId === userId) {
-        await deleteDoc(lockRef);
-      }
-    }
-  } catch (error) {
-    console.error("Error unlocking item:", error);
-  }
-};
-
-const logTransaction = async (action, collection, itemId, userId, data) => {
-  try {
-    if (!isOnline) return; // Only log when online
-
-    const transactionId = Date.now().toString();
-    await setDoc(doc(db, "transaction_log", transactionId), {
-      action,
-      collection,
-      itemId,
-      userId,
-      userName: localStorage.getItem("user_name") || "Unknown User",
-      device: localStorage.getItem("device_name") || require("os").hostname(),
-      timestamp: Date.now(),
-      data: data,
-    });
-  } catch (error) {
-    console.error("Error logging transaction:", error);
-  }
-};
-
-const subscribeToCollection = (collectionName, callback) => {
-  if (!isOnline || !firebaseInitialized) {
-    return () => {}; // Return empty unsubscribe function
-  }
-
-  try {
-    const q = collection(db, collectionName);
-    return onSnapshot(q, (snapshot) => {
-      const changes = [];
-      snapshot.docChanges().forEach((change) => {
-        changes.push({
-          type: change.type,
-          id: change.doc.id,
-          data: change.doc.data(),
-        });
-      });
-
-      callback(changes);
-    });
-  } catch (error) {
-    console.error(`Error subscribing to ${collectionName}:`, error);
-    return () => {};
-  }
-};
 // CRUD Operations that work with both online and offline modes
 
 // Get all items from a collection
@@ -419,14 +312,6 @@ const getById = async (collectionName, id) => {
 // Add a new item
 const add = async (collectionName, item) => {
   try {
-    if (!isFirebaseConfigured()) {
-      throw new Error("Firebase not properly configured");
-    }
-
-    if (!firebaseInitialized) {
-      throw new Error("Firebase not initialized");
-    }
-
     // Ensure item has ID and timestamps
     const newItem = {
       ...item,
@@ -440,14 +325,10 @@ const add = async (collectionName, item) => {
     items.push(newItem);
     localStore.set(collectionName, items);
 
-    // If online, add to Firestore
-    if (isOnline) {
+    // If online and Firebase initialized, add to Firestore
+    if (isOnline && firebaseInitialized) {
       try {
-        console.log(`Adding ${collectionName} item to Firestore:`, newItem.id);
         await setDoc(doc(db, collectionName, newItem.id), newItem);
-        console.log(
-          `Successfully added to Firestore: ${collectionName}/${newItem.id}`
-        );
       } catch (firestoreError) {
         console.error(
           `Error adding to Firestore: ${collectionName}/${newItem.id}`,
@@ -481,8 +362,8 @@ const update = async (collectionName, item) => {
       items[index] = updatedItem;
       localStore.set(collectionName, items);
 
-      // If online, update in Firestore
-      if (isOnline) {
+      // If online and Firebase initialized, update in Firestore
+      if (isOnline && firebaseInitialized) {
         await setDoc(doc(db, collectionName, updatedItem.id), updatedItem);
       }
 
@@ -506,8 +387,8 @@ const remove = async (collectionName, id) => {
     if (newItems.length !== items.length) {
       localStore.set(collectionName, newItems);
 
-      // If online, remove from Firestore
-      if (isOnline) {
+      // If online and Firebase initialized, remove from Firestore
+      if (isOnline && firebaseInitialized) {
         await deleteDoc(doc(db, collectionName, id));
       }
 
@@ -555,8 +436,8 @@ const createInvoice = async (invoice) => {
 
       localStore.set("products", products);
 
-      // If online, update products in Firestore
-      if (isOnline) {
+      // If online and Firebase initialized, update products in Firestore
+      if (isOnline && firebaseInitialized) {
         for (const product of products.filter((p) =>
           invoice.items.some((item) => item.id === p.id)
         )) {
@@ -565,8 +446,8 @@ const createInvoice = async (invoice) => {
       }
     }
 
-    // If online, add to Firestore
-    if (isOnline) {
+    // If online and Firebase initialized, add to Firestore
+    if (isOnline && firebaseInitialized) {
       await setDoc(doc(db, "invoices", newInvoice.id), newInvoice);
     }
 
@@ -574,6 +455,32 @@ const createInvoice = async (invoice) => {
   } catch (error) {
     console.error(`Error creating invoice:`, error);
     return null;
+  }
+};
+
+// Subscribe to changes in a collection (online only)
+const subscribeToCollection = (collectionName, callback) => {
+  if (!isOnline || !firebaseInitialized) {
+    return () => {}; // Return empty unsubscribe function
+  }
+
+  try {
+    const q = collection(db, collectionName);
+    return onSnapshot(q, (snapshot) => {
+      const changes = [];
+      snapshot.docChanges().forEach((change) => {
+        changes.push({
+          type: change.type,
+          id: change.doc.id,
+          data: change.doc.data(),
+        });
+      });
+
+      callback(changes);
+    });
+  } catch (error) {
+    console.error(`Error subscribing to ${collectionName}:`, error);
+    return () => {};
   }
 };
 
@@ -589,5 +496,6 @@ module.exports = {
   remove,
   createInvoice,
   getLastSyncTime,
+  subscribeToCollection,
   isFirebaseConfigured,
 };
