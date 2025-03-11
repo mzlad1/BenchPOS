@@ -2,7 +2,8 @@
 let products = [];
 let cart = [];
 const TAX_RATE = 0;
-
+let currentPage = 1;
+const productsPerPage = 1; // Adjust this number based on your UI
 // DOM Elements
 const productsListEl = document.getElementById("products-list");
 const productSearchEl = document.getElementById("product-search");
@@ -72,6 +73,121 @@ if (window.api.subscribeToCollection) {
     loadAllInvoices();
   });
 }
+
+// Add this to the end of your JavaScript file or just before initPage()
+function fixKeyboardShortcuts() {
+  // Create a global listener that comes before other handlers
+  document.addEventListener(
+    "keydown",
+    function (event) {
+      // Map of function keys to their handler functions
+      const functionKeyHandlers = {
+        F1: function () {
+          addMiscellaneousItem();
+        },
+        F2: function () {
+          processReturn();
+        },
+        F3: function () {
+          if (!document.getElementById("complete-sale").disabled) {
+            completeSale();
+          }
+        },
+        F5: function () {
+          removeSelectedItem();
+        },
+        F6: function () {
+          showProductDetails();
+        },
+        F7: function () {
+          clearCart();
+        },
+        F8: function () {
+          if (receiptModal.style.display === "block") {
+            printReceipt();
+          }
+        },
+        F9: function () {
+          increaseQuantity();
+        },
+        F10: function () {
+          decreaseQuantity();
+        },
+        F11: function () {
+          showPreviousInvoice();
+        },
+        F12: function () {
+          showNextInvoice();
+        },
+      };
+
+      // Special handling for non-function keys
+      const specialKeyHandlers = {
+        Delete: function () {
+          clearCart();
+        },
+        "/": function () {
+          document.getElementById("product-search").focus();
+        },
+        d: function () {
+          if (!event.ctrlKey && !event.altKey && !event.shiftKey) {
+            showDiscountModal();
+          }
+        },
+        b: function () {
+          if (!event.ctrlKey && !event.altKey && !event.shiftKey) {
+            const barcodeInput = document.getElementById("barcode-input");
+            if (barcodeInput) barcodeInput.focus();
+          }
+        },
+      };
+
+      // Check if it's a function key or special key we handle
+      const handler =
+        functionKeyHandlers[event.key] ||
+        specialKeyHandlers[event.key.toLowerCase()];
+
+      if (handler) {
+        // Skip text inputs except for function keys
+        if (
+          event.key.startsWith("F") ||
+          !(
+            event.target.tagName === "INPUT" ||
+            event.target.tagName === "TEXTAREA"
+          )
+        ) {
+          // Check for view mode restrictions
+          if (isViewingInvoice && !isEditingInvoice) {
+            // ONLY allow these specific shortcuts in view mode
+            if (
+              event.key === "F11" ||
+              event.key === "F12" ||
+              event.key === "F6" ||
+              event.key === "F8" ||
+              event.key === "/" ||
+              event.key.toLowerCase() === "b"
+            ) {
+              event.preventDefault();
+              handler();
+            } else {
+              // Block all other shortcuts in view mode
+              event.preventDefault();
+              alert("Please click 'Edit' first before making changes.");
+            }
+          } else {
+            // Not in view mode or in edit mode - all shortcuts work
+            event.preventDefault();
+            handler();
+          }
+        }
+      }
+    },
+    true
+  ); // Use capturing phase to ensure this runs first
+
+  console.log("Keyboard shortcuts fixed");
+}
+
 async function initPage() {
   const hasPermission = await checkPermission();
   if (!hasPermission) return;
@@ -150,6 +266,8 @@ function fixProductCards() {
 
     // Get all child elements except the button
     const button = productItem.querySelector(".add-to-cart");
+    if (!button) return; // Skip if no button found
+
     const otherElements = Array.from(productItem.children).filter(
       (el) => el !== button
     );
@@ -188,6 +306,7 @@ function fixProductCards() {
   });
 
   // Start observing the products list
+  const productsListEl = document.getElementById("products-list");
   if (productsListEl) {
     observer.observe(productsListEl, { childList: true, subtree: true });
   }
@@ -195,6 +314,7 @@ function fixProductCards() {
 
 // Render products to the products grid
 function renderProducts(productsToRender) {
+  if (!productsListEl) return;
   productsListEl.innerHTML = "";
 
   if (productsToRender.length === 0) {
@@ -203,7 +323,25 @@ function renderProducts(productsToRender) {
     return;
   }
 
-  productsToRender.forEach((product) => {
+  // Calculate pagination values
+  const totalPages = Math.ceil(productsToRender.length / productsPerPage);
+
+  // Make sure currentPage is within bounds
+  if (currentPage < 1) currentPage = 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  // Calculate start and end indices for the current page
+  const startIndex = (currentPage - 1) * productsPerPage;
+  const endIndex = Math.min(
+    startIndex + productsPerPage,
+    productsToRender.length
+  );
+
+  // Only render products for the current page
+  const productsForCurrentPage = productsToRender.slice(startIndex, endIndex);
+
+  // Render the product cards
+  productsForCurrentPage.forEach((product) => {
     const productEl = document.createElement("div");
     productEl.className = "product-item";
     productEl.innerHTML = `
@@ -221,11 +359,233 @@ function renderProducts(productsToRender) {
 
     productsListEl.appendChild(productEl);
   });
+
+  // Create and append pagination controls
+  createPaginationControls(productsToRender.length, totalPages);
+}
+
+// Add this new function to create pagination controls
+function createPaginationControls(totalProducts, totalPages) {
+  // Check if pagination already exists and remove it
+  const existingPagination = document.querySelector(".pagination-controls");
+  if (existingPagination) {
+    existingPagination.remove();
+  }
+
+  // Create pagination container
+  const paginationEl = document.createElement("div");
+  paginationEl.className = "pagination-controls";
+
+  // Add product count information
+  const productCountEl = document.createElement("div");
+  productCountEl.className = "product-count";
+  productCountEl.textContent = `Showing ${Math.min(
+    productsPerPage,
+    totalProducts
+  )} of ${totalProducts} products`;
+  paginationEl.appendChild(productCountEl);
+
+  // Create page controls
+  const pageControlsEl = document.createElement("div");
+  pageControlsEl.className = "page-controls";
+
+  // Previous button
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "btn page-btn prev-btn";
+  prevBtn.textContent = "← Previous";
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderProducts(products); // Re-render with the same products but on a new page
+    }
+  });
+  pageControlsEl.appendChild(prevBtn);
+
+  // Page indicator
+  const pageIndicator = document.createElement("span");
+  pageIndicator.className = "page-indicator";
+  pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+  pageControlsEl.appendChild(pageIndicator);
+
+  // Next button
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "btn page-btn next-btn";
+  nextBtn.textContent = "Next →";
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.addEventListener("click", () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderProducts(products); // Re-render with the same products but on a new page
+    }
+  });
+  pageControlsEl.appendChild(nextBtn);
+
+  paginationEl.appendChild(pageControlsEl);
+
+  // Insert pagination controls after the products list
+  if (productsListEl && productsListEl.parentNode) {
+    productsListEl.parentNode.insertBefore(
+      paginationEl,
+      productsListEl.nextSibling
+    );
+  }
+}
+
+// Add these styles to your CSS
+function addPaginationStyles() {
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
+    .pagination-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f8f8f8;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    
+    .product-count {
+      margin-bottom: 10px;
+      color: #666;
+      font-size: 0.9em;
+    }
+    
+    .page-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .page-btn {
+      padding: 6px 12px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .page-btn:hover:not([disabled]) {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .page-indicator {
+      font-weight: bold;
+    }
+    
+  `;
+  document.head.appendChild(styleElement);
+}
+
+function enhanceProductGrid() {
+  // Add enhanced styling for product grid
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 65vh;
+    }
+    
+    .product-item {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      padding: 15px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .product-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      border-color: var(--primary-color);
+    }
+    
+    .product-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+    }
+    
+    .product-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: var(--dark-color);
+    }
+    
+    .product-price {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--primary-color);
+      margin-bottom: 5px;
+    }
+    
+    .product-stock {
+      font-size: 0.85rem;
+      color: var(--mid-gray);
+      margin-bottom: auto;
+    }
+    
+    .add-to-cart {
+      width: 100%;
+      padding: 8px;
+      background-color: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: auto;
+    }
+    
+    .add-to-cart:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    @media (max-width: 768px) {
+      .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+        padding: 15px;
+      }
+    }
+  `;
+  document.head.appendChild(styleElement);
+}
+
+function initProductPagination() {
+  addPaginationStyles();
+  // Reset to page 1 when doing a new search
+  productSearchEl.addEventListener("input", () => {
+    currentPage = 1;
+  });
 }
 
 // Filter products based on search input
 function filterProducts() {
   const searchTerm = productSearchEl.value.toLowerCase();
+  currentPage = 1; // Reset to first page on search
 
   if (!searchTerm) {
     renderProducts(products);
@@ -235,8 +595,8 @@ function filterProducts() {
   const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchTerm) ||
-      product.sku.toLowerCase().includes(searchTerm) ||
-      product.category.toLowerCase().includes(searchTerm)
+      (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
+      (product.category && product.category.toLowerCase().includes(searchTerm))
   );
 
   renderProducts(filteredProducts);
@@ -704,116 +1064,181 @@ function initBarcodeFeature() {
   `;
   document.head.appendChild(styleElement);
 }
+function fixProductCardHeight() {
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
+    /* Fix for products grid container */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      align-items: start; /* Prevent stretching */
+      height: auto; /* Don't force a specific height */
+      max-height: 65vh; /* Limit maximum height */
+    }
+    
+    /* Fix for product cards */
+    .product-item {
+      height: auto; /* Don't stretch */
+      min-height: 180px; /* Minimum reasonable height */
+      max-height: 250px; /* Maximum reasonable height */
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Structure the content inside product cards */
+    .product-details {
+      flex: 0 1 auto; /* Don't grow, but can shrink */
+      margin-bottom: 15px;
+    }
+    
+    /* Keep the add to cart button at the bottom */
+    .add-to-cart {
+      margin-top: auto; /* Push to bottom of container */
+    }
+    
+    /* For single product view case */
+    @media (min-width: 768px) {
+      /* When only one product is visible */
+      .products-grid:only-child {
+        height: auto;
+        align-content: start;
+      }
+    }
+  `;
+  document.head.appendChild(styleElement);
 
+  console.log("Applied product card height fix");
+}
+// Set up global barcode capture that works anywhere on the page
 // Set up global barcode capture that works anywhere on the page
 function setupGlobalBarcodeCapture(barcodeInput) {
-  // Create and append a notification element for barcode capture
+  // Create a hidden input that will act as our "catch-all" for barcode input
+  const catchAllInput = document.createElement("input");
+  catchAllInput.type = "text";
+  catchAllInput.style.position = "absolute";
+  catchAllInput.style.top = "-100px"; // Hide it off-screen
+  catchAllInput.style.left = "-100px";
+  catchAllInput.style.opacity = "0";
+  document.body.appendChild(catchAllInput);
+
+  // The hidden input always has focus unless specifically interacting with another input
+  catchAllInput.focus();
+
+  // When anything other than form controls gets clicked, refocus the hidden input
+  document.addEventListener("click", (event) => {
+    if (
+      event.target.tagName !== "INPUT" &&
+      event.target.tagName !== "TEXTAREA" &&
+      event.target.tagName !== "SELECT" &&
+      event.target.tagName !== "BUTTON"
+    ) {
+      setTimeout(() => catchAllInput.focus(), 10);
+    }
+  });
+
+  // Create notification element
   const captureNotification = document.createElement("div");
   captureNotification.className = "barcode-capture";
-  captureNotification.textContent = "Capturing barcode...";
+  captureNotification.textContent = "Scanning barcode...";
+  captureNotification.style.display = "none";
   document.body.appendChild(captureNotification);
 
-  // Variables to track barcode scanner behavior
-  let barcodeBuffer = "";
+  // Variables to track barcode scanner state
   let lastKeyTime = 0;
-  let captureActive = false;
-  let keypressCount = 0;
-  let captureTimeout;
+  let scanInProgress = false;
+  let scanTimeout;
 
-  // The main document-level keypress handler
-  document.addEventListener("keypress", function (event) {
+  // Monitor input on the hidden field
+  catchAllInput.addEventListener("input", () => {
     const currentTime = new Date().getTime();
-
-    // Check if this might be from a barcode scanner (very fast input)
-    if (currentTime - lastKeyTime < 50) {
-      keypressCount++;
-
-      // If we've seen multiple keypresses in rapid succession (typical of scanners)
-      if (keypressCount >= 3 && !captureActive) {
-        // Start capturing barcode
-        startBarcodeCapture();
-      }
-
-      if (captureActive) {
-        // Add character to buffer
-        barcodeBuffer += event.key;
-
-        // Reset timeout - we expect more characters to come
-        clearTimeout(captureTimeout);
-        captureTimeout = setTimeout(finishBarcodeCapture, 100);
-      }
-    } else {
-      // Reset counter if keypresses are too far apart
-      keypressCount = 1;
-    }
-
+    const timeSinceLastKey = currentTime - lastKeyTime;
     lastKeyTime = currentTime;
-  });
 
-  // Handle the Enter key which usually terminates a barcode scan
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Enter" && captureActive) {
-      event.preventDefault(); // Prevent form submissions
-      finishBarcodeCapture();
-    }
-  });
-
-  // Start capturing barcode
-  function startBarcodeCapture() {
-    // Only start if we're not already in the barcode input
-    if (document.activeElement === barcodeInput) {
-      return;
-    }
-
-    captureActive = true;
-    barcodeBuffer = "";
-
-    // Show the notification
-    captureNotification.style.display = "block";
-
-    // Store the currently active element so we can restore focus later if needed
-    window.tempActiveElement = document.activeElement;
-
-    // Stop capturing after a reasonable timeout (3 seconds)
-    setTimeout(() => {
-      if (captureActive) {
-        finishBarcodeCapture();
+    // Fast input (less than 50ms) is likely from a scanner
+    if (timeSinceLastKey < 50) {
+      if (!scanInProgress) {
+        // Start of scan detected!
+        scanInProgress = true;
+        captureNotification.style.display = "block";
       }
-    }, 3000);
-  }
 
-  // Finish capturing barcode
-  function finishBarcodeCapture() {
-    if (!captureActive) return;
+      // Extend the timeout
+      clearTimeout(scanTimeout);
+      scanTimeout = setTimeout(finishScan, 200);
+    }
+  });
 
-    captureActive = false;
-    keypressCount = 0;
+  // Also handle keypresses separately to catch Enter key
+  catchAllInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && scanInProgress) {
+      event.preventDefault();
+      clearTimeout(scanTimeout);
+      finishScan();
+    }
+  });
 
-    // Hide notification
+  // Handle scan completion
+  function finishScan() {
+    if (!scanInProgress) return;
+
+    scanInProgress = false;
     captureNotification.style.display = "none";
 
-    // Only process if we have a reasonable barcode length
-    if (barcodeBuffer.length >= 5) {
-      console.log("Captured barcode:", barcodeBuffer);
+    // Get the scanned barcode from our hidden input
+    const barcode = catchAllInput.value.trim();
 
-      // Focus the barcode input
+    if (barcode.length >= 3) {
+      // Minimum valid barcode length
+      // Transfer the value to the visible barcode input
+      barcodeInput.value = barcode;
+
+      // Focus the visible input briefly
       barcodeInput.focus();
 
-      // Set the value and process it
-      barcodeInput.value = barcodeBuffer;
+      // Process the barcode
       processBarcodeInput();
+
+      // Clear and refocus the hidden input
+      catchAllInput.value = "";
+      setTimeout(() => catchAllInput.focus(), 100);
     } else {
-      // If it was just normal typing, restore the original focus
+      // Not a valid barcode, just clear the catchall
+      catchAllInput.value = "";
+    }
+  }
+
+  // When user explicitly focuses the visible barcode input
+  barcodeInput.addEventListener("focus", () => {
+    // Allow normal usage of the visible input when focused
+  });
+
+  barcodeInput.addEventListener("blur", () => {
+    // When leaving the visible input, refocus our hidden catcher
+    setTimeout(() => catchAllInput.focus(), 100);
+  });
+
+  // Handle the B keyboard shortcut
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key.toLowerCase() === "b" &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !event.shiftKey
+    ) {
+      // Only if not already in an input field
       if (
-        window.tempActiveElement &&
-        window.tempActiveElement !== document.body
+        document.activeElement.tagName !== "INPUT" &&
+        document.activeElement.tagName !== "TEXTAREA"
       ) {
-        window.tempActiveElement.focus();
+        event.preventDefault();
+        barcodeInput.focus();
       }
     }
+  });
 
-    barcodeBuffer = "";
-  }
+  // Initialize by focusing the hidden input
+  setTimeout(() => catchAllInput.focus(), 100);
 }
 
 // Process barcode input
@@ -3818,24 +4243,84 @@ let isEditingInvoice = false;
 
 // Add invoice navigation buttons to the page
 function initInvoiceNavigation() {
-  // Create a navigation bar for invoice browsing
+  // Create a navigation bar for invoice browsing with shortcut indicators
   const navBar = document.createElement("div");
   navBar.className = "invoice-nav";
   navBar.innerHTML = `
-    <button id="previous-invoice-btn" class="btn secondary-btn" title="Previous Invoice (F11)">
-      <span class="nav-icon">◀</span> Previous
+    <button id="previous-invoice-btn" class="btn secondary-btn" title="Previous Invoice">
+      <span class="nav-icon">◀</span> Previous <span class="shortcut-indicator">(F11)</span>
     </button>
-    <button id="view-invoices-btn" class="btn secondary-btn" title="Browse Invoices (F12)">
+    <button id="view-invoices-btn" class="btn secondary-btn" title="Browse Invoices">
       <span class="nav-icon">📋</span> Browse Invoices
     </button>
-    <button id="next-invoice-btn" class="btn secondary-btn" title="Next Invoice (F12)">
-      Next <span class="nav-icon">▶</span>
+    <button id="next-invoice-btn" class="btn secondary-btn" title="Next Invoice">
+      Next <span class="shortcut-indicator">(F12)</span> <span class="nav-icon">▶</span>
     </button>
   `;
 
-  // Insert before billing container
-  const billingContainer = document.querySelector(".billing-container");
-  billingContainer.parentNode.insertBefore(navBar, billingContainer);
+  // Find the search bar to insert the navigation bar before it
+  const searchBar = document.querySelector(".product-selection .search-bar");
+  if (searchBar) {
+    // Insert before the search bar
+    searchBar.parentNode.insertBefore(navBar, searchBar);
+
+    // Add styles for better spacing
+    const styleElement = document.createElement("style");
+    styleElement.textContent = `
+      .invoice-nav {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 15px;
+        margin-top: 10px;
+      }
+      
+      .nav-icon {
+        font-size: 0.8em;
+      }
+      
+      .shortcut-indicator {
+        font-size: 0.8em;
+        opacity: 0.7;
+        font-weight: normal;
+      }
+      
+      .product-selection h2 {
+        margin-bottom: 10px;
+      }
+      
+      /* Make the buttons take equal width */
+      .invoice-nav button {
+        flex: 1;
+        white-space: nowrap;
+        font-size: 0.9rem;
+        text-align: center;
+        justify-content: center;
+      }
+      
+      /* Keep the buttons visible on smaller screens */
+      @media (max-width: 768px) {
+        .invoice-nav {
+          flex-wrap: wrap;
+        }
+        
+        .invoice-nav button {
+          flex: 1 1 auto;
+          padding: 8px 10px;
+          font-size: 0.85rem;
+        }
+        
+        .shortcut-indicator {
+          display: none; /* Hide shortcuts on mobile */
+        }
+      }
+    `;
+    document.head.appendChild(styleElement);
+  } else {
+    // Fallback to original position if search bar not found
+    const billingContainer = document.querySelector(".billing-container");
+    billingContainer.parentNode.insertBefore(navBar, billingContainer);
+  }
 
   // Add event listeners
   document
@@ -3873,7 +4358,119 @@ function initInvoiceNavigation() {
   // Load invoices initially
   loadAllInvoices();
 }
+// This function applies a much stronger fix to force the cart to be scrollable
+function forceCartScrolling() {
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
+    /* Force fixed height for cart container with !important to override existing styles */
+    .cart-items {
+      height: 250px !important; /* Fixed height - adjust if needed */
+      max-height: 250px !important;
+      overflow-y: auto !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 8px !important;
+      position: relative !important;
+      display: block !important; /* Override any flex display */
+    }
+    
+    /* Force table to take full width and proper layout */
+    #cart-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      margin: 0 !important;
+    }
+    
+    /* Make header sticky with higher z-index to ensure it stays on top */
+    #cart-table thead {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 100 !important;
+      background-color: var(--primary-light) !important;
+    }
+    
+    #cart-table th {
+      position: sticky !important;
+      top: 0 !important;
+      background-color: var(--primary-light) !important;
+      box-shadow: 0 1px 0 0 var(--border-color) !important;
+    }
+    
+    /* Set explicit height for the invoice details to prevent page overflow */
+    .invoice-details {
+      display: flex !important;
+      flex-direction: column !important;
+      height: auto !important;
+    }
+    
+    /* Make sure invoice panel has proper constraints */
+    .invoice-panel {
+      display: flex !important;
+      flex-direction: column !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    
+    /* Ensure the scrollbar is visible and functioning */
+    .cart-items::-webkit-scrollbar {
+      width: 8px !important;
+      display: block !important;
+    }
+    
+    .cart-items::-webkit-scrollbar-track {
+      background: #f1f1f1 !important;
+      border-radius: 8px !important;
+    }
+    
+    .cart-items::-webkit-scrollbar-thumb {
+      background: var(--primary-color) !important;
+      border-radius: 8px !important;
+    }
+  `;
+  document.head.appendChild(styleElement);
 
+  console.log("Applied forced cart scrolling styles");
+
+  // Add an additional function to ensure proper initialization
+  function ensureCartScrolling() {
+    const cartItemsContainer = document.querySelector(".cart-items");
+    if (cartItemsContainer) {
+      // Force the height and scrolling behavior through direct style modification
+      cartItemsContainer.style.height = "250px";
+      cartItemsContainer.style.maxHeight = "250px";
+      cartItemsContainer.style.overflowY = "auto";
+
+      // Force table headers to be sticky
+      const tableHeaders = document.querySelectorAll("#cart-table th");
+      tableHeaders.forEach((th) => {
+        th.style.position = "sticky";
+        th.style.top = "0";
+        th.style.zIndex = "100";
+      });
+
+      console.log("Applied direct style modifications to cart container");
+    }
+  }
+
+  // Execute immediately and also set up for later execution
+  ensureCartScrolling();
+
+  // Set a mutation observer to ensure scrolling behavior persists
+  // even if the DOM changes (like when items are added)
+  const observer = new MutationObserver((mutations) => {
+    ensureCartScrolling();
+  });
+
+  const cartItemsContainer = document.querySelector(".cart-items");
+  if (cartItemsContainer) {
+    observer.observe(cartItemsContainer, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  // Also handle window resize events
+  window.addEventListener("resize", ensureCartScrolling);
+}
 // Load all invoices from the database
 async function loadAllInvoices() {
   try {
@@ -4557,6 +5154,67 @@ function updateCartTableHeader() {
     headerRow.insertBefore(checkboxHeader, headerRow.firstChild);
   }
 }
+
+function fixProductPageSpacing() {
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
+    /* Main container adjustments */
+    .product-selection {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      padding-bottom: 0;
+    }
+    
+    /* Products grid container */
+    .products-grid {
+      flex: 0 1 auto; /* Don't allow excessive growth */
+      margin-bottom: 20px; /* Consistent spacing to pagination */
+      min-height: 200px; /* Ensure minimum reasonable height */
+      max-height: 60vh; /* Limit maximum height */
+    }
+    
+    /* Pagination section */
+    .pagination-controls {
+      margin-top: 10px; /* Reduced top margin */
+      margin-bottom: 10px; /* Add bottom margin */
+    }
+    
+    /* Product count text */
+    .showing-products-count {
+      margin: 5px 0; /* Tighten up margins */
+      padding: 5px;
+      color: #666;
+      font-size: 0.9em;
+      text-align: center;
+    }
+    
+    /* Page navigation row */
+    .page-navigation {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 5px 0;
+    }
+    
+    /* When only a few products are shown */
+    @media (min-height: 768px) {
+      .product-selection {
+        justify-content: flex-start; /* Align content to top */
+      }
+      
+      /* When few products are visible, don't push pagination to bottom of screen */
+      .products-grid:only-child + .pagination-controls,
+      .products-grid:nth-last-child(2) + .pagination-controls {
+        margin-top: 15px;
+      }
+    }
+  `;
+  document.head.appendChild(styleElement);
+
+  console.log("Applied product page spacing fix");
+}
 // Listen for online/offline events
 window.addEventListener("online", updateConnectionStatus);
 window.addEventListener("offline", updateConnectionStatus);
@@ -4589,16 +5247,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   updateRenderCartForDiscounts();
   updateUpdateTotalsForDiscounts();
   updateCompleteSaleForDiscounts();
-
+  initProductPagination();
   addInvoiceNavigationStyles();
   addRefundButton();
   updateCartTableHeader();
+  enhanceProductGrid();
+  fixProductCardHeight();
+  fixProductPageSpacing();
+  setTimeout(forceCartScrolling, 300); // Slight delay to ensure DOM is ready
+  setTimeout(fixKeyboardShortcuts, 500);
 
   // Check for API support
   checkInvoiceUpdateSupport();
   if (typeof window.initSyncUI === "function") {
     window.initSyncUI();
   }
+
   // Focus barcode input after all initialization is complete
   setTimeout(() => {
     const barcodeInput = document.getElementById("barcode-input");
@@ -4608,7 +5272,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }, 1000);
 
-  setTimeout(fixProductCards, 500); // Slight delay to ensure all elements are loaded
+  setTimeout(fixProductCards, 300);
   // Initialize after page has loaded completely
   setTimeout(() => {
     initInvoiceNavigation();

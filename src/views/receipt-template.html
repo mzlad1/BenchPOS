@@ -3,55 +3,408 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
-    />
+    <title>Professional Receipt Preview</title>
     <style>
       body {
-        font-family: "Courier New", Courier, monospace;
+        font-family: "Helvetica", "Arial", sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
         padding: 20px;
-        max-width: 400px;
-        margin: 0 auto;
+        display: flex;
+        justify-content: center;
       }
+
+      .preview-container {
+        background-color: white;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+        max-width: 400px;
+      }
+
+      h2 {
+        text-align: center;
+        color: #3d5a80;
+        margin-bottom: 20px;
+      }
+
+      /* Professional Receipt Styles */
+      .professional-receipt {
+        font-family: "Helvetica", "Arial", sans-serif;
+        max-width: 80mm;
+        margin: 0 auto;
+        padding: 10px;
+        font-size: 12px;
+        color: #333;
+        background-color: white;
+        border: 1px solid #eee;
+      }
+
+      /* Header Section */
       .receipt-header {
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
       }
+
+      .logo-container {
+        margin-bottom: 10px;
+      }
+
+      .company-info p {
+        margin: 2px 0;
+        font-size: 11px;
+      }
+
+      .receipt-type {
+        font-size: 14px;
+        font-weight: bold;
+        margin: 8px 0;
+        padding: 3px;
+        border-radius: 4px;
+        background-color: #f0f0f0;
+      }
+
+      .receipt-type.refund {
+        background-color: #ffeeee;
+        color: #d32f2f;
+      }
+
+      /* Info Section */
       .receipt-info {
-        margin-bottom: 20px;
+        margin-bottom: 15px;
       }
+
+      .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 3px 0;
+      }
+
+      .receipt-label {
+        font-weight: bold;
+        flex: 1;
+      }
+
+      .receipt-value {
+        flex: 2;
+        text-align: right;
+      }
+
+      .receipt-divider {
+        border-bottom: 1px dashed #aaa;
+        margin: 10px 0;
+      }
+
+      /* Items Table */
       .receipt-items {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
       }
-      .receipt-items th {
-        border-bottom: 1px solid #000;
-        text-align: left;
-        padding: 5px;
-      }
+
+      .receipt-items th,
       .receipt-items td {
-        padding: 5px;
-        border-bottom: 1px solid #ccc;
+        padding: 4px 2px;
       }
-      .receipt-items tfoot {
-        border-top: 1px solid #000;
+
+      .receipt-items th {
+        border-bottom: 1px solid #aaa;
+        font-size: 11px;
       }
-      .total-row {
+
+      .receipt-items tbody tr:last-child td {
+        border-bottom: 1px dashed #aaa;
+        padding-bottom: 8px;
+      }
+
+      .text-center {
+        text-align: center;
+      }
+
+      .text-right {
+        text-align: right;
+      }
+
+      .strikethrough {
+        text-decoration: line-through;
+        font-size: 10px;
+        color: #777;
+      }
+
+      /* Summary Section */
+      .receipt-summary-row td {
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+
+      .total-row td {
+        font-weight: bold;
+        font-size: 14px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+      }
+
+      .discount-value {
+        color: #d32f2f;
+      }
+
+      .bold {
         font-weight: bold;
       }
+
+      /* Payment Section */
+      .payment-info {
+        margin-bottom: 15px;
+      }
+
+      .payment-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 3px 0;
+      }
+
+      .payment-label {
+        font-weight: bold;
+        flex: 1;
+      }
+
+      .payment-value {
+        flex: 1;
+        text-align: right;
+      }
+
+      /* Footer Section */
       .receipt-footer {
         text-align: center;
-        margin-top: 20px;
-        font-style: italic;
+        font-size: 10px;
+      }
+
+      .thank-you {
+        font-size: 12px;
+        font-weight: bold;
+        margin: 10px 0 5px;
+      }
+
+      .return-policy,
+      .support {
+        margin: 5px 0;
+      }
+
+      .barcode {
+        margin: 15px auto;
+        max-width: 200px;
+      }
+
+      .barcode-text {
+        margin-top: 5px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+      }
+
+      .software-credit {
+        margin-top: 15px;
+        font-size: 9px;
+        color: #999;
       }
     </style>
-    <title>Receipt</title>
   </head>
   <body>
-    <div id="receipt-container">
-      <!-- Receipt content will be inserted here dynamically -->
+    <div class="preview-container">
+      <h2>Receipt Preview</h2>
+
+      <div class="professional-receipt">
+        <div class="receipt-header">
+          <div class="logo-container">
+            <svg
+              width="180"
+              height="60"
+              viewBox="0 0 180 60"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="10"
+                y="10"
+                width="40"
+                height="40"
+                rx="5"
+                fill="#3d5a80"
+              />
+              <text
+                x="60"
+                y="35"
+                font-family="Arial, sans-serif"
+                font-size="24"
+                font-weight="bold"
+                fill="#3d5a80"
+              >
+                ShopSmart
+              </text>
+              <text
+                x="60"
+                y="48"
+                font-family="Arial, sans-serif"
+                font-size="12"
+                fill="#666"
+              >
+                Retail Solutions
+              </text>
+            </svg>
+          </div>
+
+          <div class="company-info">
+            <p>123 Main Street, Anytown, USA 12345</p>
+            <p>Tel: (555) 123-4567 | Email: info@shopsmart.com</p>
+            <p>www.shopsmart.com</p>
+          </div>
+
+          <div class="receipt-type">SALE</div>
+        </div>
+
+        <div class="receipt-info">
+          <div class="receipt-row">
+            <div class="receipt-label">Receipt #:</div>
+            <div class="receipt-value">INV-12345</div>
+          </div>
+          <div class="receipt-row">
+            <div class="receipt-label">Date:</div>
+            <div class="receipt-value">March 11, 2025</div>
+          </div>
+          <div class="receipt-row">
+            <div class="receipt-label">Time:</div>
+            <div class="receipt-value">10:45 AM</div>
+          </div>
+          <div class="receipt-row">
+            <div class="receipt-label">Customer:</div>
+            <div class="receipt-value">John Smith</div>
+          </div>
+          <div class="receipt-row">
+            <div class="receipt-label">Cashier:</div>
+            <div class="receipt-value">Store Staff</div>
+          </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <table class="receipt-items">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th class="text-center">Qty</th>
+              <th class="text-right">Price</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Premium Coffee Blend</td>
+              <td class="text-center">1</td>
+              <td class="text-right">
+                <div>$12.99</div>
+                <div class="strikethrough">$14.99</div>
+              </td>
+              <td class="text-right">$12.99</td>
+            </tr>
+            <tr>
+              <td>Organic Apples (1kg)</td>
+              <td class="text-center">2</td>
+              <td class="text-right">$4.99</td>
+              <td class="text-right">$9.98</td>
+            </tr>
+            <tr>
+              <td>Whole Grain Bread</td>
+              <td class="text-center">1</td>
+              <td class="text-right">$3.49</td>
+              <td class="text-right">$3.49</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="receipt-summary-row">
+              <td colspan="3" class="text-right">Subtotal:</td>
+              <td class="text-right">$26.46</td>
+            </tr>
+            <tr class="receipt-summary-row">
+              <td colspan="3" class="text-right">Discount:</td>
+              <td class="text-right discount-value">-$2.00</td>
+            </tr>
+            <tr class="receipt-summary-row">
+              <td colspan="3" class="text-right">Tax (7.4%):</td>
+              <td class="text-right">$1.95</td>
+            </tr>
+            <tr class="receipt-summary-row total-row">
+              <td colspan="3" class="text-right bold">TOTAL:</td>
+              <td class="text-right bold">$26.41</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="receipt-divider"></div>
+
+        <div class="payment-info">
+          <div class="payment-row">
+            <div class="payment-label">Payment Method:</div>
+            <div class="payment-value">Cash</div>
+          </div>
+          <div class="payment-row">
+            <div class="payment-label">Amount Tendered:</div>
+            <div class="payment-value">$30.00</div>
+          </div>
+          <div class="payment-row">
+            <div class="payment-label">Change:</div>
+            <div class="payment-value">$3.59</div>
+          </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-footer">
+          <p class="thank-you">Thank you for shopping at ShopSmart!</p>
+          <p class="return-policy">
+            Return policy: Items can be returned within 30 days with receipt.
+          </p>
+          <p class="support">Customer support: support@shopsmart.com</p>
+          <div class="barcode">
+            <svg viewBox="0 0 200 30">
+              <!-- Simple barcode representation -->
+              <g fill="black">
+                <rect x="0" y="0" width="2" height="30" />
+                <rect x="3" y="0" width="1" height="30" />
+                <rect x="6" y="0" width="2" height="30" />
+                <rect x="9" y="0" width="1" height="30" />
+                <rect x="12" y="0" width="2" height="30" />
+                <rect x="15" y="0" width="1" height="30" />
+                <rect x="18" y="0" width="2" height="30" />
+                <rect x="21" y="0" width="1" height="30" />
+                <rect x="24" y="0" width="2" height="30" />
+                <rect x="27" y="0" width="1" height="30" />
+                <rect x="30" y="0" width="2" height="30" />
+                <rect x="33" y="0" width="1" height="30" />
+                <rect x="36" y="0" width="2" height="30" />
+                <rect x="39" y="0" width="1" height="30" />
+                <rect x="42" y="0" width="2" height="30" />
+                <rect x="45" y="0" width="1" height="30" />
+                <rect x="48" y="0" width="2" height="30" />
+                <rect x="51" y="0" width="1" height="30" />
+                <rect x="54" y="0" width="2" height="30" />
+                <rect x="57" y="0" width="1" height="30" />
+                <rect x="60" y="0" width="2" height="30" />
+                <rect x="63" y="0" width="1" height="30" />
+                <rect x="66" y="0" width="2" height="30" />
+                <rect x="69" y="0" width="1" height="30" />
+                <rect x="72" y="0" width="2" height="30" />
+                <rect x="75" y="0" width="1" height="30" />
+                <rect x="78" y="0" width="2" height="30" />
+                <rect x="81" y="0" width="1" height="30" />
+                <rect x="84" y="0" width="2" height="30" />
+                <rect x="87" y="0" width="1" height="30" />
+              </g>
+            </svg>
+            <div class="barcode-text">INV-12345</div>
+          </div>
+          <p class="software-credit">
+            Powered by ShopSmart Billing System v1.0
+          </p>
+        </div>
+      </div>
     </div>
   </body>
 </html>

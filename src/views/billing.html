@@ -144,8 +144,83 @@
         </div>
       </div>
     </div>
+    <script>
+      // Add this as a separate script to fix the scrolling issue
+      (function () {
+        // Keep track of the current scroll position
+        let lastScrollX = 0;
+        let lastScrollY = 0;
 
+        // Save scroll position when user scrolls
+        window.addEventListener(
+          "scroll",
+          function () {
+            lastScrollX = window.scrollX;
+            lastScrollY = window.scrollY;
+          },
+          { passive: true }
+        );
+
+        // Override the focus method to preserve scroll position
+        const originalFocus = HTMLElement.prototype.focus;
+        HTMLElement.prototype.focus = function () {
+          // Save current scroll position before focusing
+          const scrollX = window.scrollX || lastScrollX;
+          const scrollY = window.scrollY || lastScrollY;
+
+          // Call the original focus method
+          originalFocus.apply(this, arguments);
+
+          // Restore scroll position after a tiny delay
+          // This is necessary because browsers may scroll after focus is called
+          setTimeout(function () {
+            window.scrollTo(scrollX, scrollY);
+          }, 0);
+        };
+
+        // Also handle the hidden input specifically
+        function fixHiddenInputs() {
+          const inputs = document.querySelectorAll(
+            'input[style*="position: absolute"]'
+          );
+
+          inputs.forEach((input) => {
+            // Check if this might be the hidden barcode input
+            if (
+              input.style.top === "-100px" ||
+              input.style.opacity === "0" ||
+              input.style.position === "absolute"
+            ) {
+              // Add more specific fixes for the hidden barcode input
+              input.style.pointerEvents = "none";
+
+              // Add an extra event listener to restore scroll after this input is focused
+              input.addEventListener("focus", function () {
+                setTimeout(function () {
+                  window.scrollTo(lastScrollX, lastScrollY);
+                }, 10);
+              });
+            }
+          });
+        }
+
+        // Run the fix when DOM is fully loaded
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", fixHiddenInputs);
+        } else {
+          fixHiddenInputs();
+        }
+
+        // Also run it again after everything is loaded
+        window.addEventListener("load", fixHiddenInputs);
+
+        // And periodically check for the hidden input (in case it's added dynamically)
+        setInterval(fixHiddenInputs, 2000);
+
+        console.log("Scroll position fix applied");
+      })();
+    </script>
     <script src="../scripts/billing.js"></script>
-    <script src="../services/sync-ui.js"></script>
+    <script src="../scripts/professional-receipt.js"></script>
   </body>
 </html>

@@ -86,14 +86,6 @@ let products = [];
 // });
 
 // Add this to billing.js, inventory.js, and reports.js
-async function handleLogout() {
-  try {
-    await window.api.logoutUser();
-    window.location.href = "login.html"; // Same directory path
-  } catch (error) {
-    console.error("Logout error:", error);
-  }
-}
 
 // In each page's initialization
 document.addEventListener("DOMContentLoaded", () => {
@@ -101,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof window.initSyncUI === "function") {
     window.initSyncUI();
   }
-  document.getElementById("logout-btn").addEventListener("click", handleLogout);
 });
 // Initialize the page
 async function initPage() {
