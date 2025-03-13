@@ -1,4 +1,4 @@
-/* Modern Login Page CSS - Shop Billing System */
+/* Modern Login Page CSS - MZLAD Billing System */
 
 /* ===== VARIABLES ===== */
 :root {
@@ -176,6 +176,9 @@ body {
 .connection-status {
   display: flex;
   align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
   gap: 0.5rem;
   font-size: 0.9rem;
   color: var(--dark-color);

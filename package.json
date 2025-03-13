@@ -38,8 +38,8 @@
     "electron-reload": "^1.5.0"
   },
   "build": {
-    "appId": "com.yourdomain.shopbillingapp",
-    "productName": "Shop Billing App",
+    "appId": "com.yourdomain.mzlad",
+    "productName": "mzlad",
     "extraResources": [
       {
         "from": ".env.production",

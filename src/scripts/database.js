@@ -13,15 +13,22 @@ const {
   enableIndexedDbPersistence,
 } = require("firebase/firestore");
 const { v4: uuidv4 } = require("uuid");
+// Determine environment path
+const envPath =
+  process.env.NODE_ENV === "production"
+    ? path.join(process.resourcesPath, ".env")
+    : path.join(__dirname, "..", ".env");
+
+require("dotenv").config({ path: envPath });
 
 // Your Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyC6z4Ci0QvHlLtonZLDAlyJHH7Km0B_PI0",
-  authDomain: "shop-d44bb.firebaseapp.com",
-  projectId: "shop-d44bb",
-  storageBucket: "shop-d44bb.firebasestorage.app",
-  messagingSenderId: "624712206371",
-  appId: "1:624712206371:web:3e93f2354ed96164804996",
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
 };
 
 // Initialize Firebase

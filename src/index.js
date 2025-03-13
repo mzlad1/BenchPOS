@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, screen } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const Store = require("electron-store");
@@ -96,9 +96,11 @@ let mainWindow;
 
 const createWindow = () => {
   // Create the browser window
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: width,
+    height: height,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -108,7 +110,8 @@ const createWindow = () => {
       worldSafeExecuteJavaScript: true,
     },
   });
-
+  // Maximize the window
+  mainWindow.maximize();
   // Set Content-Security-Policy
   mainWindow.webContents.session.webRequest.onHeadersReceived(
     (details, callback) => {

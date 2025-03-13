@@ -823,7 +823,7 @@ function generateReceiptHtml(invoice) {
 
   return `
     <div class="receipt-header">
-      <h2>Shop Billing System</h2>
+      <h2>MZLAD Billing System</h2>
       <p>123 Main Street, Anytown, USA</p>
       <p>Tel: (555) 123-4567</p>
     </div>
@@ -3746,7 +3746,7 @@ function generateReceiptHtmlWithDiscount(invoice) {
 
   return `
     <div class="receipt-header">
-      <h2>Shop Billing System</h2>
+      <h2>MZLAD Billing System</h2>
       <p>123 Main Street, Anytown, USA</p>
       <p>Tel: (555) 123-4567</p>
       <h3>${transactionType}</h3>
@@ -5254,8 +5254,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   enhanceProductGrid();
   fixProductCardHeight();
   fixProductPageSpacing();
-  setTimeout(forceCartScrolling, 300); // Slight delay to ensure DOM is ready
   setTimeout(fixKeyboardShortcuts, 500);
+  setTimeout(forceCartScrolling, 300); // Slight delay to ensure DOM is ready
 
   // Check for API support
   checkInvoiceUpdateSupport();
