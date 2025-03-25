@@ -472,7 +472,7 @@ main {
 
 .item-select {
   cursor: pointer;
-  width: a8px;
+  width: 8px;
   height: 18px;
   accent-color: var(--primary-color);
 }

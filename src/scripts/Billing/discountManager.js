@@ -257,12 +257,12 @@ function showDiscountModal() {
 
                         // Show/hide appropriate suggestion buttons
                         if (input.value === "percentage") {
-                            percentageSuggestions.style.display = "block";
+                            percentageSuggestions.style.display = "flex";
                             fixedSuggestions.style.display = "none";
                             discountValueInput.removeAttribute("max"); // Remove max constraint
                         } else if (input.value === "fixed") {
                             percentageSuggestions.style.display = "none";
-                            fixedSuggestions.style.display = "block";
+                            fixedSuggestions.style.display = "flex";
                             discountValueInput.setAttribute(
                                 "max",
                                 currentSubtotal.toFixed(2)
@@ -589,7 +589,7 @@ function showMultiItemDiscountModal(itemIndices) {
 
                         // Show/hide appropriate suggestion buttons
                         if (input.value === "percentage") {
-                            percentageSuggestions.style.display = "block";
+                            percentageSuggestions.style.display = "flex";
                             fixedSuggestions.style.display = "none";
                             discountValueInput.removeAttribute("max"); // Remove max constraint
                             updateMultiSavingsPreview(
@@ -599,7 +599,7 @@ function showMultiItemDiscountModal(itemIndices) {
                             );
                         } else if (input.value === "fixed") {
                             percentageSuggestions.style.display = "none";
-                            fixedSuggestions.style.display = "block";
+                            fixedSuggestions.style.display = "flex";
                             updateMultiSavingsPreview(
                                 selectedCartItems,
                                 "fixed",
@@ -959,7 +959,7 @@ function showItemDiscountModal(itemIndex) {
 
                         // Show/hide appropriate suggestion buttons
                         if (input.value === "percentage") {
-                            percentageSuggestions.style.display = "block";
+                            percentageSuggestions.style.display = "flex";
                             fixedSuggestions.style.display = "none";
                             discountValueInput.removeAttribute("max"); // Remove max constraint
                             updatePricePreview(
@@ -969,7 +969,7 @@ function showItemDiscountModal(itemIndex) {
                             );
                         } else if (input.value === "fixed") {
                             percentageSuggestions.style.display = "none";
-                            fixedSuggestions.style.display = "block";
+                            fixedSuggestions.style.display = "flex";
                             discountValueInput.setAttribute(
                                 "max",
                                 Math.abs(item.price).toFixed(2)
