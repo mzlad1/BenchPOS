@@ -7,1003 +7,344 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
     />
-    <link rel="stylesheet" href="styles/main.css" />
-    <link rel="stylesheet" href="styles/billing2.css" />
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <title>MZLAD Billing System</title>
-    <style>
-      /* Dashboard-specific enhancements */
-      .dashboard-container {
-        padding: 0 var(--space-md);
-        margin: 0 auto;
-        max-width: 1400px;
-        width: 100%;
-      }
-
-      .welcome-section {
-        background: linear-gradient(
-          135deg,
-          var(--primary-color),
-          var(--primary-dark)
-        );
-        color: white;
-        border-radius: var(--card-radius);
-        margin-bottom: var(--space-xl);
-        padding: var(--space-xl);
-        box-shadow: var(--box-shadow);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .welcome-section::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 300px;
-        height: 100%;
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="rgba(255,255,255,0.1)"><circle cx="50" cy="50" r="40"/></svg>');
-        background-size: 100px 100px;
-        opacity: 0.2;
-      }
-
-      .welcome-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-lg);
-      }
-
-      .welcome-text h1 {
-        font-size: 1.8rem;
-        color: white;
-        margin-bottom: var(--space-sm);
-      }
-
-      .welcome-text p {
-        color: rgba(255, 255, 255, 0.85);
-        font-size: 1rem;
-        max-width: 600px;
-      }
-
-      .user-profile {
-        display: flex;
-        align-items: center;
-        gap: var(--space-md);
-        background: rgba(255, 255, 255, 0.15);
-        padding: var(--space-md) var(--space-lg);
-        border-radius: var(--card-radius);
-        backdrop-filter: blur(5px);
-      }
-
-      .user-avatar {
-        width: 50px;
-        height: 50px;
-        background-color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        color: var(--primary-dark);
-      }
-
-      .user-info {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .user-name {
-        font-weight: 600;
-        font-size: 1.1rem;
-      }
-
-      .user-role {
-        font-size: 0.85rem;
-        opacity: 0.9;
-      }
-
-      .logout-btn {
-        background-color: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: none;
-        padding: var(--space-sm) var(--space-md);
-        border-radius: var(--button-radius);
-        cursor: pointer;
-        transition: var(--transition);
-        font-size: 0.9rem;
-      }
-
-      .logout-btn:hover {
-        background-color: rgba(255, 255, 255, 0.3);
-      }
-
-      .dashboard {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: var(--space-lg);
-        margin-bottom: var(--space-xl);
-      }
-
-      .dashboard .card {
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        min-height: 220px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: var(--space-xl);
-        border-radius: var(--card-radius);
-      }
-
-      .dashboard .card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--box-shadow-hover);
-      }
-
-      .dashboard .card h2 {
-        margin-top: var(--space-md);
-        margin-bottom: var(--space-sm);
-        font-size: 1.4rem;
-      }
-
-      .dashboard .card p {
-        color: var(--mid-gray);
-        max-width: 200px;
-        margin: 0 auto;
-      }
-
-      .card-icon {
-        width: 80px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        font-size: 2.5rem;
-        margin-bottom: var(--space-md);
-        transition: all 0.3s ease;
-      }
-
-      .card:nth-child(1) .card-icon {
-        background-color: rgba(67, 97, 238, 0.1);
-        color: var(--primary-color);
-      }
-
-      .card:nth-child(2) .card-icon {
-        background-color: rgba(76, 201, 240, 0.1);
-        color: var(--secondary-color);
-      }
-
-      .card:nth-child(3) .card-icon {
-        background-color: rgba(247, 37, 133, 0.1);
-        color: var(--accent-color);
-      }
-
-      .dashboard .card:hover .card-icon {
-        transform: scale(1.1);
-      }
-
-      .disabled-card {
-        opacity: 0.6;
-        position: relative;
-        pointer-events: none;
-      }
-
-      .disabled-card::after {
-        content: "🔒";
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        font-size: 24px;
-        background: rgba(0, 0, 0, 0.1);
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .status-wrapper {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: var(--space-lg);
-        margin-bottom: var(--space-xl);
-      }
-
-      .status-card {
-        background-color: white;
-        border-radius: var(--card-radius);
-        box-shadow: var(--box-shadow);
-        padding: var(--space-lg);
-        display: flex;
-        flex-direction: column;
-      }
-
-      .status-card h3 {
-        font-size: 1.1rem;
-        margin-bottom: var(--space-md);
-        color: var(--dark-color);
-        padding-bottom: var(--space-sm);
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .connection-status {
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
-        margin-bottom: var(--space-md);
-      }
-
-      .connection-indicator {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        position: relative;
-      }
-
-      .connection-indicator.online {
-        background-color: var(--success-color);
-      }
-
-      .connection-indicator.online::after {
-        content: "";
-        position: absolute;
-        top: -4px;
-        left: -4px;
-        right: -4px;
-        bottom: -4px;
-        border-radius: 50%;
-        background-color: rgba(82, 183, 136, 0.2);
-        animation: pulse 2s infinite;
-      }
-
-      .connection-indicator.offline {
-        background-color: var(--danger-color);
-      }
-
-      .connection-text {
-        font-weight: 500;
-      }
-
-      .sync-status {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-md);
-      }
-
-      #last-sync {
-        font-size: 0.9rem;
-        color: white;
-      }
-
-      #sync-button {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--space-sm);
-        background-color: var(--primary-light);
-        color: var(--primary-dark);
-        border: none;
-        padding: var(--space-sm) var(--space-md);
-        border-radius: var(--button-radius);
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-      }
-
-      #sync-button:hover:not(:disabled) {
-        background-color: var(--primary-color);
-        color: white;
-      }
-
-      #sync-button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-
-      #sync-button::before {
-        content: "↻";
-        font-size: 1.2rem;
-      }
-
-      .quick-actions h3 {
-        font-size: 1.1rem;
-        margin-bottom: var(--space-md);
-        color: var(--dark-color);
-      }
-
-      .action-buttons {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: var(--space-md);
-      }
-
-      .action-button {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background-color: white;
-        border: 1px solid var(--border-color);
-        border-radius: var(--card-radius);
-        padding: var(--space-md);
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
-        color: var(--dark-color);
-      }
-
-      .action-button:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--box-shadow);
-        border-color: var(--primary-light);
-      }
-
-      .action-icon {
-        font-size: 1.8rem;
-        margin-bottom: var(--space-sm);
-        color: var(--primary-color);
-      }
-
-      .action-label {
-        font-size: 0.9rem;
-        font-weight: 500;
-        text-align: center;
-      }
-
-      .system-info {
-        background-color: white;
-        border-radius: var(--card-radius);
-        box-shadow: var(--box-shadow);
-        padding: var(--space-lg);
-        margin-bottom: var(--space-lg);
-      }
-
-      .system-info h3 {
-        font-size: 1.1rem;
-        margin-bottom: var(--space-md);
-        color: var(--dark-color);
-        padding-bottom: var(--space-sm);
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--space-md);
-      }
-
-      .info-item {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .info-label {
-        font-size: 0.85rem;
-        color: var(--mid-gray);
-        margin-bottom: var(--space-xs);
-      }
-
-      .info-value {
-        font-weight: 500;
-        font-size: 0.95rem;
-      }
-
-      footer {
-        margin-top: auto;
-        text-align: center;
-        padding: var(--space-xl) 0;
-        color: var(--mid-gray);
-        font-size: 0.9rem;
-      }
-
-      .footer-links {
-        display: flex;
-        justify-content: center;
-        gap: var(--space-md);
-        margin-top: var(--space-sm);
-      }
-
-      .footer-links a {
-        color: var(--mid-gray);
-        text-decoration: none;
-        transition: var(--transition);
-      }
-
-      .footer-links a:hover {
-        color: var(--primary-color);
-      }
-
-      /* Animation for connection indicator */
-      @keyframes pulse {
-        0% {
-          transform: scale(1);
-          opacity: 0.7;
-        }
-        70% {
-          transform: scale(1.5);
-          opacity: 0;
-        }
-        100% {
-          transform: scale(1);
-          opacity: 0;
-        }
-      }
-
-      /* Responsive adjustments */
-      @media (max-width: 992px) {
-        .welcome-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: var(--space-lg);
-        }
-
-        .user-profile {
-          width: 100%;
-        }
-
-        .dashboard {
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        }
-      }
-
-      @media (max-width: 768px) {
-        .dashboard {
-          grid-template-columns: 1fr;
-        }
-
-        .welcome-section {
-          padding: var(--space-lg);
-        }
-
-        .welcome-section::before {
-          display: none;
-        }
-
-        .welcome-text h1 {
-          font-size: 1.5rem;
-        }
-
-        .user-profile {
-          padding: var(--space-sm) var(--space-md);
-        }
-
-        .user-avatar {
-          width: 40px;
-          height: 40px;
-          font-size: 1.2rem;
-        }
-      }
-
-      @media (max-width: 576px) {
-        .status-wrapper {
-          grid-template-columns: 1fr;
-        }
-
-        .info-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .action-buttons {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="styles/index.css" />
   </head>
-  <body>
-    <div class="container">
-      <main>
-        <div class="dashboard-container">
-          <section class="welcome-section">
-            <div class="welcome-header">
-              <div class="welcome-text">
-                <h1>MZLAD Billing System</h1>
-                <p>
-                  Welcome to your offline-ready POS and Inventory Management
-                  dashboard. Choose a module to get started.
-                </p>
-              </div>
-              <div class="user-profile">
-                <div class="user-avatar">👤</div>
-                <div class="user-info">
-                  <span class="user-name" id="current-user-name"
-                    >Not logged in</span
-                  >
-                  <span class="user-role" id="current-user-role">Admin</span>
-                </div>
-                <button id="logout-btn" class="logout-btn">Logout</button>
-              </div>
-            </div>
-          </section>
+  <body class="light-mode">
+    <div class="app-container">
+      <!-- Sidebar -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <div class="logo-icon">M</div>
+            <span class="logo-text">MZLAD</span>
+          </div>
+          <div class="menu-toggle" id="menu-toggle">◀</div>
+        </div>
 
-          <section class="dashboard">
-            <div
-              class="card"
-              onclick="window.location.href='views/billing.html'"
+        <div class="nav-menu">
+          <div class="menu-section">
+            <a href="index.html" class="menu-item active">
+              <div class="menu-icon">📊</div>
+              <span class="menu-text">Dashboard</span>
+            </a>
+
+            <a href="views/billing.html" class="menu-item">
+              <div class="menu-icon">💵</div>
+              <span class="menu-text">New Sale</span>
+            </a>
+
+            <a
+              href="views/inventory.html"
+              class="menu-item"
+              id="inventory-link"
             >
-              <div class="card-icon">💵</div>
-              <h2>New Sale</h2>
-              <p>Create invoices, process transactions and print receipts</p>
+              <div class="menu-icon">📦</div>
+              <span class="menu-text">Inventory</span>
+              <span class="badge" id="inventory-badge">3</span>
+            </a>
+
+            <a href="views/reports.html" class="menu-item" id="reports-link">
+              <div class="menu-icon">📈</div>
+              <span class="menu-text">Reports</span>
+            </a>
+          </div>
+
+          <div class="menu-section">
+            <div class="menu-label">System</div>
+
+            <div class="menu-item">
+              <div class="menu-icon">⚙️</div>
+              <span class="menu-text">Settings</span>
             </div>
 
-            <div
-              class="card"
-              onclick="window.location.href='views/inventory.html'"
-            >
-              <div class="card-icon">📦</div>
-              <h2>Inventory</h2>
-              <p>Manage products, categories and stock levels</p>
+            <div class="menu-item">
+              <div class="menu-icon">❓</div>
+              <span class="menu-text">Help Center</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="user-profile">
+          <div class="avatar" id="user-avatar">U</div>
+          <div class="user-details">
+            <div class="user-name" id="current-user-name">Not logged in</div>
+            <div class="user-role" id="current-user-role">No role</div>
+          </div>
+          <button id="logout-btn" class="logout-btn">⇥</button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+          <div class="page-title">Dashboard</div>
+
+          <div class="header-actions">
+            <div class="search-bar">
+              <div class="search-icon">🔍</div>
+              <input type="text" class="search-input" placeholder="Search..." />
             </div>
 
-            <div
-              class="card"
-              onclick="window.location.href='views/reports.html'"
-            >
-              <div class="card-icon">📊</div>
-              <h2>Reports</h2>
-              <p>View sales analysis, inventory reports and financial data</p>
+            <div class="connection-status">
+              <div
+                class="status-indicator offline"
+                id="connection-indicator"
+              ></div>
+              <span id="connection-text">Offline Mode</span>
             </div>
-          </section>
 
-          <div class="status-wrapper">
-            <div class="status-card">
-              <h3>System Status</h3>
-              <div class="connection-status">
-                <div class="connection-indicator offline"></div>
-                <span class="connection-text">Offline Mode</span>
+            <div class="header-btn">
+              <span>🔔</span>
+              <div class="notification-indicator"></div>
+            </div>
+
+            <div class="theme-switcher" id="theme-switcher">
+              <div class="theme-option light">☀️</div>
+              <div class="theme-option dark">🌙</div>
+              <div class="theme-indicator"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard">
+          <div class="dashboard-header">
+            <div class="welcome-section">
+              <div class="welcome-message" id="welcome-message">
+                Welcome back, <span id="user-greeting">User</span>!
               </div>
-              <div class="sync-status">
-                <span id="last-sync">Last sync: Never</span>
-                <button id="sync-button" disabled>Sync Data</button>
+              <div class="date-display" id="current-date">
+                Friday, March 21, 2025
               </div>
             </div>
 
-            <div class="status-card">
-              <h3>Quick Actions</h3>
-              <div class="action-buttons">
-                <a href="views/billing.html" class="action-button">
-                  <span class="action-icon">🧾</span>
-                  <span class="action-label">New Sale</span>
-                </a>
-                <a
-                  href="views/inventory.html"
-                  class="action-button"
-                  id="add-product-action"
-                >
-                  <span class="action-icon">➕</span>
-                  <span class="action-label">Add Product</span>
-                </a>
-                <a
-                  href="views/reports.html"
-                  class="action-button"
-                  id="sales-report-action"
-                >
-                  <span class="action-icon">📈</span>
-                  <span class="action-label">Sales Report</span>
-                </a>
-                <a href="#" class="action-button" id="help-action">
-                  <span class="action-icon">❓</span>
-                  <span class="action-label">Help</span>
-                </a>
+            <div class="action-buttons">
+              <button class="btn btn-outline" id="sync-button">
+                <div class="btn-icon">🔄</div>
+                <span>Sync Data</span>
+              </button>
+
+              <button class="btn btn-primary">
+                <div class="btn-icon">➕</div>
+                <span>New Sale</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats Section -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-title">TOTAL SALES</div>
+                <div class="stat-icon sales">💵</div>
+              </div>
+              <div class="stat-value" id="sales-count">0</div>
+              <div class="stat-trend trend-up">
+                <span>↑ 12%</span>
+                <span>vs last week</span>
+              </div>
+              <div class="stat-progress">
+                <div class="progress-bar" style="width: 75%"></div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-title">REVENUE</div>
+                <div class="stat-icon revenue">💰</div>
+              </div>
+              <div class="stat-value" id="revenue-value">$0.00</div>
+              <div class="stat-trend trend-up">
+                <span>↑ 8%</span>
+                <span>vs last week</span>
+              </div>
+              <div class="stat-progress">
+                <div class="progress-bar" style="width: 65%"></div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-title">PRODUCTS</div>
+                <div class="stat-icon products">📦</div>
+              </div>
+              <div class="stat-value" id="products-count">0</div>
+              <div class="stat-trend">
+                <span>Recently added: 0</span>
+              </div>
+              <div class="stat-progress">
+                <div class="progress-bar" style="width: 50%"></div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <div class="stat-title">LOW STOCK ITEMS</div>
+                <div class="stat-icon low-stock">⚠️</div>
+              </div>
+              <div class="stat-value" id="low-stock-count">0</div>
+              <div class="stat-trend trend-down">
+                <span>Requires attention</span>
+              </div>
+              <div class="stat-progress">
+                <div class="progress-bar" style="width: 25%"></div>
               </div>
             </div>
           </div>
 
-          <section class="system-info">
-            <h3>System Information</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Version</span>
-                <span class="info-value">MZLAD Billing v1.0.0</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Database</span>
-                <span class="info-value" id="database-status"
-                  >Local Storage</span
-                >
-              </div>
-              <div class="info-item">
-                <span class="info-label">Last Login</span>
-                <span class="info-value" id="last-login">Today at 9:30 AM</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Local Data</span>
-                <span class="info-value" id="local-data-size"
-                  >Calculating...</span
-                >
+          <!-- Dashboard Grid -->
+          <div class="dashboard-grid">
+            <!-- Chart Section -->
+            <div class="dashboard-section col-span-8">
+              <div class="chart-container">
+                <div class="chart-header">
+                  <div class="chart-title">Sales Performance</div>
+                  <div class="chart-actions">
+                    <button class="btn btn-primary" id="chart-week">
+                      This Week
+                    </button>
+                    <button class="btn btn-ghost" id="chart-month">
+                      This Month
+                    </button>
+                    <button class="btn btn-ghost" id="chart-year">
+                      This Year
+                    </button>
+                  </div>
+                </div>
+
+                <div class="chart-tabs">
+                  <div class="chart-tab active" id="tab-revenue">Revenue</div>
+                  <div class="chart-tab" id="tab-orders">Orders</div>
+                  <div class="chart-tab" id="tab-products">Products</div>
+                </div>
+
+                <!-- We're adding a wrapper div for lazy loading -->
+                <div id="chart-wrapper">
+                  <div id="chart-loading">Loading chart data...</div>
+                </div>
               </div>
             </div>
-          </section>
-        </div>
-      </main>
 
-      <footer>
-        <p>MZLAD Billing System &copy; <span id="current-year">2025</span></p>
-        <div class="footer-links">
-          <a href="#" id="about-link">About</a>
-          <a href="#" id="help-link">Help</a>
-          <a href="#" id="support-link">Support</a>
+            <!-- Activity Section -->
+            <div class="dashboard-section col-span-4">
+              <div class="activity-container">
+                <div class="activity-header">
+                  <div class="activity-title">Recent Activity</div>
+                  <button class="btn btn-ghost" style="padding: 0.4rem">
+                    <span>•••</span>
+                  </button>
+                </div>
+                <div class="activity-list" id="activity-list">
+                  <!-- Activity items will be dynamically inserted here -->
+                  <div class="activity-item" id="activity-loading">
+                    <div class="activity-content">
+                      <div class="activity-text">
+                        Loading recent activities...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Access Section -->
+          <div class="quick-access-grid">
+            <div class="quick-card billing" id="billing-card">
+              <div class="quick-card-header">
+                <div class="quick-card-title">New Sale</div>
+                <div class="quick-card-subtitle">
+                  Create invoices and receipts
+                </div>
+                <div class="quick-card-icon">💵</div>
+              </div>
+              <div class="quick-card-body">
+                <div class="feature-list">
+                  <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Process transactions quickly</span>
+                  </div>
+                  <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Apply discounts and taxes</span>
+                  </div>
+                  <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Print or email receipts</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="quick-card inventory" id="inventory-card">
+              <div class="quick-card-header">
+                <div class="quick-card-title">Inventory</div>
+                <div class="quick-card-subtitle">Manage products and stock</div>
+                <div class="quick-card-icon">📦</div>
+              </div>
+              <div class="quick-card-body">
+                <div class="feature-list">
+                  <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Add and update products</span>
+                  </div>
+                  <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Track stock levels</span>
+                  </div>
+                  <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Set price and tax rules</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="quick-card reports" id="reports-card">
+              <div class="quick-card-header">
+                <div class="quick-card-title">Reports</div>
+                <div class="quick-card-subtitle">Analytics and insights</div>
+                <div class="quick-card-icon">📊</div>
+              </div>
+              <div class="quick-card-body">
+                <div class="feature-list">
+                  <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Sales performance analysis</span>
+                  </div>
+                  <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Inventory movement reports</span>
+                  </div>
+                  <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Export data to CSV/PDF</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sync Section -->
+          <div class="sync-section">
+            <div class="sync-info">
+              <div class="sync-title">Data Synchronization</div>
+              <div class="sync-subtitle" id="last-sync">Last sync: Never</div>
+            </div>
+            <button class="btn btn-primary" id="sync-button-bottom">
+              <div class="btn-icon">🔄</div>
+              <span>Sync Now</span>
+            </button>
+          </div>
         </div>
-      </footer>
+      </div>
     </div>
 
-    <script src="../src/services/sync-ui.js"></script>
-
-    <script>
-      // Initialize the dashboard
-      document.addEventListener("DOMContentLoaded", async () => {
-        try {
-          // Check if user is logged in
-          const user = await window.api.getCurrentUser();
-          if (!user) {
-            window.location.href = "views/login.html";
-            return;
-          }
-
-          // Set user information
-          document.getElementById("current-user-name").textContent =
-            user.name || "User";
-          document.getElementById("current-user-role").textContent =
-            user.role || "User";
-
-          // Set current year in footer
-          document.getElementById("current-year").textContent =
-            new Date().getFullYear();
-
-          // Apply role-based restrictions
-          applyRoleBasedAccess(user);
-
-          // Set up event listeners
-          document
-            .getElementById("logout-btn")
-            .addEventListener("click", handleLogout);
-          document
-            .getElementById("sync-button")
-            .addEventListener("click", syncData);
-          document
-            .getElementById("help-action")
-            .addEventListener("click", showHelp);
-          document
-            .getElementById("help-link")
-            .addEventListener("click", showHelp);
-          document
-            .getElementById("about-link")
-            .addEventListener("click", showAbout);
-          document
-            .getElementById("support-link")
-            .addEventListener("click", showSupport);
-
-          // Initialize system information
-          initSystemInfo();
-
-          // Check connection status
-          checkConnectionStatus();
-          setupOnlineListeners();
-        } catch (error) {
-          console.error("Dashboard initialization error:", error);
-          window.location.href = "views/login.html";
-        }
-      });
-
-      // Apply role-based access restrictions
-      function applyRoleBasedAccess(user) {
-        const inventoryCard = document.querySelector(".card:nth-child(2)");
-        const reportsCard = document.querySelector(".card:nth-child(3)");
-        const addProductAction = document.getElementById("add-product-action");
-        const salesReportAction = document.getElementById(
-          "sales-report-action"
-        );
-
-        if (user.role === "cashier") {
-          // Cashiers can only access billing
-          if (inventoryCard) {
-            inventoryCard.classList.add("disabled-card");
-            inventoryCard.onclick = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              showPermissionError("Inventory");
-            };
-          }
-
-          if (reportsCard) {
-            reportsCard.classList.add("disabled-card");
-            reportsCard.onclick = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              showPermissionError("Reports");
-            };
-          }
-
-          // Disable quick actions
-          if (addProductAction) {
-            addProductAction.classList.add("disabled-card");
-            addProductAction.onclick = (e) => {
-              e.preventDefault();
-              showPermissionError("Add Product");
-            };
-          }
-
-          if (salesReportAction) {
-            salesReportAction.classList.add("disabled-card");
-            salesReportAction.onclick = (e) => {
-              e.preventDefault();
-              showPermissionError("Sales Report");
-            };
-          }
-        } else if (user.role === "manager") {
-          // Managers can access billing and inventory but not reports
-          if (reportsCard) {
-            reportsCard.classList.add("disabled-card");
-            reportsCard.onclick = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              showPermissionError("Reports");
-            };
-          }
-
-          // Disable reports quick action
-          if (salesReportAction) {
-            salesReportAction.classList.add("disabled-card");
-            salesReportAction.onclick = (e) => {
-              e.preventDefault();
-              showPermissionError("Sales Report");
-            };
-          }
-        }
-
-        console.log(`Applied access restrictions for role: ${user.role}`);
-      }
-
-      // Show permission error
-      function showPermissionError(module) {
-        alert(`You do not have permission to access ${module}.`);
-      }
-
-      // Handle logout
-      async function handleLogout() {
-        try {
-          console.log("Logging out...");
-          const result = await window.api.logoutUser();
-
-          if (result && result.success) {
-            window.location.href = "views/login.html";
-          } else {
-            console.error("Logout failed:", result);
-            alert("Logout failed. Please try again.");
-          }
-        } catch (error) {
-          console.error("Logout error:", error);
-          alert("An error occurred during logout.");
-        }
-      }
-
-      // Check connection status
-      async function checkConnectionStatus() {
-        try {
-          if (window.api && typeof window.api.getOnlineStatus === "function") {
-            const isOnline = await window.api.getOnlineStatus();
-            updateConnectionUI(isOnline);
-
-            // Check last sync time
-            if (typeof window.api.getLastSyncTime === "function") {
-              const lastSyncTime = await window.api.getLastSyncTime();
-              updateLastSyncTime(lastSyncTime);
-            }
-          } else {
-            updateConnectionUI(navigator.onLine);
-          }
-        } catch (error) {
-          console.error("Error checking connection status:", error);
-          updateConnectionUI(navigator.onLine);
-        }
-      }
-
-      // Update connection UI
-      function updateConnectionUI(isOnline) {
-        const indicator = document.querySelector(".connection-indicator");
-        const statusText = document.querySelector(".connection-text");
-        const syncButton = document.getElementById("sync-button");
-        const databaseStatus = document.getElementById("database-status");
-
-        if (isOnline) {
-          indicator.classList.remove("offline");
-          indicator.classList.add("online");
-          statusText.textContent = "Online Mode";
-          syncButton.disabled = false;
-          databaseStatus.textContent = "Firebase (Connected)";
-        } else {
-          indicator.classList.remove("online");
-          indicator.classList.add("offline");
-          statusText.textContent = "Offline Mode";
-          syncButton.disabled = true;
-          databaseStatus.textContent = "Local Storage (Offline)";
-        }
-      }
-
-      // Update last sync time display
-      function updateLastSyncTime(timestamp) {
-        const lastSyncEl = document.getElementById("last-sync");
-        if (timestamp) {
-          const date = new Date(timestamp);
-          lastSyncEl.textContent = `Last sync: ${date.toLocaleString()}`;
-        } else {
-          lastSyncEl.textContent = "Last sync: Never";
-        }
-      }
-
-      // Set up online status listeners
-      function setupOnlineListeners() {
-        if (
-          window.api &&
-          typeof window.api.onOnlineStatusChanged === "function"
-        ) {
-          window.api.onOnlineStatusChanged((isOnline) => {
-            updateConnectionUI(isOnline);
-          });
-        } else {
-          window.addEventListener("online", () => updateConnectionUI(true));
-          window.addEventListener("offline", () => updateConnectionUI(false));
-        }
-      }
-
-      // Sync data
-      async function syncData() {
-        try {
-          const syncButton = document.getElementById("sync-button");
-          syncButton.disabled = true;
-          syncButton.textContent = "Syncing...";
-
-          if (window.api && typeof window.api.syncData === "function") {
-            const result = await window.api.syncData();
-
-            if (result && result.success) {
-              updateLastSyncTime(result.timestamp || new Date().toISOString());
-              showNotification("Data synced successfully!");
-
-              // Update system info to reflect new data
-              initSystemInfo();
-            } else {
-              showNotification(
-                "Sync failed. " + (result?.message || "Please try again."),
-                true
-              );
-            }
-          } else {
-            showNotification("Sync functionality not available", true);
-          }
-        } catch (error) {
-          console.error("Sync error:", error);
-          showNotification(
-            "Error syncing data: " + (error.message || "Unknown error"),
-            true
-          );
-        } finally {
-          const syncButton = document.getElementById("sync-button");
-          syncButton.disabled = false;
-          syncButton.textContent = "Sync Data";
-        }
-      }
-
-      // Initialize system information
-      async function initSystemInfo() {
-        try {
-          // Update last login time
-          const lastLoginEl = document.getElementById("last-login");
-          lastLoginEl.textContent = new Date().toLocaleString();
-
-          // Calculate local data size
-          const localDataEl = document.getElementById("local-data-size");
-
-          if (window.api) {
-            // Try to get products and invoices count
-            let productCount = 0;
-            let invoiceCount = 0;
-
-            if (typeof window.api.getProducts === "function") {
-              const products = await window.api.getProducts();
-              productCount = products.length;
-            }
-
-            if (typeof window.api.getInvoices === "function") {
-              const invoices = await window.api.getInvoices();
-              invoiceCount = invoices.length;
-            }
-
-            localDataEl.textContent = `${productCount} Products, ${invoiceCount} Invoices`;
-          } else {
-            localDataEl.textContent = "Unknown";
-          }
-        } catch (error) {
-          console.error("Error initializing system info:", error);
-        }
-      }
-
-      // Show notification
-      function showNotification(message, isError = false) {
-        // Create notification element if it doesn't exist
-        let notification = document.querySelector(".notification");
-        if (!notification) {
-          notification = document.createElement("div");
-          notification.className = "notification";
-          document.body.appendChild(notification);
-
-          // Add styles if not already in stylesheet
-          const style = document.createElement("style");
-          style.textContent = `
-            .notification {
-              position: fixed;
-              bottom: 20px;
-              right: 20px;
-              height: 50px;
-              padding: 12px 20px;
-              background-color: var(--success-color);
-              color: white;
-              border-radius: 4px;
-              box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-              z-index: 1000;
-              font-size: 0.9rem;
-              transform: translateY(100px);
-              opacity: 0;
-              transition: transform 0.3s, opacity 0.3s;
-            }
-            
-            .notification.error {
-              background-color: var(--danger-color);
-            }
-            
-            .notification.show {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          `;
-          document.head.appendChild(style);
-        }
-
-        // Set message and type
-        notification.textContent = message;
-        notification.className = isError
-          ? "notification error"
-          : "notification";
-
-        // Show notification
-        setTimeout(() => {
-          notification.classList.add("show");
-        }, 10);
-
-        // Hide after 4 seconds
-        setTimeout(() => {
-          notification.classList.remove("show");
-        }, 4000);
-      }
-
-      // Help, About and Support functions
-      function showHelp(e) {
-        e.preventDefault();
-        alert(
-          "Help Documentation\n\nThis system allows you to manage sales, inventory, and generate reports. For additional help, please contact your system administrator."
-        );
-      }
-
-      function showAbout(e) {
-        e.preventDefault();
-        alert(
-          "About MZLAD Billing System\n\nVersion: 1.0.0\nDeveloped by: MZLAD Team\nThis is an offline-ready point of sale and inventory management system."
-        );
-      }
-
-      function showSupport(e) {
-        e.preventDefault();
-        alert(
-          "Support Information\n\nFor technical support, please contact:\nEmail: support@mzlad.com\nPhone: (555) 123-4567"
-        );
-      }
-
-      // Set current year in copyright
-      document.getElementById("current-year").textContent =
-        new Date().getFullYear();
-    </script>
+    <script src="scripts/activity-logger.js"></script>
+    <script src="scripts/index.js"></script>
+    <script src="scripts/activity-modal.js"></script>
   </body>
 </html>
