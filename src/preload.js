@@ -111,7 +111,7 @@ contextBridge.exposeInMainWorld("api", {
     const subscription = (event, data) => callback(data);
     ipcRenderer.on("unsynced-data-available", subscription);
     return () =>
-      ipcRenderer.removeListener("unsynced-data-available", subscription);
+        ipcRenderer.removeListener("unsynced-data-available", subscription);
   },
 
   onSyncStarted: (callback) => {

@@ -168,10 +168,10 @@ function showUnsyncedDataDialog(data) {
   // Build summary of unsynced items
   let unsyncedSummary = "";
   for (const [collection, counts] of Object.entries(
-    data.unsyncedCounts || {}
+      data.unsyncedCounts || {}
   )) {
     unsyncedSummary += `<li><strong>${
-      collection.charAt(0).toUpperCase() + collection.slice(1)
+        collection.charAt(0).toUpperCase() + collection.slice(1)
     }:</strong> ${counts.total} items</li>`;
   }
 
@@ -209,40 +209,40 @@ function showUnsyncedDataDialog(data) {
 
     // Show a temporary notification
     showTemporaryNotification(
-      "You can sync anytime by clicking the Sync button in the bottom right corner."
+        "You can sync anytime by clicking the Sync button in the bottom right corner."
     );
   });
 
   document
-    .getElementById("sync-now-btn")
-    .addEventListener("click", async () => {
-      // Start sync process
-      syncDialog.style.display = "none";
+      .getElementById("sync-now-btn")
+      .addEventListener("click", async () => {
+        // Start sync process
+        syncDialog.style.display = "none";
 
-      try {
-        // Show sync in progress notification
-        showSyncProgressNotification();
+        try {
+          // Show sync in progress notification
+          showSyncProgressNotification();
 
-        // Perform sync
-        const result = await window.api.performSync();
+          // Perform sync
+          const result = await window.api.performSync();
 
-        // Show result
-        if (result && result.success) {
-          showTemporaryNotification("Sync completed successfully!", "success");
-        } else {
+          // Show result
+          if (result && result.success) {
+            showTemporaryNotification("Sync completed successfully!", "success");
+          } else {
+            showTemporaryNotification(
+                "Sync failed: " + (result?.message || "Unknown error"),
+                "error"
+            );
+          }
+        } catch (error) {
+          console.error("Error during sync:", error);
           showTemporaryNotification(
-            "Sync failed: " + (result?.message || "Unknown error"),
-            "error"
+              "Error during sync. Please try again later.",
+              "error"
           );
         }
-      } catch (error) {
-        console.error("Error during sync:", error);
-        showTemporaryNotification(
-          "Error during sync. Please try again later.",
-          "error"
-        );
-      }
-    });
+      });
 }
 
 // Function to show a temporary notification
@@ -345,13 +345,13 @@ function showReAuthDialog(email, callbackChannel) {
 
   // Add event listeners
   document
-    .getElementById("close-reauth-dialog")
-    .addEventListener("click", () => {
-      reAuthDialog.style.display = "none";
-      if (window.api) {
-        window.api.invokeCallback(callbackChannel, { cancelled: true });
-      }
-    });
+      .getElementById("close-reauth-dialog")
+      .addEventListener("click", () => {
+        reAuthDialog.style.display = "none";
+        if (window.api) {
+          window.api.invokeCallback(callbackChannel, { cancelled: true });
+        }
+      });
 
   document.getElementById("cancel-reauth-btn").addEventListener("click", () => {
     reAuthDialog.style.display = "none";
