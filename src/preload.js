@@ -111,7 +111,7 @@ contextBridge.exposeInMainWorld("api", {
     const subscription = (event, data) => callback(data);
     ipcRenderer.on("unsynced-data-available", subscription);
     return () =>
-      ipcRenderer.removeListener("unsynced-data-available", subscription);
+        ipcRenderer.removeListener("unsynced-data-available", subscription);
   },
 
   onSyncStarted: (callback) => {
@@ -178,6 +178,24 @@ contextBridge.exposeInMainWorld("api", {
     localStorage.setItem("user_name", userData.name);
     localStorage.setItem("device_name", userData.device);
     return true;
+  },
+
+  // Authentication dialog handlers
+  onShowReAuthDialog: (callback) => {
+    const subscription = (event, data) => callback(data);
+    ipcRenderer.on("show-reauth-dialog", subscription);
+    return () => ipcRenderer.removeListener("show-reauth-dialog", subscription);
+  },
+
+  onAuthError: (callback) => {
+    const subscription = (event, data) => callback(data);
+    ipcRenderer.on("auth-error", subscription);
+    return () => ipcRenderer.removeListener("auth-error", subscription);
+  },
+
+  invokeCallback: (channel, data) => {
+    console.log(`Preload: Invoking callback ${channel}`, data);
+    return safeIpcInvoke(channel, data);
   },
 });
 

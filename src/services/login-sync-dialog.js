@@ -13,6 +13,11 @@ function initLoginSyncDialog() {
   } else {
     console.warn("API for unsynced data events not available");
   }
+  if (window.api && window.api.onShowReAuthDialog) {
+    window.api.onShowReAuthDialog((data) => {
+      showReAuthDialog(data.email, data.callback);
+    });
+  }
 }
 
 // Function to add styles for the login sync dialog

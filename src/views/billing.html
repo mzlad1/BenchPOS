@@ -1,50 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+          http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+  />
 
-    <link rel="stylesheet" href="../styles/main.css" />
 
-    <title>Create Invoice - MZLAD Billing System</title>
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <div class="header-left">
-          <button
-            class="btn back-btn"
-            onclick="window.location.href='../index.html'"
-          >
-            Back
-          </button>
-          <h1>New Sale</h1>
-        </div>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <link rel="stylesheet" href="../styles/billing.css" />
+  <title>New Sale - MZLAD Billing System</title>
+</head>
+<body class="light-mode">
+<div class="app-container">
+  <!-- Sidebar Container (will be populated by layout.js) -->
+  <div id="sidebar-container"></div>
 
-        <div class="header-right">
-          <div class="connection-status">
-            <div id="connection-indicator" class="indicator offline"></div>
-            <span id="connection-text">Offline Mode</span>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header Container (will be populated by layout.js) -->
+    <div id="header-container"></div>
+
+    <main>
+      <div class="container">
+        <header>
+
+          <div class="header-right">
+            <span id="current-date"></span>
           </div>
-          <span id="current-date"></span>
-        </div>
-      </header>
+        </header>
 
-      <main>
         <div class="billing-container">
           <div class="product-selection">
             <h2>Products</h2>
+
+
             <div class="search-bar">
               <input
-                type="text"
-                id="product-search"
-                placeholder="Search products..."
+                      type="text"
+                      id="product-search"
+                      placeholder="Search products..."
               />
             </div>
+
             <div id="products-list" class="products-grid">
               <!-- Products will be loaded here dynamically -->
               <div class="loading">Loading products...</div>
@@ -68,28 +68,28 @@
               <div class="customer-info">
                 <label for="customer-name">Customer:</label>
                 <input
-                  type="text"
-                  id="customer-name"
-                  placeholder="Customer name (optional)"
+                        type="text"
+                        id="customer-name"
+                        placeholder="Customer name (optional)"
                 />
               </div>
 
               <div class="cart-items">
                 <table id="cart-table">
                   <thead>
-                    <tr>
-                      <th>Item</th>
-                      <th>Price</th>
-                      <th>Qty</th>
-                      <th>Total</th>
-                      <th>Action</th>
-                    </tr>
+                  <tr>
+                    <th>Item</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                  </tr>
                   </thead>
                   <tbody id="cart-items">
-                    <!-- Cart items will be added here -->
-                    <tr class="empty-cart">
-                      <td colspan="5">No items added yet</td>
-                    </tr>
+                  <!-- Cart items will be added here -->
+                  <tr class="empty-cart">
+                    <td colspan="6">No items added yet</td>
+                  </tr>
                   </tbody>
                 </table>
               </div>
@@ -100,6 +100,10 @@
                   <span id="subtotal">$0.00</span>
                 </div>
                 <div class="summary-row">
+                  <span>Discount:</span>
+                  <span id="discount-value">$0.00</span>
+                </div>
+                <div class="summary-row">
                   <span>Tax (0):</span>
                   <span id="tax">$0.00</span>
                 </div>
@@ -108,6 +112,7 @@
                   <span id="total">$0.00</span>
                 </div>
               </div>
+
 
               <div class="payment-actions">
                 <button id="clear-invoice" class="btn secondary-btn">
@@ -120,107 +125,220 @@
             </div>
           </div>
         </div>
-      </main>
-    </div>
-
-    <!-- Receipt Modal -->
-    <div id="receipt-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Receipt</h2>
-          <span class="close">&times;</span>
-        </div>
-        <div id="receipt-container" class="receipt">
-          <!-- Receipt content will be generated here -->
-        </div>
-        <div class="modal-footer">
-          <button id="print-receipt" class="btn primary-btn">
-            Print Receipt
-          </button>
-          <button id="email-receipt" class="btn secondary-btn">
-            Email Receipt
-          </button>
-          <button id="new-sale" class="btn">New Sale</button>
-        </div>
       </div>
+    </main>
+  </div>
+</div>
+
+<!-- Receipt Modal -->
+<div id="receipt-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Receipt</h2>
+      <span class="close">&times;</span>
     </div>
-    <script>
-      // Add this as a separate script to fix the scrolling issue
-      (function () {
-        // Keep track of the current scroll position
-        let lastScrollX = 0;
-        let lastScrollY = 0;
+    <div id="receipt-container" class="receipt">
+      <!-- Receipt content will be generated here -->
+    </div>
+    <div class="modal-footer">
+      <button id="print-receipt" class="btn primary-btn">
+        Print Receipt <span class="shortcut-indicator">(F8)</span>
+      </button>
+      <button id="email-receipt" class="btn secondary-btn">
+        Email Receipt
+      </button>
+      <button id="new-sale" class="btn">New Sale</button>
+    </div>
+  </div>
+</div>
 
-        // Save scroll position when user scrolls
-        window.addEventListener(
-          "scroll",
-          function () {
-            lastScrollX = window.scrollX;
-            lastScrollY = window.scrollY;
-          },
-          { passive: true }
-        );
 
-        // Override the focus method to preserve scroll position
-        const originalFocus = HTMLElement.prototype.focus;
-        HTMLElement.prototype.focus = function () {
-          // Save current scroll position before focusing
-          const scrollX = window.scrollX || lastScrollX;
-          const scrollY = window.scrollY || lastScrollY;
+<script>
+  // Add this as a separate script to fix the scrolling issue
+  (function () {
+    // Keep track of the current scroll position
+    let lastScrollX = 0;
+    let lastScrollY = 0;
 
-          // Call the original focus method
-          originalFocus.apply(this, arguments);
+    // Save scroll position when user scrolls
+    window.addEventListener(
+            "scroll",
+            function () {
+              lastScrollX = window.scrollX;
+              lastScrollY = window.scrollY;
+            },
+            { passive: true }
+    );
 
-          // Restore scroll position after a tiny delay
-          // This is necessary because browsers may scroll after focus is called
-          setTimeout(function () {
-            window.scrollTo(scrollX, scrollY);
-          }, 0);
-        };
+    // Override the focus method to preserve scroll position
+    const originalFocus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function () {
+      // Save current scroll position before focusing
+      const scrollX = window.scrollX || lastScrollX;
+      const scrollY = window.scrollY || lastScrollY;
 
-        // Also handle the hidden input specifically
-        function fixHiddenInputs() {
-          const inputs = document.querySelectorAll(
-            'input[style*="position: absolute"]'
-          );
+      // Call the original focus method
+      originalFocus.apply(this, arguments);
 
-          inputs.forEach((input) => {
-            // Check if this might be the hidden barcode input
-            if (
-              input.style.top === "-100px" ||
-              input.style.opacity === "0" ||
-              input.style.position === "absolute"
-            ) {
-              // Add more specific fixes for the hidden barcode input
-              input.style.pointerEvents = "none";
+      // Restore scroll position after a tiny delay
+      // This is necessary because browsers may scroll after focus is called
+      setTimeout(function () {
+        window.scrollTo(scrollX, scrollY);
+      }, 0);
+    };
 
-              // Add an extra event listener to restore scroll after this input is focused
-              input.addEventListener("focus", function () {
-                setTimeout(function () {
-                  window.scrollTo(lastScrollX, lastScrollY);
-                }, 10);
-              });
-            }
+    // Also handle the hidden input specifically
+    function fixHiddenInputs() {
+      const inputs = document.querySelectorAll(
+              'input[style*="position: absolute"]'
+      );
+
+      inputs.forEach((input) => {
+        // Check if this might be the hidden barcode input
+        if (
+                input.style.top === "-100px" ||
+                input.style.opacity === "0" ||
+                input.style.position === "absolute"
+        ) {
+          // Add more specific fixes for the hidden barcode input
+          input.style.pointerEvents = "none";
+
+          // Add an extra event listener to restore scroll after this input is focused
+          input.addEventListener("focus", function () {
+            setTimeout(function () {
+              window.scrollTo(lastScrollX, lastScrollY);
+            }, 10);
           });
         }
+      });
+    }
 
-        // Run the fix when DOM is fully loaded
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", fixHiddenInputs);
-        } else {
-          fixHiddenInputs();
+    // Run the fix when DOM is fully loaded
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fixHiddenInputs);
+    } else {
+      fixHiddenInputs();
+    }
+
+    // Also run it again after everything is loaded
+    window.addEventListener("load", fixHiddenInputs);
+
+    // And periodically check for the hidden input (in case it's added dynamically)
+    setInterval(fixHiddenInputs, 2000);
+
+    console.log("Scroll position fix applied");
+  })();
+</script>
+
+<!-- F3 key receipt format fix -->
+<script>
+  // This script fixes the F3 key receipt format issue
+  (function() {
+    // Wait for everything to be fully loaded
+    window.addEventListener('load', function() {
+      console.log('F3 Fix: Starting direct injection fix...');
+
+      // Get reference to the Complete Sale button
+      const completeBtn = document.getElementById('complete-sale');
+      if (!completeBtn) {
+        console.error('F3 Fix: Complete Sale button not found!');
+        return;
+      }
+
+      // Create a function that simulates clicking the button
+      function clickCompleteSaleButton() {
+        if (completeBtn && !completeBtn.disabled) {
+          console.log('F3 Fix: Clicking Complete Sale button...');
+          completeBtn.click();
         }
+      }
 
-        // Also run it again after everything is loaded
-        window.addEventListener("load", fixHiddenInputs);
+      // Very high priority event listener to catch F3 before anything else
+      window.addEventListener('keydown', function(event) {
+        if (event.key === 'F3') {
+          console.log('F3 Fix: F3 key intercepted!');
 
-        // And periodically check for the hidden input (in case it's added dynamically)
-        setInterval(fixHiddenInputs, 2000);
+          // Stop the event from propagating to other handlers
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
 
-        console.log("Scroll position fix applied");
-      })();
-    </script>
-    <script src="../scripts/billing.js"></script>
-    <script src="../scripts/professional-receipt.js"></script>
-  </body>
+          // Skip if viewing invoice without being in edit mode
+          if (window.isViewingInvoice && !window.isEditingInvoice) {
+            alert("Please click 'Edit' first before making changes.");
+            return false;
+          }
+
+          // Trigger the button click
+          clickCompleteSaleButton();
+
+          return false;
+        }
+      }, true); // true = capture phase, ensures this runs first
+
+      console.log('F3 Fix: Fix applied successfully!');
+    });
+
+    console.log('F3 Fix: Script loaded');
+  })();
+</script>
+
+<!-- Load Scripts -->
+<script src="../scripts/layout.js"></script>
+<script src="../scripts/Billing/core.js"></script>
+<script src="../scripts/Billing/productManager.js"></script>
+<script src="../scripts/Billing/cartManager.js"></script>
+<script src="../scripts/Billing/payment-and-receipts.js"></script>
+<script src="../scripts/Billing/barcodeHandler.js"></script>
+<script src="../scripts/Billing/discountManager.js"></script>
+<script src="../scripts/Billing/keyboardController.js"></script>
+<script src="../scripts/Billing/invoiceNavigator.js"></script>
+<script src="../scripts/Billing/ui-fixes.js"></script>
+<script src="../scripts/professional-receipt.js"></script>
+<script>
+  // Initialize page with correct layout
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize layout manager first
+    if (window.LayoutManager) {
+      window.LayoutManager.init('billing');
+    }
+
+    // Set the current date
+    const today = new Date();
+    const currentDateEl = document.getElementById('current-date');
+    if (currentDateEl) {
+      currentDateEl.textContent = formatDate(today);
+    }
+
+    function formatDate(date) {
+      if (!(date instanceof Date) || isNaN(date)) {
+        return 'Invalid date';
+      }
+
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = date.getFullYear();
+
+      return `${month}/${day}/${year}`;
+    }
+
+    // Move barcode form to products section
+    const barcodeForm = document.getElementById('barcode-form');
+    const productsList = document.getElementById('products-list');
+
+    if (barcodeForm && productsList) {
+      barcodeForm.classList.remove('hidden');
+      productsList.parentNode.insertBefore(barcodeForm, productsList);
+    }
+
+    // Focus barcode input if it exists
+    setTimeout(() => {
+      const barcodeInput = document.getElementById('barcode-input');
+      if (barcodeInput) {
+        barcodeInput.focus();
+      }
+    }, 500);
+  });
+</script>
+</body>
 </html>

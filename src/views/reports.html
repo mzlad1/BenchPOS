@@ -1,82 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
-    />
-    <link rel="stylesheet" href="../styles/main.css" />
-    <title>Reports - MZLAD Billing System</title>
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <div class="header-left">
-          <button
-            class="btn back-btn"
-            onclick="window.location.href='../index.html'"
-          >
-            Back
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <title>Reports - MZLAD Billing System</title>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <link rel="stylesheet" href="../styles/report.css" />
+</head>
+<body class="light-mode">
+<div class="app-container">
+  <!-- Sidebar Container (will be populated by layout.js) -->
+  <div id="sidebar-container"></div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header Container (will be populated by layout.js) -->
+    <div id="header-container"></div>
+
+    <!-- Reports Content -->
+    <div class="reports-container">
+      <!-- Report Controls -->
+      <div class="report-controls">
+        <div class="date-filters">
+          <div class="filter-group">
+            <label for="report-period">Date Range</label>
+            <select id="report-period">
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="this-week">This Week</option>
+              <option value="last-week">Last Week</option>
+              <option value="this-month" selected>This Month</option>
+              <option value="last-month">Last Month</option>
+              <option value="this-year">This Year</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+
+          <div id="custom-date-range" style="display: none;" class="date-range-picker">
+            <div class="filter-group">
+              <label for="date-from">From</label>
+              <input type="date" id="date-from">
+            </div>
+            <div class="filter-group">
+              <label for="date-to">To</label>
+              <input type="date" id="date-to">
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <button id="apply-filters" class="btn btn-primary">
+            <span>Apply Filters</span>
           </button>
-          <h1>Reports</h1>
+          <button id="export-report" class="btn btn-outline">
+            <span class="btn-icon">📊</span>
+            <span>Export CSV</span>
+          </button>
+          <button id="print-report" class="btn btn-outline">
+            <span class="btn-icon">🖨️</span>
+            <span>Print</span>
+          </button>
         </div>
-        <div class="header-right">
-          <div class="connection-status">
-            <div id="connection-indicator" class="indicator offline"></div>
-            <span id="connection-text">Offline Mode</span>
-          </div>
-          <span id="current-date"></span>
-        </div>
-      </header>
+      </div>
 
-      <main>
-        <div class="reports-container">
-          <!-- Sales Report -->
-          <div class="report-section">
-            <h2>Sales Report</h2>
-            <div id="sales-report" class="report-content">
-              <div class="loading">Loading sales data...</div>
+      <!-- Sales Summary Cards -->
+      <div class="report-summary">
+        <div class="summary-item">
+          <h3>TOTAL SALES</h3>
+          <p id="total-sales">$0.00</p>
+          <div class="summary-meta">
+            <span id="sales-trend" class="trend-up">+0% vs. previous period</span>
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <h3>TRANSACTIONS</h3>
+          <p id="total-transactions">0</p>
+          <div class="summary-meta">
+            <span id="transactions-trend" class="trend-up">+0% vs. previous period</span>
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <h3>AVERAGE SALE</h3>
+          <p id="average-sale">$0.00</p>
+          <div class="summary-meta">
+            <span id="average-trend" class="trend-up">+0% vs. previous period</span>
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <h3>TOTAL PROFIT</h3>
+          <p id="total-profit">$0.00</p>
+          <div class="summary-meta">
+            <span id="profit-trend" class="trend-up">+0% vs. previous period</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Performance Chart -->
+      <div class="report-section">
+        <div class="report-header">
+          <div class="report-title">
+            <span class="report-icon">📈</span>
+            <span>Sales Performance</span>
+          </div>
+          <div class="report-actions">
+            <button class="btn btn-ghost" id="view-daily">Daily</button>
+            <button class="btn btn-ghost" id="view-weekly">Weekly</button>
+            <button class="btn btn-ghost" id="view-monthly">Monthly</button>
+          </div>
+        </div>
+
+        <div class="report-content">
+          <div class="chart-container" id="sales-chart">
+            <div class="chart-placeholder">
+              <span class="chart-icon">📊</span>
+              <span>Sales data will be visualized here</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Report Tabs -->
+      <div class="report-section">
+        <div class="report-header">
+          <div class="report-title">
+            <span class="report-icon">💵</span>
+            <span>Sales Report</span>
+          </div>
+        </div>
+
+        <div class="report-tabs">
+          <div class="report-tab active" data-tab="daily-sales">Daily Sales</div>
+          <div class="report-tab" data-tab="product-sales">Product Sales</div>
+          <div class="report-tab" data-tab="category-sales">Category Sales</div>
+        </div>
+
+        <div class="report-content">
+          <!-- Daily Sales Tab -->
+          <div id="daily-sales" class="tab-content active">
+            <div class="table-container">
+              <table class="report-table">
+                <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Transactions</th>
+                  <th>Items Sold</th>
+                  <th>Sales</th>
+                  <th>Cost</th>
+                  <th>Profit</th>
+                  <th>Margin</th>
+                </tr>
+                </thead>
+                <tbody id="daily-sales-table">
+                <tr>
+                  <td colspan="7" class="loading">Loading sales data...</td>
+                </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <!-- Product Report -->
-          <div class="report-section">
-            <h2>Product Report</h2>
-            <div id="product-report" class="report-content">
-              <div class="loading">Loading product data...</div>
+          <!-- Product Sales Tab -->
+          <div id="product-sales" class="tab-content">
+            <div class="table-container">
+              <table class="report-table">
+                <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th>Quantity Sold</th>
+                  <th>Revenue</th>
+                  <th>Profit</th>
+                  <th>Margin</th>
+                </tr>
+                </thead>
+                <tbody id="product-sales-table">
+                <tr>
+                  <td colspan="7" class="loading">Loading product sales data...</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Category Sales Tab -->
+          <div id="category-sales" class="tab-content">
+            <div class="table-container">
+              <table class="report-table">
+                <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Items Sold</th>
+                  <th>Revenue</th>
+                  <th>Profit</th>
+                  <th>Margin</th>
+                </tr>
+                </thead>
+                <tbody id="category-sales-table">
+                <tr>
+                  <td colspan="5" class="loading">Loading category sales data...</td>
+                </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
-      </main>
+      </div>
+
+      <!-- Inventory Stats -->
+      <div class="report-section">
+        <div class="report-header">
+          <div class="report-title">
+            <span class="report-icon">📦</span>
+            <span>Inventory Overview</span>
+          </div>
+        </div>
+
+        <div class="report-content">
+          <div class="report-summary">
+            <div class="summary-item">
+              <h3>TOTAL PRODUCTS</h3>
+              <p id="total-products">0</p>
+            </div>
+
+            <div class="summary-item">
+              <h3>INVENTORY VALUE</h3>
+              <p id="inventory-value">$0.00</p>
+            </div>
+
+            <div class="summary-item">
+              <h3>INVENTORY COST</h3>
+              <p id="inventory-cost">$0.00</p>
+            </div>
+
+            <div class="summary-item warning">
+              <h3>LOW STOCK ITEMS</h3>
+              <p id="low-stock-count">0</p>
+            </div>
+          </div>
+
+          <h3>Top Selling Products</h3>
+          <div class="table-container">
+            <table class="report-table">
+              <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Units Sold</th>
+                <th>Revenue</th>
+                <th>In Stock</th>
+              </tr>
+              </thead>
+              <tbody id="top-selling-table">
+              <tr>
+                <td colspan="5" class="loading">Loading top products...</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Low Stock Products</h3>
+          <div class="table-container">
+            <table class="report-table">
+              <thead>
+              <tr>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Price</th>
+                <th>Stock</th>
+              </tr>
+              </thead>
+              <tbody id="low-stock-table">
+              <tr>
+                <td colspan="4" class="loading">Loading low stock products...</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <script src="../scripts/reports.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", async function () {
-        try {
-          const user = await window.api.getCurrentUser();
-          if (!user) {
-            window.location.href = "login.html";
-            return;
-          }
-
-          // Check role-based access
-          if (user.role === "cashier" || user.role === "manager") {
-            alert("You do not have permission to access the Reports page.");
-            window.location.href = "../index.html";
-            return;
-          }
-
-          // If we reach here, continue loading the page normally
-          console.log("User authorized to access Reports page");
-        } catch (error) {
-          console.error("Access control error:", error);
-          window.location.href = "login.html";
-        }
-      });
-    </script>
-    <script src="../services/sync-ui.js"></script>
-  </body>
+<!-- Load Scripts -->
+<script src="../scripts/layout.js"></script>
+<script src="../scripts/reports.js"></script>
+<script src="../services/sync-ui.js"></script>
+</body>
 </html>

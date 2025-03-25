@@ -1,4 +1,4 @@
-// sync-ui.js - Include this in your renderer process
+// Enhanced sync-ui.js - Include this in your renderer process
 
 // Create and initialize the sync UI
 function initSyncUI() {
@@ -11,27 +11,55 @@ function initSyncUI() {
     document.body.appendChild(syncContainer);
   }
 
-  // Set initial empty state
+  // Create minimized indicator
+  let miniIndicator = document.getElementById("mini-sync-indicator");
+  if (!miniIndicator) {
+    miniIndicator = document.createElement("div");
+    miniIndicator.id = "mini-sync-indicator";
+    miniIndicator.className = "sync-indicator";
+    document.body.appendChild(miniIndicator);
+  }
+
+  // Set initial UI state
   syncContainer.innerHTML = `
     <div class="sync-header">
-      <h3>Data Synchronization</h3>
-      <button id="sync-toggle-btn" class="btn secondary-btn">Show Details</button>
+      <h3><span class="sync-icon">⟳</span> Data Synchronization</h3>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button id="minimize-sync-btn" class="minimize-btn" title="Minimize">−</button>
+        <button id="sync-toggle-btn" class="btn">Show Details</button>
+      </div>
     </div>
     <div class="sync-content" style="display: none;">
-      <div id="sync-status" class="sync-status">Checking sync status...</div>
+      <div id="sync-status" class="sync-status">
+        <span class="status-icon">⟳</span>
+        <span>Checking sync status...</span>
+      </div>
       <div id="unsynced-data" class="unsynced-data"></div>
       <div class="sync-actions">
-        <button id="sync-now-btn" class="btn primary-btn">Sync Now</button>
-        <button id="refresh-sync-status-btn" class="btn secondary-btn">Refresh Status</button>
+        <button id="sync-now-btn" class="btn primary-btn">
+          <span class="sync-icon">⟳</span> Sync Now
+        </button>
+        <button id="refresh-sync-status-btn" class="btn secondary-btn">
+          Refresh Status
+        </button>
       </div>
       <div id="sync-progress" class="sync-progress" style="display: none;">
         <div class="progress-bar-container">
           <div id="sync-progress-bar" class="progress-bar" style="width: 0%"></div>
         </div>
-        <div id="sync-progress-text">Starting sync...</div>
+        <div id="sync-progress-text">
+          <span class="sync-icon" style="display: inline-block; animation: spin 1s linear infinite;">⟳</span>
+          Starting sync...
+        </div>
       </div>
       <div id="last-sync-time" class="last-sync-time"></div>
     </div>
+  `;
+
+  // Set minimized indicator content
+  miniIndicator.innerHTML = `
+    <div class="spinner"></div>
+    <span>Syncing data...</span>
   `;
 
   // Add styles for the sync UI
@@ -39,17 +67,23 @@ function initSyncUI() {
 
   // Add event listeners
   document
-    .getElementById("sync-toggle-btn")
-    .addEventListener("click", toggleSyncDetails);
+      .getElementById("sync-toggle-btn")
+      .addEventListener("click", toggleSyncDetails);
   document.getElementById("sync-now-btn").addEventListener("click", startSync);
   document
-    .getElementById("refresh-sync-status-btn")
-    .addEventListener("click", checkSyncStatus);
+      .getElementById("refresh-sync-status-btn")
+      .addEventListener("click", checkSyncStatus);
+  document
+      .getElementById("minimize-sync-btn")
+      .addEventListener("click", minimizeSyncUI);
+  document
+      .getElementById("mini-sync-indicator")
+      .addEventListener("click", maximizeSyncUI);
 
   // Set up IPC listeners for sync events
   setupSyncListeners();
 
-  // Check sync status initially
+  // Check sync status initially with a slight delay
   setTimeout(checkSyncStatus, 1000);
 }
 
@@ -61,146 +95,320 @@ function addSyncStyles() {
   const styleElement = document.createElement("style");
   styleElement.id = "sync-ui-styles";
   styleElement.textContent = `
+    :root {
+      --primary-color: #4361ee;
+      --primary-hover: #3a56d4;
+      --secondary-color: #3f37c9;
+      --accent-color: #4cc9f0;
+      --success-color: #0cce6b;
+      --warning-color: #ff9e00;
+      --danger-color: #e5383b;
+      --light-gray: #f8f9fa;
+      --medium-gray: #e9ecef;
+      --dark-gray: #495057;
+      --text-primary: #212529;
+      --text-secondary: #6c757d;
+      --border-color: #dee2e6;
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --border-radius: 8px;
+      --border-radius-lg: 12px;
+      --transition: all 0.2s ease-in-out;
+    }
+
+    /* Sync Container Styles */
     .sync-container {
       position: fixed;
-      bottom: 10px;
-      left: 10px;
-      width: 300px;
+      bottom: 20px;
+      right: 20px;
+      width: 360px;
       background-color: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-lg);
       z-index: 1000;
       overflow: hidden;
-      font-family: Arial, sans-serif;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      transform-origin: bottom right;
+    }
+
+    .sync-container.hidden {
+      transform: scale(0.6);
+      opacity: 0;
+      pointer-events: none;
     }
 
     .sync-header {
+      background-color: var(--primary-color);
+      padding: 14px 16px;
+      color: white;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 15px;
-      background-color: #f0f4f8;
-      border-bottom: 1px solid #ddd;
     }
 
     .sync-header h3 {
-      margin: 0;
-      font-size: 14px;
-      color: #333;
+      font-size: 16px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sync-header .sync-icon {
+      font-size: 18px;
+    }
+
+    .sync-header .btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .sync-header .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
     }
 
     .sync-content {
-      padding: 15px;
-      font-size: 13px;
+      padding: 16px;
     }
 
     .sync-status {
-      margin-bottom: 10px;
-      font-weight: bold;
+      padding: 12px;
+      border-radius: var(--border-radius);
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: var(--light-gray);
+    }
+
+    .sync-status.success {
+      background-color: rgba(12, 206, 107, 0.1);
+      color: var(--success-color);
+    }
+
+    .sync-status.warning {
+      background-color: rgba(255, 158, 0, 0.1);
+      color: var(--warning-color);
+    }
+
+    .sync-status.error {
+      background-color: rgba(229, 56, 59, 0.1);
+      color: var(--danger-color);
+    }
+
+    .sync-status .status-icon {
+      font-size: 18px;
     }
 
     .unsynced-data {
-      margin-bottom: 15px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
     }
 
     .unsynced-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
-      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .unsynced-item:last-child {
+      border-bottom: none;
+    }
+
+    .unsynced-details {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 0 12px 8px 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
     }
 
     .sync-actions {
       display: flex;
       gap: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 16px;
+    }
+
+    .sync-actions .btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .sync-actions .primary-btn {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .sync-actions .primary-btn:hover, .sync-actions .primary-btn:focus {
+      background-color: var(--primary-hover);
+    }
+
+    .sync-actions .secondary-btn {
+      background-color: var(--light-gray);
+      color: var(--text-primary);
+    }
+
+    .sync-actions .secondary-btn:hover, .sync-actions .secondary-btn:focus {
+      background-color: var(--medium-gray);
     }
 
     .sync-progress {
-      margin: 15px 0;
+      margin: 16px 0;
     }
 
     .progress-bar-container {
-      width: 100%;
       height: 8px;
-      background-color: #eee;
-      border-radius: 4px;
+      background-color: var(--medium-gray);
+      border-radius: 50px;
       overflow: hidden;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
     }
 
     .progress-bar {
       height: 100%;
-      background-color: #4CAF50;
+      background-color: var(--primary-color);
+      width: 0;
       transition: width 0.3s ease;
+    }
+
+    #sync-progress-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .last-sync-time {
       font-size: 12px;
-      color: #666;
+      color: var(--text-secondary);
       text-align: right;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
     }
 
-    /* Status indicators */
-    .sync-status.success {
-      color: #4CAF50;
+    /* Minimized Sync Indicator */
+    .sync-indicator {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: var(--transition);
     }
 
-    .sync-status.warning {
-      color: #FF9800;
+    .sync-indicator.active {
+      opacity: 1;
+      transform: translateY(0);
     }
 
-    .sync-status.error {
-      color: #F44336;
+    .sync-indicator .spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
 
-    /* Animated sync icon */
-    .sync-icon {
-      display: inline-block;
-      animation: rotate 2s linear infinite;
-      margin-right: 5px;
-    }
-
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* Button styles */
-    .sync-container .btn {
-      padding: 6px 12px;
-      font-size: 12px;
-    }
-    
     /* Notification styles */
     .temp-notification {
       position: fixed;
       top: 20px;
       right: 20px;
-      padding: 15px 20px;
-      background-color: #333;
-      color: white;
-      border-radius: 4px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      padding: 12px 16px;
+      background-color: white;
+      border-left: 4px solid var(--primary-color);
+      color: var(--text-primary);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
       z-index: 2000;
       max-width: 300px;
       display: none;
-      animation: fadeIn 0.3s ease;
+      animation: slideIn 0.3s ease-out;
     }
 
     .temp-notification.success {
-      background-color: #4CAF50;
+      border-left-color: var(--success-color);
     }
 
     .temp-notification.error {
-      background-color: #F44336;
+      border-left-color: var(--danger-color);
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* Minimize Button */
+    .minimize-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      transition: var(--transition);
+    }
+
+    .minimize-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    /* Animations */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes slideIn {
+      from { 
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
   `;
+
   document.head.appendChild(styleElement);
 }
 
@@ -218,6 +426,28 @@ function toggleSyncDetails() {
   }
 }
 
+// Minimize the sync UI
+function minimizeSyncUI() {
+  const syncContainer = document.getElementById("sync-container");
+  const miniIndicator = document.getElementById("mini-sync-indicator");
+
+  syncContainer.classList.add("hidden");
+  setTimeout(() => {
+    miniIndicator.classList.add("active");
+  }, 300);
+}
+
+// Maximize the sync UI
+function maximizeSyncUI() {
+  const syncContainer = document.getElementById("sync-container");
+  const miniIndicator = document.getElementById("mini-sync-indicator");
+
+  miniIndicator.classList.remove("active");
+  setTimeout(() => {
+    syncContainer.classList.remove("hidden");
+  }, 100);
+}
+
 // Check sync status
 async function checkSyncStatus() {
   try {
@@ -226,14 +456,14 @@ async function checkSyncStatus() {
     const lastSyncTimeEl = document.getElementById("last-sync-time");
 
     // Show checking status
-    statusEl.textContent = "Checking sync status...";
+    statusEl.innerHTML = '<span class="status-icon">⟳</span><span>Checking sync status...</span>';
     statusEl.className = "sync-status";
     unsyncedDataEl.innerHTML = "";
 
     // Get online status
     const isOnline = await window.api.getOnlineStatus();
     if (!isOnline) {
-      statusEl.textContent = "Currently offline. Sync not available.";
+      statusEl.innerHTML = '<span class="status-icon">⚠️</span><span>Currently offline. Sync not available.</span>';
       statusEl.className = "sync-status warning";
       return;
     }
@@ -242,9 +472,9 @@ async function checkSyncStatus() {
     const result = await window.api.checkUnsyncedData();
 
     if (!result.success) {
-      statusEl.textContent = `Error checking sync status: ${
-        result.message || "Unknown error"
-      }`;
+      statusEl.innerHTML = `<span class="status-icon">⚠️</span><span>Error checking sync status: ${
+          result.message || "Unknown error"
+      }</span>`;
       statusEl.className = "sync-status error";
       return;
     }
@@ -260,13 +490,14 @@ async function checkSyncStatus() {
 
     // Update UI based on unsynced data
     if (!result.hasUnsyncedData) {
-      statusEl.textContent = "All data is in sync.";
+      statusEl.innerHTML = '<span class="status-icon">✓</span><span>All data is in sync.</span>';
       statusEl.className = "sync-status success";
+      unsyncedDataEl.innerHTML = ""; // Clear the container
       return;
     }
 
     // Display unsynced data summary
-    statusEl.textContent = `Found ${result.totalUnsyncedItems} items that need to be synced.`;
+    statusEl.innerHTML = `<span class="status-icon">⚠️</span><span>Found ${result.totalUnsyncedItems} items that need to be synced.</span>`;
     statusEl.className = "sync-status warning";
 
     let unsyncedHTML = "";
@@ -274,8 +505,8 @@ async function checkSyncStatus() {
       unsyncedHTML += `
         <div class="unsynced-item">
           <span>${
-            collection.charAt(0).toUpperCase() + collection.slice(1)
-          }</span>
+          collection.charAt(0).toUpperCase() + collection.slice(1)
+      }</span>
           <span>${counts.total} items</span>
         </div>
         <div class="unsynced-details">
@@ -289,8 +520,7 @@ async function checkSyncStatus() {
     unsyncedDataEl.innerHTML = unsyncedHTML;
   } catch (error) {
     console.error("Error checking sync status:", error);
-    document.getElementById("sync-status").textContent =
-      "Error checking sync status.";
+    document.getElementById("sync-status").innerHTML = '<span class="status-icon">⚠️</span><span>Error checking sync status.</span>';
     document.getElementById("sync-status").className = "sync-status error";
   }
 }
@@ -307,8 +537,9 @@ async function startSync() {
     // Get online status
     const isOnline = await window.api.getOnlineStatus();
     if (!isOnline) {
-      statusEl.textContent = "Cannot sync while offline.";
+      statusEl.innerHTML = '<span class="status-icon">⚠️</span><span>Cannot sync while offline.</span>';
       statusEl.className = "sync-status error";
+      showTemporaryNotification("Cannot sync while offline", "error");
       return;
     }
 
@@ -317,10 +548,17 @@ async function startSync() {
     progressEl.style.display = "block";
     progressBarEl.style.width = "0%";
     progressTextEl.innerHTML =
-      '<span class="sync-icon">⟳</span> Starting sync...';
+        '<span class="sync-icon" style="display: inline-block; animation: spin 1s linear infinite;">⟳</span> Starting sync...';
 
-    statusEl.textContent = "Synchronizing data...";
+    statusEl.innerHTML = '<span class="status-icon">⟳</span><span>Synchronizing data...</span>';
     statusEl.className = "sync-status";
+
+    // Also update the mini indicator
+    document.getElementById("mini-sync-indicator").innerHTML = `
+      <div class="spinner"></div>
+      <span>Syncing data...</span>
+    `;
+    document.getElementById("mini-sync-indicator").classList.add("active");
 
     // Start the sync process
     const result = await window.api.performSync();
@@ -329,20 +567,23 @@ async function startSync() {
     syncNowBtn.disabled = false;
 
     if (result && result.success) {
-      statusEl.textContent = "Sync completed successfully!";
+      statusEl.innerHTML = '<span class="status-icon">✓</span><span>Sync completed successfully!</span>';
       statusEl.className = "sync-status success";
 
       // Update last sync time
       if (result.timestamp) {
         const date = new Date(result.timestamp);
         document.getElementById(
-          "last-sync-time"
+            "last-sync-time"
         ).textContent = `Last sync: ${date.toLocaleString()}`;
       }
 
       // Show completion in progress bar
       progressBarEl.style.width = "100%";
-      progressTextEl.textContent = "Sync completed!";
+      progressTextEl.innerHTML = '<span class="status-icon">✓</span> Sync completed!';
+
+      // Show success notification
+      showTemporaryNotification("Sync completed successfully!", "success");
 
       // Hide progress after a delay
       setTimeout(() => {
@@ -351,20 +592,30 @@ async function startSync() {
         checkSyncStatus();
       }, 2000);
     } else {
-      statusEl.textContent =
-        result && result.message
+      const errorMessage = result && result.message
           ? `Sync failed: ${result.message}`
           : "Sync failed with unknown error";
+
+      statusEl.innerHTML = `<span class="status-icon">⚠️</span><span>${errorMessage}</span>`;
       statusEl.className = "sync-status error";
-      progressTextEl.textContent = "Sync failed. Please try again.";
+      progressTextEl.innerHTML = '<span class="status-icon">⚠️</span> Sync failed. Please try again.';
+
+      // Show error notification
+      showTemporaryNotification(errorMessage, "error");
     }
+
+    // Update mini indicator after sync completion
+    setTimeout(() => {
+      document.getElementById("mini-sync-indicator").classList.remove("active");
+    }, 2000);
   } catch (error) {
     console.error("Error during sync:", error);
-    document.getElementById("sync-status").textContent = "Error during sync.";
+    document.getElementById("sync-status").innerHTML = '<span class="status-icon">⚠️</span><span>Error during sync.</span>';
     document.getElementById("sync-status").className = "sync-status error";
-    document.getElementById("sync-progress-text").textContent =
-      "Sync error. Please try again.";
+    document.getElementById("sync-progress-text").innerHTML = '<span class="status-icon">⚠️</span> Sync error. Please try again.';
     document.getElementById("sync-now-btn").disabled = false;
+
+    showTemporaryNotification("Error during sync operation", "error");
   }
 }
 
@@ -378,15 +629,18 @@ function setupSyncListeners() {
       const progressBarEl = document.getElementById("sync-progress-bar");
       const progressTextEl = document.getElementById("sync-progress-text");
 
-      statusEl.textContent = "Synchronizing data...";
+      statusEl.innerHTML = '<span class="status-icon">⟳</span><span>Synchronizing data...</span>';
       statusEl.className = "sync-status";
 
       progressEl.style.display = "block";
       progressBarEl.style.width = "0%";
       progressTextEl.innerHTML =
-        '<span class="sync-icon">⟳</span> Starting sync...';
+          '<span class="sync-icon" style="display: inline-block; animation: spin 1s linear infinite;">⟳</span> Starting sync...';
 
       document.getElementById("sync-now-btn").disabled = true;
+
+      // Show mini indicator
+      document.getElementById("mini-sync-indicator").classList.add("active");
     });
   }
 
@@ -397,16 +651,21 @@ function setupSyncListeners() {
       const progressBarEl = document.getElementById("sync-progress-bar");
 
       // Update progress text
-      progressTextEl.innerHTML = `<span class="sync-icon">⟳</span> Syncing ${data.collection}...`;
+      progressTextEl.innerHTML = `<span class="sync-icon" style="display: inline-block; animation: spin 1s linear infinite;">⟳</span> Syncing ${data.collection}...`;
 
       // Calculate approximate progress (this is just a visual estimate)
       // Getting accurate progress would require knowledge of total items up front
-      const collections = ["products", "invoices"];
+      const collections = ["products", "invoices", "users", "settings"];
       const collectionIndex = collections.indexOf(data.collection);
-      const progressPercent = (
-        (collectionIndex / collections.length) *
-        100
-      ).toFixed(0);
+      let progressPercent = 10; // Start with 10% minimum
+
+      if (data.total > 0) {
+        // If we have item count details, calculate more accurate progress
+        progressPercent = Math.min(90, Math.round((data.processed / data.total) * 100));
+      } else if (collectionIndex >= 0) {
+        // Fallback to collection-based progress
+        progressPercent = Math.min(90, Math.round(((collectionIndex + 1) / collections.length) * 100));
+      }
 
       progressBarEl.style.width = `${progressPercent}%`;
     });
@@ -424,7 +683,7 @@ function setupSyncListeners() {
       syncNowBtn.disabled = false;
 
       if (data && data.success) {
-        statusEl.textContent = "Sync completed successfully!";
+        statusEl.innerHTML = '<span class="status-icon">✓</span><span>Sync completed successfully!</span>';
         statusEl.className = "sync-status success";
 
         // Update last sync time
@@ -438,7 +697,10 @@ function setupSyncListeners() {
 
         // Show completion in progress bar
         progressBarEl.style.width = "100%";
-        progressTextEl.textContent = "Sync completed!";
+        progressTextEl.innerHTML = '<span class="status-icon">✓</span> Sync completed!';
+
+        // Show notification
+        showTemporaryNotification("Sync completed successfully!", "success");
 
         // Hide progress after a delay
         setTimeout(() => {
@@ -447,11 +709,22 @@ function setupSyncListeners() {
           checkSyncStatus();
         }, 2000);
       } else {
-        statusEl.textContent =
-          data && data.error ? `Sync failed: ${data.error}` : "Sync failed";
+        const errorMessage = data && data.error
+            ? `Sync failed: ${data.error}`
+            : "Sync failed";
+
+        statusEl.innerHTML = `<span class="status-icon">⚠️</span><span>${errorMessage}</span>`;
         statusEl.className = "sync-status error";
-        progressTextEl.textContent = "Sync failed. Please try again.";
+        progressTextEl.innerHTML = '<span class="status-icon">⚠️</span> Sync failed. Please try again.';
+
+        // Show error notification
+        showTemporaryNotification(errorMessage, "error");
       }
+
+      // Hide mini indicator
+      setTimeout(() => {
+        document.getElementById("mini-sync-indicator").classList.remove("active");
+      }, 2000);
     });
   }
 }

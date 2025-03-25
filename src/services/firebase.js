@@ -144,8 +144,12 @@ const syncData = async () => {
 
   // Check if user is authenticated
   if (!auth.currentUser) {
-    console.log("Cannot sync: No authenticated user");
-    return { success: false, message: "Authentication required for sync" };
+    console.log("No authenticated user, attempting to authenticate");
+    const authSuccess = await ensureFirebaseAuth(auth);
+
+    if (!authSuccess) {
+      return { success: false, message: "Authentication required for sync" };
+    }
   }
 
   isSyncing = true;
@@ -426,10 +430,20 @@ const createInvoice = async (invoice) => {
       invoice.items.forEach((item) => {
         const productIndex = products.findIndex((p) => p.id === item.id);
         if (productIndex !== -1) {
-          products[productIndex].stock -= item.quantity;
-          if (products[productIndex].stock < 0) {
-            products[productIndex].stock = 0;
+          // Check if this is a refund (price < 0 or isRefund flag)
+          const isRefund = item.price < 0 || item.isRefund === true;
+
+          if (isRefund) {
+            // For refunds, INCREASE the stock (return items to inventory)
+            products[productIndex].stock += item.quantity;
+          } else {
+            // For sales, DECREASE the stock
+            products[productIndex].stock -= item.quantity;
+            if (products[productIndex].stock < 0) {
+              products[productIndex].stock = 0;
+            }
           }
+
           products[productIndex].updatedAt = new Date().toISOString();
         }
       });
@@ -498,4 +512,119 @@ module.exports = {
   getLastSyncTime,
   subscribeToCollection,
   isFirebaseConfigured,
+};
+/**
+ * Ensure Firebase authentication when online
+ * @param {Object} auth - Firebase auth instance
+ * @returns {Promise<boolean>} - Authentication result
+ */
+const ensureFirebaseAuth = async (auth) => {
+  try {
+    // If already authenticated with Firebase, we're good
+    if (auth.currentUser) {
+      console.log("Firebase already authenticated");
+      return true;
+    }
+
+    console.log("Attempting to restore Firebase authentication");
+
+    // Get stored credentials from secure store
+    const secureStore = require("./secureStore");
+    const credentials = secureStore.load();
+
+    if (!credentials || !credentials.email) {
+      console.log("No stored credentials found");
+      return false;
+    }
+
+    // Get local authentication
+    const ElectronStore = require("electron-store");
+    const localStore = new ElectronStore({ name: "shop-billing-local-data" });
+    const users = localStore.get("users") || [];
+    const localUser = users.find((u) => u.email === credentials.email);
+
+    if (!localUser) {
+      console.log("Local user not found for stored credentials");
+      return false;
+    }
+
+    // Try to sign in with Firebase
+    const { signInWithEmailAndPassword } = require("firebase/auth");
+
+    // We need the plaintext password which isn't stored
+    // Instead, we'll show a reauthentication dialog to the user
+    const { BrowserWindow } = require("electron");
+    const mainWindow = BrowserWindow.getAllWindows()[0];
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      // Send event to renderer to show re-auth dialog
+      mainWindow.webContents.send("show-reauth-dialog", {
+        email: credentials.email,
+        callback: "firebase-auth-callback",
+      });
+
+      // Set up one-time listener for the password response
+      return new Promise((resolve) => {
+        const { ipcMain } = require("electron");
+
+        const authResponseHandler = async (
+            event,
+            { email, password, cancelled }
+        ) => {
+          // Remove the listener
+          ipcMain.removeHandler("firebase-auth-callback");
+
+          if (cancelled) {
+            console.log("Re-authentication cancelled by user");
+            resolve(false);
+            return;
+          }
+
+          try {
+            // Try to authenticate with Firebase
+            const userCredential = await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+            console.log("Re-authentication successful");
+
+            // Update secure store with new tokens
+            if (userCredential.user) {
+              secureStore.save({
+                uid: userCredential.user.uid,
+                email: userCredential.user.email,
+                displayName: credentials.displayName || localUser.name,
+                role: credentials.role || localUser.role,
+                tokens: {
+                  accessToken: userCredential.user.accessToken,
+                  refreshToken: userCredential.user.refreshToken,
+                },
+                lastLogin: new Date().toISOString(),
+              });
+            }
+
+            resolve(true);
+          } catch (error) {
+            console.error("Firebase re-authentication failed:", error);
+
+            // Notify the user about the auth failure
+            mainWindow.webContents.send("auth-error", {
+              message:
+                  "Firebase authentication failed. Please try logging out and back in.",
+            });
+
+            resolve(false);
+          }
+        };
+
+        ipcMain.handle("firebase-auth-callback", authResponseHandler);
+      });
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Error ensuring Firebase authentication:", error);
+    return false;
+  }
 };
