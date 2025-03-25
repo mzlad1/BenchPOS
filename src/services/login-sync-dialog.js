@@ -13,6 +13,12 @@ function initLoginSyncDialog() {
   } else {
     console.warn("API for unsynced data events not available");
   }
+
+  if (window.api && window.api.onShowReAuthDialog) {
+    window.api.onShowReAuthDialog((data) => {
+      showReAuthDialog(data.email, data.callback);
+    });
+  }
 }
 
 // Function to add styles for the login sync dialog
@@ -296,3 +302,84 @@ function showSyncProgressNotification() {
 
 // Export initialization function
 window.initLoginSyncDialog = initLoginSyncDialog;
+
+function showReAuthDialog(email, callbackChannel) {
+  // Create dialog if it doesn't exist
+  let reAuthDialog = document.getElementById("reauth-dialog");
+  if (!reAuthDialog) {
+    reAuthDialog = document.createElement("div");
+    reAuthDialog.id = "reauth-dialog";
+    reAuthDialog.className = "sync-dialog";
+    document.body.appendChild(reAuthDialog);
+  }
+
+  // Set dialog content
+  reAuthDialog.innerHTML = `
+    <div class="sync-dialog-content">
+      <div class="sync-dialog-header">
+        <h2>Authentication Required</h2>
+        <button id="close-reauth-dialog" class="close-btn">&times;</button>
+      </div>
+      <div class="sync-dialog-body">
+        <p>Please re-enter your password to sync with the cloud.</p>
+        <form id="reauth-form">
+          <div class="form-group">
+            <label for="reauth-email">Email</label>
+            <input type="email" id="reauth-email" value="${email}" readonly>
+          </div>
+          <div class="form-group">
+            <label for="reauth-password">Password</label>
+            <input type="password" id="reauth-password" placeholder="Enter your password" required>
+          </div>
+        </form>
+      </div>
+      <div class="sync-dialog-footer">
+        <button id="cancel-reauth-btn" class="btn secondary-btn">Cancel</button>
+        <button id="submit-reauth-btn" class="btn primary-btn">Authenticate</button>
+      </div>
+    </div>
+  `;
+
+  // Show the dialog
+  reAuthDialog.style.display = "flex";
+
+  // Add event listeners
+  document
+    .getElementById("close-reauth-dialog")
+    .addEventListener("click", () => {
+      reAuthDialog.style.display = "none";
+      if (window.api) {
+        window.api.invokeCallback(callbackChannel, { cancelled: true });
+      }
+    });
+
+  document.getElementById("cancel-reauth-btn").addEventListener("click", () => {
+    reAuthDialog.style.display = "none";
+    if (window.api) {
+      window.api.invokeCallback(callbackChannel, { cancelled: true });
+    }
+  });
+
+  document.getElementById("submit-reauth-btn").addEventListener("click", () => {
+    const password = document.getElementById("reauth-password").value;
+
+    if (!password) {
+      // Show error
+      alert("Please enter your password");
+      return;
+    }
+
+    reAuthDialog.style.display = "none";
+
+    if (window.api) {
+      window.api.invokeCallback(callbackChannel, {
+        email: email,
+        password: password,
+        cancelled: false,
+      });
+    }
+  });
+}
+
+// Export the function
+window.showReAuthDialog = showReAuthDialog;
