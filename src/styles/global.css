@@ -901,6 +901,7 @@ a {
 .dark-mode .import-instructions div {
     background-color: var(--base-300);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--base-300);
 }
 
 .dark-mode #csv-preview {
@@ -935,12 +936,7 @@ a {
     color: var(--text-primary);
 }
 
-/* Notification styling */
-.dark-mode #notification {
-    background-color: var(--base-100);
-    color: var(--text-primary);
-    box-shadow: var(--shadow-md);
-}
+
 
 /* Enhanced highlight for search results */
 .dark-mode .highlight {
@@ -1282,3 +1278,173 @@ a {
     outline-offset: 2px;
 }
 
+/* Dark Mode Styles for Sync UI */
+
+/* Apply these styles when dark mode is active */
+.dark-mode .sync-container,
+body[class*="dark"] .sync-container {
+    background-color: #1a2234;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.dark-mode .sync-header,
+body[class*="dark"] .sync-header {
+    background-color: #3a56d4; /* Slightly lighter than your primary */
+    color: white;
+}
+
+.dark-mode .sync-header .btn,
+body[class*="dark"] .sync-header .btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.dark-mode .sync-header .btn:hover,
+body[class*="dark"] .sync-header .btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.dark-mode .sync-content,
+body[class*="dark"] .sync-content {
+    color: #e2e8f0;
+}
+
+.dark-mode .sync-status,
+body[class*="dark"] .sync-status {
+    background-color: #131a29;
+    color: #a5b4fc;
+}
+
+.dark-mode .sync-status.success,
+body[class*="dark"] .sync-status.success {
+    background-color: rgba(12, 206, 107, 0.15);
+    color: #34d399;
+}
+
+.dark-mode .sync-status.warning,
+body[class*="dark"] .sync-status.warning {
+    background-color: rgba(255, 158, 0, 0.15);
+    color: #fbbf24;
+}
+
+.dark-mode .sync-status.error,
+body[class*="dark"] .sync-status.error {
+    background-color: rgba(229, 56, 59, 0.15);
+    color: #f87171;
+}
+
+.dark-mode .unsynced-data,
+body[class*="dark"] .unsynced-data {
+    border-color: rgba(255, 255, 255, 0.1);
+    background-color: #131a29;
+}
+
+.dark-mode .unsynced-item,
+body[class*="dark"] .unsynced-item {
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+
+.dark-mode .unsynced-details,
+body[class*="dark"] .unsynced-details {
+    color: #94a3b8;
+}
+
+.dark-mode .sync-actions .primary-btn,
+body[class*="dark"] .sync-actions .primary-btn {
+    background-color: #4f46e5;
+    color: white;
+}
+
+.dark-mode .sync-actions .primary-btn:hover,
+.dark-mode .sync-actions .primary-btn:focus,
+body[class*="dark"] .sync-actions .primary-btn:hover,
+body[class*="dark"] .sync-actions .primary-btn:focus {
+    background-color: #6366f1;
+}
+
+.dark-mode .sync-actions .secondary-btn,
+body[class*="dark"] .sync-actions .secondary-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+.dark-mode .sync-actions .secondary-btn:hover,
+.dark-mode .sync-actions .secondary-btn:focus,
+body[class*="dark"] .sync-actions .secondary-btn:hover,
+body[class*="dark"] .sync-actions .secondary-btn:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark-mode .progress-bar-container,
+body[class*="dark"] .progress-bar-container {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .progress-bar,
+body[class*="dark"] .progress-bar {
+    background-color: #6366f1;
+}
+
+.dark-mode #sync-progress-text,
+body[class*="dark"] #sync-progress-text {
+    color: #94a3b8;
+}
+
+.dark-mode .last-sync-time,
+body[class*="dark"] .last-sync-time {
+    color: #94a3b8;
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .sync-indicator,
+body[class*="dark"] .sync-indicator {
+    background-color: #4f46e5;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .sync-indicator .spinner,
+body[class*="dark"] .sync-indicator .spinner {
+    border-color: rgba(255, 255, 255, 0.2);
+    border-top-color: white;
+}
+
+.dark-mode .temp-notification,
+body[class*="dark"] .temp-notification {
+    background-color: #1a2234;
+    color: #e2e8f0;
+    border-left: 4px solid #6366f1;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .temp-notification.success,
+body[class*="dark"] .temp-notification.success {
+    border-left-color: #34d399;
+}
+
+.dark-mode .temp-notification.error,
+body[class*="dark"] .temp-notification.error {
+    border-left-color: #f87171;
+}
+
+/* Fixing some contrast issues for accessibility */
+.dark-mode .sync-actions .btn:disabled,
+body[class*="dark"] .sync-actions .btn:disabled {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Emphasize hover states for better interaction feedback */
+.dark-mode .sync-indicator:hover,
+body[class*="dark"] .sync-indicator:hover {
+    background-color: #6366f1;
+    transform: translateY(-2px);
+}
+
+/* Make sure focus states are visible in dark mode */
+.dark-mode .sync-actions .btn:focus,
+body[class*="dark"] .sync-actions .btn:focus {
+    outline: 2px solid #a5b4fc;
+    outline-offset: 2px;
+}

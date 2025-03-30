@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, Menu, screen } = require("electron");
 const path = require("path");
+
 const fs = require("fs");
 const Store = require("electron-store");
 const localStore = new Store({
@@ -108,6 +109,7 @@ const createWindow = () => {
       webSecurity: true,
       allowRunningInsecureContent: false,
       worldSafeExecuteJavaScript: true,
+      enableRemoteModule: false,
     },
   });
   // Maximize the window
@@ -797,6 +799,49 @@ function setupIpcHandlers() {
 
     return receiptPath;
   });
+  ipcMain.handle("firebase-auth-callback", async (event, authData) => {
+    // This is a placeholder that will be replaced dynamically
+    // The actual handler is created in ensureFirebaseAuth function
+    return { success: false, message: "Handler not initialized" };
+  });
+  ipcMain.handle('get-users', async (event, filters) => {
+    console.log('Main process received filters:', filters);
+
+    // Check if filters is undefined or null
+    if (!filters) {
+      console.error('Filters object is null or undefined');
+      filters = {}; // Default to empty object
+    }
+
+    try {
+      // Create query with filters
+      let usersRef = db.collection('users');
+
+      if (filters.roleFilter) {
+        console.log(`Filtering by role: ${filters.roleFilter}`);
+        usersRef = usersRef.where('role', '==', filters.roleFilter);
+      }
+
+      if (filters.statusFilter) {
+        console.log(`Filtering by status: ${filters.statusFilter}`);
+        usersRef = usersRef.where('status', '==', filters.statusFilter);
+      }
+
+
+      const snapshot = await usersRef.get();
+      const users = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      console.log(`Found ${users.length} users matching criteria`);
+      return users;
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      throw error;
+    }
+  });
+
 }
 
 // Set online status when network connectivity changes
