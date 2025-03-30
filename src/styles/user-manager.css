@@ -1,0 +1,592 @@
+.users-container {
+    background-color: var(--base-100);
+    border-radius: var(--rounded-box);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* Search Bar */
+.search-bar {
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--base-200);
+}
+
+.search-bar input {
+    flex: 1;
+    min-width: 250px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--rounded-btn);
+    font-size: 14px;
+    color: var(--text-primary);
+    background-color: var(--base-100);
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.filters {
+    display: flex;
+    gap: 12px;
+}
+
+.filters select {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--rounded-btn);
+    font-size: 14px;
+    color: var(--text-primary);
+    background-color: var(--base-100);
+    cursor: pointer;
+}
+
+.filters select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+/* Table Styles */
+.users-table-container {
+    overflow-x: auto;
+}
+
+#users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#users-table th,
+#users-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#users-table th {
+    font-weight: 600;
+    color: var(--text-primary);
+    background-color: var(--base-200);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#users-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#users-table tbody tr:hover {
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* User Status */
+.user-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 50px;
+}
+
+.user-status.active {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.user-status.inactive {
+    background-color: rgba(229, 56, 59, 0.1);
+    color: var(--danger-color);
+}
+
+/* User Role */
+.user-role {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.user-role.admin {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+}
+
+.user-role.manager {
+    background-color: rgba(14, 165, 233, 0.1);
+    color: var(--secondary);
+}
+
+.user-role.cashier {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--accent);
+}
+
+/* Action Buttons */
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    color: var(--text-secondary);
+}
+
+.action-btn:hover {
+    background-color: var(--base-300);
+}
+
+.action-btn.edit-btn:hover {
+    color: var(--secondary);
+}
+
+.action-btn.delete-btn:hover {
+    color: var(--danger-color);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+/* Loading State */
+.loading-row td {
+    padding: 40px !important;
+    text-align: center;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(99, 102, 241, 0.2);
+    border-radius: 50%;
+    border-top-color: var(--primary);
+    animation: spin 1s linear infinite;
+    margin-bottom: 8px;
+}
+
+.loading-text {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--base-200);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pagination-btn {
+    padding: 6px 12px;
+    font-size: 14px;
+    background-color: var(--base-100);
+    border: 1px solid var(--border-color);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+#page-indicator {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* Modal Forms */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--rounded-btn);
+    font-size: 14px;
+    color: var(--text-primary);
+    background-color: var(--base-100);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: var(--base-100);
+    margin: 50px auto;
+    width: 100%;
+    max-width: 500px;
+    border-radius: var(--rounded-box);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.close {
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close:hover {
+    color: var(--text-primary);
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: var(--rounded-btn);
+    background-color: var(--base-100);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-md);
+    z-index: 9999; /* Increased z-index from 1100 to make sure it's always on top */
+    max-width: 300px;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    border-left: 4px solid var(--primary);
+    pointer-events: none; /* This prevents the notification from intercepting mouse events */
+}
+
+.notification.success {
+    border-left-color: var(--success-color);
+}
+
+.notification.error {
+    border-left-color: var(--danger-color);
+}
+
+.notification.warning {
+    border-left-color: var(--warning-color);
+}
+
+.notification.info {
+    border-left-color: var(--primary); /* Using the primary color for info notifications */
+}
+
+.notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--text-secondary);
+}
+
+.empty-state p {
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+/* Button Styles */
+.primary-btn {
+    background-color: var(--primary);
+    color: white;
+}
+
+.primary-btn:hover, .primary-btn:focus {
+    background-color: var(--primary-focus);
+}
+
+.secondary-btn {
+    background-color: var(--base-200);
+    color: var(--text-primary);
+}
+
+.secondary-btn:hover, .secondary-btn:focus {
+    background-color: var(--base-300);
+}
+
+.danger-btn {
+    background-color: var(--danger-color);
+    color: #ec0b0b;
+}
+
+.danger-btn:hover, .danger-btn:focus {
+    background-color: #953838;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--rounded-btn);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-icon {
+    font-size: 18px;
+    display: inline-block;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-actions .btn {
+        flex: 1;
+    }
+
+    .search-bar {
+        flex-direction: column;
+    }
+
+    .filters {
+        width: 100%;
+    }
+
+    .filters select {
+        flex: 1;
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .modal-content {
+        margin: 20px;
+        width: calc(100% - 40px);
+    }
+}
+
+/* Dark Mode Styles */
+.dark-mode .users-container,
+body[class*="dark"] .users-container {
+    background-color: #1a2234;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .search-bar,
+body[class*="dark"] .search-bar {
+    background-color: #131a29;
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .search-bar input,
+.dark-mode .filters select,
+body[class*="dark"] .search-bar input,
+body[class*="dark"] .filters select {
+    background-color: #0d1320;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.dark-mode #users-table th,
+body[class*="dark"] #users-table th {
+    background-color: #131a29;
+    color: #e2e8f0;
+}
+
+.dark-mode #users-table td,
+body[class*="dark"] #users-table td {
+    border-color: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+
+.dark-mode #users-table tbody tr:hover,
+body[class*="dark"] #users-table tbody tr:hover {
+    background-color: rgba(99, 102, 241, 0.1);
+}
+
+.dark-mode .pagination,
+body[class*="dark"] .pagination {
+    background-color: #131a29;
+    border-top-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .pagination-btn,
+body[class*="dark"] .pagination-btn {
+    background-color: #1a2234;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+.dark-mode .loading-spinner,
+body[class*="dark"] .loading-spinner {
+    border-color: rgba(99, 102, 241, 0.2);
+    border-top-color: #818cf8;
+}
+
+.dark-mode .form-group label,
+body[class*="dark"] .form-group label {
+    color: #e2e8f0;
+}
+
+.dark-mode .form-group input,
+.dark-mode .form-group select,
+body[class*="dark"] .form-group input,
+body[class*="dark"] .form-group select {
+    background-color: #131a29;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.dark-mode .modal-content,
+body[class*="dark"] .modal-content {
+    background-color: #1a2234;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .modal-header,
+body[class*="dark"] .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .notification,
+body[class*="dark"] .notification {
+    background-color: #1a2234;
+    color: #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .secondary-btn,
+body[class*="dark"] .secondary-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+.dark-mode .secondary-btn:hover,
+.dark-mode .secondary-btn:focus,
+body[class*="dark"] .secondary-btn:hover,
+body[class*="dark"] .secondary-btn:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark-mode .action-btn:hover,
+body[class*="dark"] .action-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+.fixed-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: auto;
+    max-width: 300px;
+}
+
+/* Make sure the notification doesn't overlap with other elements */
+.notification.show {
+    display: block;
+    /* Animation if you want it */
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

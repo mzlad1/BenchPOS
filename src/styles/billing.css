@@ -552,7 +552,8 @@ main {
 .payment-actions {
   display: flex;
   gap: var(--spacing-sm);
-  justify-content: flex-end;
+  justify-content: center; /* Center the buttons horizontally */
+  align-items: center; /* Center the buttons vertically */
   flex-wrap: wrap;
 }
 
@@ -1337,13 +1338,6 @@ main {
   border-radius: 0 0 var(--rounded-box) var(--rounded-box);
 }
 
-.payment-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  justify-content: flex-end;
-}
-
 .btn {
   font-weight: 500;
   display: flex;
@@ -1432,3 +1426,19 @@ main {
     min-height: 100vh;
   }
 }
+@media (max-width: 1200px) {
+  .billing-container {
+    flex-direction: column-reverse; /* Change the order of the sections */
+  }
+}
+@media (max-width: 768px) {
+  .billing-container {
+    flex-direction: column-reverse; /* Change the order of the sections */
+  }
+}
+@media (max-width: 480px) {
+  .billing-container {
+    flex-direction: column-reverse; /* Change the order of the sections */
+  }
+}
+

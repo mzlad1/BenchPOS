@@ -88,7 +88,83 @@ contextBridge.exposeInMainWorld("api", {
       return { success: false, message: error.message };
     }
   },
+  ipcRenderer: {
+    // Send a message to the main process
+    send: (channel, ...args) => {
+      ipcRenderer.send(channel, ...args);
+    },
 
+    // Call a method in the main process and get the response
+    invoke: (channel, ...args) => {
+      return ipcRenderer.invoke(channel, ...args);
+    },
+
+    // Register a listener for a specific channel
+    on: (channel, callback) => {
+      // Deliberately strip event as it includes `sender`
+      ipcRenderer.on(channel, (event, ...args) => callback(...args));
+
+      // Return a cleanup function to remove the listener
+      return () => {
+        ipcRenderer.removeListener(channel, callback);
+      };
+    },
+
+    // Register a one-time listener for a specific channel
+    once: (channel, callback) => {
+      ipcRenderer.once(channel, (event, ...args) => callback(...args));
+    }
+  },
+  getUsers: async (filters) => {
+    console.log("Preload: Calling get-users");
+    try {
+      return await safeIpcInvoke("get-users", filters);
+    } catch (error) {
+      console.error("Error in getUsers:", error);
+      // Return empty array as fallback
+      return [];
+    }
+  },
+
+  getUserById: async (userId) => {
+    console.log("Preload: Calling get-user-by-id");
+    try {
+      return await safeIpcInvoke("get-user-by-id", userId);
+    } catch (error) {
+      console.error("Error in getUserById:", error);
+      return null;
+    }
+  },
+
+  createUser: async (userData) => {
+    console.log("Preload: Calling create-user");
+    try {
+      return await safeIpcInvoke("create-user", userData);
+    } catch (error) {
+      console.error("Error in createUser:", error);
+      return { success: false, message: "Failed to create user: " + error.message };
+    }
+  },
+
+  updateUser: async (userData) => {
+    console.log("Preload: Calling update-user");
+    try {
+      return await safeIpcInvoke("update-user", userData);
+    } catch (error) {
+      console.error("Error in updateUser:", error);
+      return { success: false, message: "Failed to update user: " + error.message };
+    }
+  },
+
+  deleteUser: async (userId) => {
+    console.log("Preload: Calling delete-user");
+    try {
+      return await safeIpcInvoke("delete-user", userId);
+    } catch (error) {
+      console.error("Error in deleteUser:", error);
+      return { success: false, message: "Failed to delete user: " + error.message };
+    }
+  },
   // Event listeners for online status and sync events
   onOnlineStatusChanged: (callback) => {
     console.log("Preload: Setting up online-status-changed listener");
@@ -105,6 +181,7 @@ contextBridge.exposeInMainWorld("api", {
       console.log("Removing online-status-changed listener");
       ipcRenderer.removeListener("online-status-changed", subscription);
     };
+
   },
 
   onUnsyncedDataAvailable: (callback) => {

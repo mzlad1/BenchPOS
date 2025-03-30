@@ -253,7 +253,6 @@
 .table-container {
     background: white;
     border-radius: var(--border-radius);
-    overflow: hidden;
     box-shadow: var(--shadow-sm);
 }
 

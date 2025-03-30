@@ -35,7 +35,7 @@ const LayoutManager = {
             if (this.user) {
                 this.applyRoleBasedAccess(this.user);
             }
-
+            this.applyLanguageDirection();
             console.log(`Layout initialized for page: ${this.currentPage}`);
         } catch (error) {
             console.error('Error initializing layout:', error);
@@ -85,6 +85,11 @@ const LayoutManager = {
                 <div class="menu-icon">🔑</div>
                 <span class="menu-text">Register new User</span>
                 </a> 
+                <a href="../views/user-manager.html" class="menu-item" id="nav-user-manager">
+                <div class="menu-icon">👥</div>     
+                <span class="menu-text">User Manager</span>
+                </a>
+                
             </div>
             
   
@@ -175,6 +180,7 @@ const LayoutManager = {
             case 'billing': return 'New Sale';
             case 'reports': return 'Reports & Analytics';
             case 'register': return 'Register new User';
+            case 'user-manager': return 'User Manager';
             default: return 'MZLAD Billing System';
         }
     },
@@ -351,6 +357,7 @@ const LayoutManager = {
         const reportsLink = document.getElementById('nav-reports');
         const registerLink = document.getElementById('nav-register');
         const dashboardLink = document.getElementById('nav-dashboard');
+        const usermanagerLink = document.getElementById('nav-user-manager');
 
         if (user.role === 'cashier') {
             // Cashiers can only access billing
@@ -366,6 +373,9 @@ const LayoutManager = {
             if (dashboardLink) {
                 dashboardLink.style.display = 'none';
             }
+            if (usermanagerLink) {
+                usermanagerLink.style.display = 'none';
+            }
         } else if (user.role === 'manager') {
             // Managers can access billing and inventory but not reports
             if (reportsLink) {
@@ -376,6 +386,9 @@ const LayoutManager = {
             }
             if (dashboardLink) {
                 dashboardLink.style.display = 'none';
+            }
+            if (usermanagerLink) {
+                usermanagerLink.style.display = 'none';
             }
         }
         // Admins can access everything (no restrictions)

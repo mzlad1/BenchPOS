@@ -6,7 +6,7 @@ let products = [];
 let editingProductId = null;
 let isOnline = false;
 let currentPage = 1;
-const pageSize = 6; // Number of products per page
+const pageSize = 10; // Number of products per page
 let totalPages = 1;
 let selectedProductIds = [];
 
@@ -224,6 +224,7 @@ async function syncData() {
 function showNotification(message, type = "info") {
   // Create element if it doesn't exist
   let notification = document.getElementById("notification");
+
   if (!notification) {
     notification = document.createElement("div");
     notification.id = "notification";
@@ -235,8 +236,6 @@ function showNotification(message, type = "info") {
     notification.style.boxShadow = "var(--shadow-md)";
     notification.style.zIndex = "9999";
     notification.style.maxWidth = "300px";
-    notification.style.backgroundColor = "white";
-    notification.style.color = "var(--text-primary)";
     notification.style.transition = "all 0.3s ease";
     notification.style.transform = "translateY(-20px)";
     notification.style.opacity = "0";
@@ -244,13 +243,32 @@ function showNotification(message, type = "info") {
     document.body.appendChild(notification);
   }
 
-  // Set type styling
+  // Check if dark mode is active
+  const isDarkMode = document.body.classList.contains('dark-mode') ||
+      document.documentElement.classList.contains('dark-mode') ||
+      document.body.classList.contains('dark');
+
+  // Set base styles based on theme
+  if (isDarkMode) {
+    notification.style.backgroundColor = "#1a2234";
+    notification.style.color = "#e2e8f0";
+    notification.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.4)";
+  } else {
+    notification.style.backgroundColor = "white";
+    notification.style.color = "var(--text-primary)";
+    notification.style.boxShadow = "var(--shadow-md)";
+  }
+
+  // Set type styling with different colors for dark/light mode
   if (type === "success") {
-    notification.style.borderLeftColor = "var(--success-color)";
+    notification.style.borderLeftColor = isDarkMode ? "#34d399" : "var(--success-color)";
   } else if (type === "error") {
-    notification.style.borderLeftColor = "var(--danger-color)";
+    notification.style.borderLeftColor = isDarkMode ? "#f87171" : "var(--danger-color)";
   } else if (type === "warning") {
-    notification.style.borderLeftColor = "var(--warning-color)";
+    notification.style.borderLeftColor = isDarkMode ? "#fbbf24" : "var(--warning-color)";
+  } else {
+    // Default info style
+    notification.style.borderLeftColor = isDarkMode ? "#6366f1" : "var(--primary-color)";
   }
 
   // Set content and show
