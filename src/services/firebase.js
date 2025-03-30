@@ -568,8 +568,8 @@ const ensureFirebaseAuth = async (auth) => {
         const { ipcMain } = require("electron");
 
         const authResponseHandler = async (
-            event,
-            { email, password, cancelled }
+          event,
+          { email, password, cancelled }
         ) => {
           // Remove the listener
           ipcMain.removeHandler("firebase-auth-callback");
@@ -583,9 +583,9 @@ const ensureFirebaseAuth = async (auth) => {
           try {
             // Try to authenticate with Firebase
             const userCredential = await signInWithEmailAndPassword(
-                auth,
-                email,
-                password
+              auth,
+              email,
+              password
             );
             console.log("Re-authentication successful");
 
@@ -611,7 +611,7 @@ const ensureFirebaseAuth = async (auth) => {
             // Notify the user about the auth failure
             mainWindow.webContents.send("auth-error", {
               message:
-                  "Firebase authentication failed. Please try logging out and back in.",
+                "Firebase authentication failed. Please try logging out and back in.",
             });
 
             resolve(false);

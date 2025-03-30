@@ -711,6 +711,13 @@ function setupIpcHandlers() {
     }
   });
 
+  // Firebase re-authentication callback
+  ipcMain.handle("firebase-auth-callback", async (event, authData) => {
+    // This is a placeholder that will be replaced dynamically
+    // The actual handler is created in ensureFirebaseAuth function
+    return { success: false, message: "Handler not initialized" };
+  });
+
   ipcMain.handle("register-user", async (event, userData) => {
     try {
       return await authService.registerUser(userData);
@@ -860,9 +867,4 @@ app.on("web-contents-created", (event, contents) => {
       }
     }
   );
-});
-ipcMain.handle("firebase-auth-callback", async (event, authData) => {
-  // This is a placeholder that will be replaced dynamically
-  // The actual handler is created in ensureFirebaseAuth function
-  return { success: false, message: "Handler not initialized" };
 });
