@@ -81,7 +81,12 @@ const LayoutManager = {
                 <div class="menu-icon">📈</div>
                 <span class="menu-text">Reports</span>
               </a>
+              <a href="../views/register.html" class="menu-item" id="nav-register">
+                <div class="menu-icon">🔑</div>
+                <span class="menu-text">Register new User</span>
+                </a> 
             </div>
+            
   
             <div class="menu-section">
               <div class="menu-label">System</div>
@@ -169,6 +174,7 @@ const LayoutManager = {
             case 'inventory': return 'Inventory Management';
             case 'billing': return 'New Sale';
             case 'reports': return 'Reports & Analytics';
+            case 'register': return 'Register new User';
             default: return 'MZLAD Billing System';
         }
     },
@@ -343,31 +349,33 @@ const LayoutManager = {
 
         const inventoryLink = document.getElementById('nav-inventory');
         const reportsLink = document.getElementById('nav-reports');
+        const registerLink = document.getElementById('nav-register');
+        const dashboardLink = document.getElementById('nav-dashboard');
 
         if (user.role === 'cashier') {
             // Cashiers can only access billing
             if (inventoryLink) {
-                inventoryLink.classList.add('disabled');
-                inventoryLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    alert('You do not have permission to access Inventory.');
-                });
+                inventoryLink.style.display = 'none';
             }
             if (reportsLink) {
-                reportsLink.classList.add('disabled');
-                reportsLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    alert('You do not have permission to access Reports.');
-                });
+                reportsLink.style.display = 'none';
+            }
+            if (registerLink) {
+                registerLink.style.display = 'none';
+            }
+            if (dashboardLink) {
+                dashboardLink.style.display = 'none';
             }
         } else if (user.role === 'manager') {
             // Managers can access billing and inventory but not reports
             if (reportsLink) {
-                reportsLink.classList.add('disabled');
-                reportsLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    alert('You do not have permission to access Reports.');
-                });
+                reportsLink.style.display = 'none';
+            }
+            if (registerLink) {
+                registerLink.style.display = 'none';
+            }
+            if (dashboardLink) {
+                dashboardLink.style.display = 'none';
             }
         }
         // Admins can access everything (no restrictions)

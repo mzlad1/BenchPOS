@@ -109,40 +109,38 @@ function applyRoleBasedAccess(user) {
     const reportsCard = document.getElementById("reports-card");
     const inventoryLink = document.getElementById("inventory-link");
     const reportsLink = document.getElementById("reports-link");
+    const registerLink = document.getElementById('nav-register');
+
 
     if (user.role === "cashier") {
         // Cashiers can only access billing
         if (inventoryCard) {
-            inventoryCard.classList.add("disabled");
+            inventoryCard.style.display = 'none';
         }
         if (reportsCard) {
-            reportsCard.classList.add("disabled");
+            reportsCard.style.display = 'none';
         }
         if (inventoryLink) {
-            inventoryLink.classList.add("disabled");
-            inventoryLink.addEventListener("click", (e) => {
-                e.preventDefault();
-                alert("You do not have permission to access Inventory.");
-            });
+            inventoryLink.style.display = 'none';
         }
         if (reportsLink) {
-            reportsLink.classList.add("disabled");
-            reportsLink.addEventListener("click", (e) => {
-                e.preventDefault();
-                alert("You do not have permission to access Reports.");
-            });
+            reportsLink.style.display = 'none';
+        }
+
+        if (registerLink) {
+            registerLink.style.display = 'none';
         }
     } else if (user.role === "manager") {
         // Managers can access billing and inventory but not reports
         if (reportsCard) {
-            reportsCard.classList.add("disabled");
+            reportsCard.style.display = 'none';
         }
         if (reportsLink) {
-            reportsLink.classList.add("disabled");
-            reportsLink.addEventListener("click", (e) => {
-                e.preventDefault();
-                alert("You do not have permission to access Reports.");
-            });
+            reportsLink.style.display = 'none';
+        }
+
+        if (registerLink) {
+            registerLink.style.display = 'none';
         }
     }
     // Admins can access everything (no restrictions)
