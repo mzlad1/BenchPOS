@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';" />
+    <title>Register User - MZLAD Billing System</title>
+
+    <!-- Global Styles (shared across pages) -->
+    <link rel="stylesheet" href="../styles/global.css" />
+    <link rel="stylesheet" href="../styles/register.css" />
+</head>
+<body class="light-mode">
+<div class="app-container">
+    <!-- Sidebar Container (will be populated by layout.js) -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Container (will be populated by layout.js) -->
+        <div id="header-container"></div>
+
+        <!-- Register Content -->
+        <div class="register-container">
+            <div class="register-form-container">
+                <h2>Create New Account</h2>
+
+                <div id="error-message" class="error-message"></div>
+
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-name">Full Name</label>
+                        <input
+                                type="text"
+                                id="register-name"
+                                placeholder="Enter your name"
+                                required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input
+                                type="email"
+                                id="register-email"
+                                placeholder="Enter your email"
+                                required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input
+                                type="password"
+                                id="register-password"
+                                placeholder="Create a password"
+                                required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-role">Role</label>
+                        <select id="register-role">
+                            <option value="cashier">Cashier</option>
+                            <option value="manager">Manager</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="register-button" class="btn primary-btn">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load Scripts -->
+
+<script src="../scripts/register.js"></script>
+<script src="../scripts/activity-logger.js"></script>
+<script src="../scripts/layout.js"></script>
+<script>
+    // Initialize page
+    document.addEventListener("DOMContentLoaded", async function() {
+        // First validate user access
+        try {
+            const user = await window.api.getCurrentUser();
+            if (!user) {
+                window.location.href = "../views/login.html";
+                return;
+            }
+
+            // Check role-based access - only admin can access register page
+            if (user.role !== "admin") {
+                alert("You do not have permission to access the Register User page.");
+                window.location.href = "../index.html";
+                return;
+            }
+
+            // Initialize layout with current page identifier
+            await LayoutManager.init('register');
+
+            console.log("User authorized to access Register User page");
+
+            // Initialize sync UI (if exists)
+            if (typeof window.initSyncUI === "function") {
+                window.initSyncUI();
+            }
+
+        } catch (error) {
+            console.error("Access control error:", error);
+            window.location.href = "../views/login.html";
+        }
+    });
+</script>
+</body>
+</html>

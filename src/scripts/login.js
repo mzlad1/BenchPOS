@@ -1,52 +1,62 @@
 let isOnline = false;
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Force logout and clean all potential auth storage first
+  forceLogoutAndCleanStorage();
+
   // Initialize the page
   initPage();
+
+  // Initialize sync dialog if available
   if (typeof window.initLoginSyncDialog === "function") {
     window.initLoginSyncDialog();
   }
-  // Set up event listeners
-  document.getElementById("login-form").addEventListener("submit", handleLogin);
-  document
-    .getElementById("create-account-link")
-    .addEventListener("click", showRegisterModal);
-  document
-    .getElementById("register-form")
-    .addEventListener("submit", handleRegister);
-  document
-    .getElementById("cancel-register")
-    .addEventListener("click", hideRegisterModal);
-  document.querySelector(".close").addEventListener("click", hideRegisterModal);
 
-  // Close modal when clicking outside
-  window.addEventListener("click", (event) => {
-    if (event.target === document.getElementById("register-modal")) {
-      hideRegisterModal();
-    }
-  });
+  // Set up event listeners
+  document
+      .getElementById("login-form")
+      .addEventListener("submit", handleLogin);
 });
 
-async function initPage() {
-  // Check if already logged in
+// Function to force logout and clean all potential storage mechanisms
+function forceLogoutAndCleanStorage() {
+  console.log("Forcing logout and cleaning storage");
+
   try {
-    const currentUser = await window.api.getCurrentUser();
-    if (currentUser && currentUser.id) {
-      // User is already logged in, redirect to appropriate page
-      if (currentUser.role === "admin") {
-        window.location.href = "../index.html";
-      } else if (currentUser.role === "manager") {
-        window.location.href = "reports.html";
-      } else {
-        window.location.href = "billing.html";
-      }
-      return;
+    // 1. Clear localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("auth");
+    localStorage.removeItem("session");
+    // Clear any other potential auth items
+
+    // 2. Clear sessionStorage
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("auth");
+    sessionStorage.removeItem("session");
+
+    // 3. Clear cookies related to authentication
+    document.cookie.split(";").forEach(function(c) {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+
+    // 4. Set a local flag to indicate this is a fresh start
+    sessionStorage.setItem("forcedLogout", "true");
+
+    // 5. Call API logout if available
+    if (window.api && typeof window.api.logoutUser === "function") {
+      console.log("Calling API logout");
+      window.api.logoutUser().catch(e => console.error("Error during API logout:", e));
     }
   } catch (error) {
-    console.error("Error checking user:", error);
+    console.error("Error during forced logout:", error);
   }
+}
 
-  // Check connection status
+async function initPage() {
+  // Skip user check entirely, go straight to connection check
+  console.log("Skipping user check, requiring login");
   await checkConnectionStatus();
 }
 
@@ -67,7 +77,10 @@ async function checkConnectionStatus() {
     updateConnectionUI(isOnline);
 
     // Register for status updates
-    if (window.api && typeof window.api.onOnlineStatusChanged === "function") {
+    if (
+        window.api &&
+        typeof window.api.onOnlineStatusChanged === "function"
+    ) {
       console.log("Setting up online status listener");
       window.api.onOnlineStatusChanged((status) => {
         console.log("Online status update received:", status);
@@ -99,7 +112,6 @@ function updateConnectionUI(online) {
   }
 }
 
-// Update the handleLogin function in login.js
 async function handleLogin(event) {
   event.preventDefault();
 
@@ -121,6 +133,7 @@ async function handleLogin(event) {
 
     let result;
     try {
+      // Pass online status to login function
       result = await window.api.loginUser({ email, password, isOnline });
       console.log("Login result:", result);
     } catch (loginError) {
@@ -130,15 +143,21 @@ async function handleLogin(event) {
 
     // Add null/undefined check before accessing properties
     if (result && result.success) {
-      // Modified to always redirect to index.html regardless of user role
-      window.location.href = "../index.html";
+      // Redirect based on user role
+      if (result.user && result.user.role === "admin") {
+        window.location.href = "../index.html";
+      } else if (result.user && result.user.role === "manager") {
+        window.location.href = "inventory.html";
+      } else {
+        window.location.href = "billing.html";
+      }
     } else {
       // Handle null or undefined result
       if (!result) {
         showError("Login failed - no response from server");
       } else {
         showError(
-          result.message || "Login failed. Please check your credentials."
+            result.message || "Login failed. Please check your credentials."
         );
       }
     }
@@ -160,80 +179,4 @@ function showError(message) {
   setTimeout(() => {
     errorEl.style.display = "none";
   }, 5000);
-}
-
-function showRegisterModal() {
-  if (!isOnline) {
-    showError(
-      "Account creation requires internet connection. Please connect and try again."
-    );
-    return;
-  }
-
-  document.getElementById("register-modal").style.display = "block";
-}
-
-function hideRegisterModal() {
-  document.getElementById("register-modal").style.display = "none";
-  document.getElementById("register-form").reset();
-}
-
-async function handleRegister(event) {
-  event.preventDefault();
-
-  if (!isOnline) {
-    showError(
-      "Account creation requires internet connection. Please connect and try again."
-    );
-    return;
-  }
-
-  const name = document.getElementById("register-name").value;
-  const email = document.getElementById("register-email").value;
-  const password = document.getElementById("register-password").value;
-  const role = document.getElementById("register-role").value;
-  const registerButton = document.getElementById("register-button");
-
-  if (!name || !email || !password) {
-    showError("Please fill all required fields");
-    return;
-  }
-
-  try {
-    // Disable register button
-    registerButton.disabled = true;
-    registerButton.textContent = "Creating account...";
-
-    // Try to register
-    const result = await window.api.registerUser({
-      name,
-      email,
-      password,
-      role,
-    });
-
-    if (result.success) {
-      // Registration successful
-      hideRegisterModal();
-
-      // Pre-fill login form with registered email
-      document.getElementById("email").value = email;
-      document.getElementById("password").value = "";
-
-      showError("Account created successfully! You can now login.");
-      document.getElementById("error-message").style.backgroundColor =
-        "#e7f9e7";
-      document.getElementById("error-message").style.color = "#2ecc71";
-    } else {
-      // Registration failed
-      showError(result.message || "Account creation failed. Please try again.");
-    }
-  } catch (error) {
-    console.error("Registration error:", error);
-    showError("An error occurred during account creation. Please try again.");
-  } finally {
-    // Re-enable register button
-    registerButton.disabled = false;
-    registerButton.textContent = "Create Account";
-  }
 }
