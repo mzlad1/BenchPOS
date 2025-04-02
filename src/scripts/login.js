@@ -7,15 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize the page
   initPage();
 
-  // Initialize sync dialog if available
-  if (typeof window.initLoginSyncDialog === "function") {
-    window.initLoginSyncDialog();
-  }
-
   // Set up event listeners
-  document
-      .getElementById("login-form")
-      .addEventListener("submit", handleLogin);
+  document.getElementById("login-form").addEventListener("submit", handleLogin);
 });
 
 // Function to force logout and clean all potential storage mechanisms
@@ -37,8 +30,10 @@ function forceLogoutAndCleanStorage() {
     sessionStorage.removeItem("session");
 
     // 3. Clear cookies related to authentication
-    document.cookie.split(";").forEach(function(c) {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    document.cookie.split(";").forEach(function (c) {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
 
     // 4. Set a local flag to indicate this is a fresh start
@@ -47,7 +42,9 @@ function forceLogoutAndCleanStorage() {
     // 5. Call API logout if available
     if (window.api && typeof window.api.logoutUser === "function") {
       console.log("Calling API logout");
-      window.api.logoutUser().catch(e => console.error("Error during API logout:", e));
+      window.api
+        .logoutUser()
+        .catch((e) => console.error("Error during API logout:", e));
     }
   } catch (error) {
     console.error("Error during forced logout:", error);
@@ -77,10 +74,7 @@ async function checkConnectionStatus() {
     updateConnectionUI(isOnline);
 
     // Register for status updates
-    if (
-        window.api &&
-        typeof window.api.onOnlineStatusChanged === "function"
-    ) {
+    if (window.api && typeof window.api.onOnlineStatusChanged === "function") {
       console.log("Setting up online status listener");
       window.api.onOnlineStatusChanged((status) => {
         console.log("Online status update received:", status);
@@ -157,7 +151,7 @@ async function handleLogin(event) {
         showError("Login failed - no response from server");
       } else {
         showError(
-            result.message || "Login failed. Please check your credentials."
+          result.message || "Login failed. Please check your credentials."
         );
       }
     }

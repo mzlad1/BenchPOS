@@ -1,12 +1,32 @@
 const { app, BrowserWindow, ipcMain, Menu, screen } = require("electron");
 const path = require("path");
-
+const { collection, query, where, getDocs } = require("firebase/firestore");
 const fs = require("fs");
 const Store = require("electron-store");
+const { doc, getDoc, deleteDoc, setDoc } = require("firebase/firestore");
+
 const localStore = new Store({
   name: "shop-billing-local-data",
 });
+// Load database service
+let dbService = null;
+try {
+  dbService = require("./database");
+  console.log("Database service loaded successfully");
 
+  // Make the db variable available to other modules
+  db = dbService.db;
+} catch (error) {
+  console.error("Failed to load database service:", error);
+  // Create a dummy service
+  dbService = {
+    db: null,
+    addProduct: async (product) => product.id || Date.now().toString(),
+    getProducts: async () => [],
+    createInvoice: async (invoice) => invoice.id || Date.now().toString(),
+    getInvoices: async () => [],
+  };
+}
 // Initialize Firebase service
 let firebaseService = null;
 try {
@@ -131,6 +151,9 @@ const createWindow = () => {
   // Load the login page first
   mainWindow.loadFile(path.join(__dirname, "./views/login.html"));
 
+  if (syncService) {
+    syncService.setupIpcHandlers(null); // Initially pass null
+  }
   // Build menu from template
   const mainMenu = Menu.buildFromTemplate(menuTemplate);
   Menu.setApplicationMenu(mainMenu);
@@ -161,12 +184,26 @@ app.on("ready", async () => {
     const result = await initializeFirebase();
     console.log("Firebase initialization result:", result);
 
-    // Only set up sync handlers if Firebase initialized successfully
-    if (result && syncService && db) {
-      syncService.setupIpcHandlers(db);
+    // Set database from either Firebase auth module or direct database service
+    if (result) {
+      // Try to get db from auth module first
+      try {
+        const authModule = require("./services/auth");
+        db = authModule.db || dbService.db;
+      } catch (error) {
+        // Fall back to database service
+        db = dbService.db;
+      }
     }
-  } else {
-    console.log("Firebase service not available, running in local-only mode");
+
+    // Only set up sync handlers if we have a valid database
+    if (db && syncService) {
+      syncService.setupIpcHandlers(db);
+    } else {
+      console.warn(
+        "Database not available, sync functionality will be limited"
+      );
+    }
   }
 });
 
@@ -307,8 +344,8 @@ const initializeFirebase = async () => {
         const authModule = require("./services/auth");
         db = authModule.db || null;
 
-        // Now set up the sync service if db is available
-        if (db && syncService) {
+        // Now set up the sync service with the real db
+        if (syncService) {
           syncService.setupIpcHandlers(db);
         }
       }
@@ -461,6 +498,48 @@ function setupIpcHandlers() {
     } else {
       console.log("Firebase getLastSyncTime not available");
       return null;
+    }
+  });
+
+  ipcMain.handle("get-user-by-id", async (event, userId) => {
+    try {
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        return null;
+      }
+      return { id: userSnap.id, ...userSnap.data() };
+    } catch (error) {
+      console.error("Error in get-user-by-id:", error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle("update-user", async (event, userData) => {
+    try {
+      // Optionally remove the password field if it's empty so it isn't updated
+      if (userData.password === "") {
+        delete userData.password;
+      }
+      // Update the timestamp
+      userData.updatedAt = new Date().toISOString();
+
+      // Update the user document (using merge: true to update fields)
+      await setDoc(doc(db, "users", userData.id), userData, { merge: true });
+      return { success: true };
+    } catch (error) {
+      console.error("Error in update-user:", error);
+      return { success: false, message: error.message };
+    }
+  });
+
+  ipcMain.handle("delete-user", async (event, userId) => {
+    try {
+      await deleteDoc(doc(db, "users", userId));
+      return { success: true };
+    } catch (error) {
+      console.error("Error in delete-user:", error);
+      return { success: false, message: error.message };
     }
   });
 
@@ -799,49 +878,48 @@ function setupIpcHandlers() {
 
     return receiptPath;
   });
-  ipcMain.handle("firebase-auth-callback", async (event, authData) => {
-    // This is a placeholder that will be replaced dynamically
-    // The actual handler is created in ensureFirebaseAuth function
-    return { success: false, message: "Handler not initialized" };
-  });
-  ipcMain.handle('get-users', async (event, filters) => {
-    console.log('Main process received filters:', filters);
 
-    // Check if filters is undefined or null
+  ipcMain.handle("get-users", async (event, filters) => {
+    console.log("Main process received filters:", filters);
+
+    // Default filters to an empty object if undefined or null
     if (!filters) {
-      console.error('Filters object is null or undefined');
-      filters = {}; // Default to empty object
+      console.error("Filters object is null or undefined");
+      filters = {};
     }
 
     try {
-      // Create query with filters
-      let usersRef = db.collection('users');
+      // Create a base collection reference using modular syntax
+      let usersQuery = collection(db, "users");
 
+      // Apply filters using query() and where()
       if (filters.roleFilter) {
         console.log(`Filtering by role: ${filters.roleFilter}`);
-        usersRef = usersRef.where('role', '==', filters.roleFilter);
+        usersQuery = query(usersQuery, where("role", "==", filters.roleFilter));
       }
 
       if (filters.statusFilter) {
         console.log(`Filtering by status: ${filters.statusFilter}`);
-        usersRef = usersRef.where('status', '==', filters.statusFilter);
+        usersQuery = query(
+          usersQuery,
+          where("status", "==", filters.statusFilter)
+        );
       }
 
-
-      const snapshot = await usersRef.get();
-      const users = snapshot.docs.map(doc => ({
+      // Execute the query using getDocs()
+      const snapshot = await getDocs(usersQuery);
+      const users = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
 
       console.log(`Found ${users.length} users matching criteria`);
       return users;
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
       throw error;
     }
   });
-
 }
 
 // Set online status when network connectivity changes

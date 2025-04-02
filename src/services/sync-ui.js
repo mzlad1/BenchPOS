@@ -67,18 +67,18 @@ function initSyncUI() {
 
   // Add event listeners
   document
-      .getElementById("sync-toggle-btn")
-      .addEventListener("click", toggleSyncDetails);
+    .getElementById("sync-toggle-btn")
+    .addEventListener("click", toggleSyncDetails);
   document.getElementById("sync-now-btn").addEventListener("click", startSync);
   document
-      .getElementById("refresh-sync-status-btn")
-      .addEventListener("click", checkSyncStatus);
+    .getElementById("refresh-sync-status-btn")
+    .addEventListener("click", checkSyncStatus);
   document
-      .getElementById("minimize-sync-btn")
-      .addEventListener("click", minimizeSyncUI);
+    .getElementById("minimize-sync-btn")
+    .addEventListener("click", minimizeSyncUI);
   document
-      .getElementById("mini-sync-indicator")
-      .addEventListener("click", maximizeSyncUI);
+    .getElementById("mini-sync-indicator")
+    .addEventListener("click", maximizeSyncUI);
 
   // Set up IPC listeners for sync events
   setupSyncListeners();
@@ -456,14 +456,16 @@ async function checkSyncStatus() {
     const lastSyncTimeEl = document.getElementById("last-sync-time");
 
     // Show checking status
-    statusEl.innerHTML = '<span class="status-icon">⟳</span><span>Checking sync status...</span>';
+    statusEl.innerHTML =
+      '<span class="status-icon">⟳</span><span>Checking sync status...</span>';
     statusEl.className = "sync-status";
     unsyncedDataEl.innerHTML = "";
 
     // Get online status
     const isOnline = await window.api.getOnlineStatus();
     if (!isOnline) {
-      statusEl.innerHTML = '<span class="status-icon">⚠️</span><span>Currently offline. Sync not available.</span>';
+      statusEl.innerHTML =
+        '<span class="status-icon">⚠️</span><span>Currently offline. Sync not available.</span>';
       statusEl.className = "sync-status warning";
       return;
     }
@@ -473,7 +475,7 @@ async function checkSyncStatus() {
 
     if (!result.success) {
       statusEl.innerHTML = `<span class="status-icon">⚠️</span><span>Error checking sync status: ${
-          result.message || "Unknown error"
+        result.message || "Unknown error"
       }</span>`;
       statusEl.className = "sync-status error";
       return;
@@ -490,9 +492,35 @@ async function checkSyncStatus() {
 
     // Update UI based on unsynced data
     if (!result.hasUnsyncedData) {
-      statusEl.innerHTML = '<span class="status-icon">✓</span><span>All data is in sync.</span>';
+      statusEl.innerHTML =
+        '<span class="status-icon">✓</span><span>All data is in sync.</span>';
       statusEl.className = "sync-status success";
       unsyncedDataEl.innerHTML = ""; // Clear the container
+      return;
+    }
+
+    if (!result.success) {
+      const errorMessage = result.message || "Error checking sync status";
+
+      // Show retry button for database initialization errors
+      if (errorMessage.includes("Database not initialized")) {
+        statusEl.innerHTML = `
+      <span class="status-icon">⚠️</span>
+      <span>${errorMessage}</span>
+      <button id="retry-sync-btn" class="btn secondary-btn" style="margin-left: 10px;">Retry</button>
+    `;
+
+        // Add event listener for retry button
+        document
+          .getElementById("retry-sync-btn")
+          .addEventListener("click", () => {
+            checkSyncStatus();
+          });
+      } else {
+        statusEl.innerHTML = `<span class="status-icon">⚠️</span><span>${errorMessage}</span>`;
+      }
+
+      statusEl.className = "sync-status error";
       return;
     }
 
@@ -505,8 +533,8 @@ async function checkSyncStatus() {
       unsyncedHTML += `
         <div class="unsynced-item">
           <span>${
-          collection.charAt(0).toUpperCase() + collection.slice(1)
-      }</span>
+            collection.charAt(0).toUpperCase() + collection.slice(1)
+          }</span>
           <span>${counts.total} items</span>
         </div>
         <div class="unsynced-details">
@@ -520,7 +548,8 @@ async function checkSyncStatus() {
     unsyncedDataEl.innerHTML = unsyncedHTML;
   } catch (error) {
     console.error("Error checking sync status:", error);
-    document.getElementById("sync-status").innerHTML = '<span class="status-icon">⚠️</span><span>Error checking sync status.</span>';
+    document.getElementById("sync-status").innerHTML =
+      '<span class="status-icon">⚠️</span><span>Error checking sync status.</span>';
     document.getElementById("sync-status").className = "sync-status error";
   }
 }
@@ -537,7 +566,8 @@ async function startSync() {
     // Get online status
     const isOnline = await window.api.getOnlineStatus();
     if (!isOnline) {
-      statusEl.innerHTML = '<span class="status-icon">⚠️</span><span>Cannot sync while offline.</span>';
+      statusEl.innerHTML =
+        '<span class="status-icon">⚠️</span><span>Cannot sync while offline.</span>';
       statusEl.className = "sync-status error";
       showTemporaryNotification("Cannot sync while offline", "error");
       return;
@@ -548,9 +578,10 @@ async function startSync() {
     progressEl.style.display = "block";
     progressBarEl.style.width = "0%";
     progressTextEl.innerHTML =
-        '<span class="sync-icon" style="display: inline-block; animation: spin 1s linear infinite;">⟳</span> Starting sync...';
+      '<span class="sync-icon" style="display: inline-block; animation: spin 1s linear infinite;">⟳</span> Starting sync...';
 
-    statusEl.innerHTML = '<span class="status-icon">⟳</span><span>Synchronizing data...</span>';
+    statusEl.innerHTML =
+      '<span class="status-icon">⟳</span><span>Synchronizing data...</span>';
     statusEl.className = "sync-status";
 
     // Also update the mini indicator
@@ -567,20 +598,22 @@ async function startSync() {
     syncNowBtn.disabled = false;
 
     if (result && result.success) {
-      statusEl.innerHTML = '<span class="status-icon">✓</span><span>Sync completed successfully!</span>';
+      statusEl.innerHTML =
+        '<span class="status-icon">✓</span><span>Sync completed successfully!</span>';
       statusEl.className = "sync-status success";
 
       // Update last sync time
       if (result.timestamp) {
         const date = new Date(result.timestamp);
         document.getElementById(
-            "last-sync-time"
+          "last-sync-time"
         ).textContent = `Last sync: ${date.toLocaleString()}`;
       }
 
       // Show completion in progress bar
       progressBarEl.style.width = "100%";
-      progressTextEl.innerHTML = '<span class="status-icon">✓</span> Sync completed!';
+      progressTextEl.innerHTML =
+        '<span class="status-icon">✓</span> Sync completed!';
 
       // Show success notification
       showTemporaryNotification("Sync completed successfully!", "success");
@@ -592,13 +625,15 @@ async function startSync() {
         checkSyncStatus();
       }, 2000);
     } else {
-      const errorMessage = result && result.message
+      const errorMessage =
+        result && result.message
           ? `Sync failed: ${result.message}`
           : "Sync failed with unknown error";
 
       statusEl.innerHTML = `<span class="status-icon">⚠️</span><span>${errorMessage}</span>`;
       statusEl.className = "sync-status error";
-      progressTextEl.innerHTML = '<span class="status-icon">⚠️</span> Sync failed. Please try again.';
+      progressTextEl.innerHTML =
+        '<span class="status-icon">⚠️</span> Sync failed. Please try again.';
 
       // Show error notification
       showTemporaryNotification(errorMessage, "error");
@@ -610,9 +645,11 @@ async function startSync() {
     }, 2000);
   } catch (error) {
     console.error("Error during sync:", error);
-    document.getElementById("sync-status").innerHTML = '<span class="status-icon">⚠️</span><span>Error during sync.</span>';
+    document.getElementById("sync-status").innerHTML =
+      '<span class="status-icon">⚠️</span><span>Error during sync.</span>';
     document.getElementById("sync-status").className = "sync-status error";
-    document.getElementById("sync-progress-text").innerHTML = '<span class="status-icon">⚠️</span> Sync error. Please try again.';
+    document.getElementById("sync-progress-text").innerHTML =
+      '<span class="status-icon">⚠️</span> Sync error. Please try again.';
     document.getElementById("sync-now-btn").disabled = false;
 
     showTemporaryNotification("Error during sync operation", "error");
@@ -629,13 +666,14 @@ function setupSyncListeners() {
       const progressBarEl = document.getElementById("sync-progress-bar");
       const progressTextEl = document.getElementById("sync-progress-text");
 
-      statusEl.innerHTML = '<span class="status-icon">⟳</span><span>Synchronizing data...</span>';
+      statusEl.innerHTML =
+        '<span class="status-icon">⟳</span><span>Synchronizing data...</span>';
       statusEl.className = "sync-status";
 
       progressEl.style.display = "block";
       progressBarEl.style.width = "0%";
       progressTextEl.innerHTML =
-          '<span class="sync-icon" style="display: inline-block; animation: spin 1s linear infinite;">⟳</span> Starting sync...';
+        '<span class="sync-icon" style="display: inline-block; animation: spin 1s linear infinite;">⟳</span> Starting sync...';
 
       document.getElementById("sync-now-btn").disabled = true;
 
@@ -661,10 +699,16 @@ function setupSyncListeners() {
 
       if (data.total > 0) {
         // If we have item count details, calculate more accurate progress
-        progressPercent = Math.min(90, Math.round((data.processed / data.total) * 100));
+        progressPercent = Math.min(
+          90,
+          Math.round((data.processed / data.total) * 100)
+        );
       } else if (collectionIndex >= 0) {
         // Fallback to collection-based progress
-        progressPercent = Math.min(90, Math.round(((collectionIndex + 1) / collections.length) * 100));
+        progressPercent = Math.min(
+          90,
+          Math.round(((collectionIndex + 1) / collections.length) * 100)
+        );
       }
 
       progressBarEl.style.width = `${progressPercent}%`;
@@ -683,7 +727,8 @@ function setupSyncListeners() {
       syncNowBtn.disabled = false;
 
       if (data && data.success) {
-        statusEl.innerHTML = '<span class="status-icon">✓</span><span>Sync completed successfully!</span>';
+        statusEl.innerHTML =
+          '<span class="status-icon">✓</span><span>Sync completed successfully!</span>';
         statusEl.className = "sync-status success";
 
         // Update last sync time
@@ -697,7 +742,8 @@ function setupSyncListeners() {
 
         // Show completion in progress bar
         progressBarEl.style.width = "100%";
-        progressTextEl.innerHTML = '<span class="status-icon">✓</span> Sync completed!';
+        progressTextEl.innerHTML =
+          '<span class="status-icon">✓</span> Sync completed!';
 
         // Show notification
         showTemporaryNotification("Sync completed successfully!", "success");
@@ -709,13 +755,13 @@ function setupSyncListeners() {
           checkSyncStatus();
         }, 2000);
       } else {
-        const errorMessage = data && data.error
-            ? `Sync failed: ${data.error}`
-            : "Sync failed";
+        const errorMessage =
+          data && data.error ? `Sync failed: ${data.error}` : "Sync failed";
 
         statusEl.innerHTML = `<span class="status-icon">⚠️</span><span>${errorMessage}</span>`;
         statusEl.className = "sync-status error";
-        progressTextEl.innerHTML = '<span class="status-icon">⚠️</span> Sync failed. Please try again.';
+        progressTextEl.innerHTML =
+          '<span class="status-icon">⚠️</span> Sync failed. Please try again.';
 
         // Show error notification
         showTemporaryNotification(errorMessage, "error");
@@ -723,7 +769,9 @@ function setupSyncListeners() {
 
       // Hide mini indicator
       setTimeout(() => {
-        document.getElementById("mini-sync-indicator").classList.remove("active");
+        document
+          .getElementById("mini-sync-indicator")
+          .classList.remove("active");
       }, 2000);
     });
   }
