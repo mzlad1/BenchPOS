@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+    />
+    <title>Help Center - MZLAD Billing System</title>
+    <link rel="stylesheet" href="../styles/global.css" />
+    <link rel="stylesheet" href="../styles/help.css" />
+  </head>
+  <body class="light-mode">
+    <div class="app-container">
+      <!-- Sidebar Container (will be populated by layout.js) -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header Container (will be populated by layout.js) -->
+        <div id="header-container"></div>
+
+        <!-- Help Center Content -->
+        <div class="help-container">
+          <div class="help-sidebar">
+            <div class="help-search">
+              <div class="search-icon">🔍</div>
+              <input
+                type="text"
+                id="help-search-input"
+                placeholder="Search help topics..."
+              />
+            </div>
+
+            <div class="help-nav">
+              <div class="nav-section">
+                <div class="section-title">Getting Started</div>
+                <div class="nav-item active" data-target="welcome">
+                  <span>Welcome to MZLAD</span>
+                </div>
+                <div class="nav-item" data-target="quick-start">
+                  <span>Quick Start Guide</span>
+                </div>
+                <div class="nav-item" data-target="system-requirements">
+                  <span>System Requirements</span>
+                </div>
+              </div>
+
+              <div class="nav-section">
+                <div class="section-title">Sales & Billing</div>
+                <div class="nav-item" data-target="create-invoice">
+                  <span>Creating Invoices</span>
+                </div>
+                <div class="nav-item" data-target="manage-transactions">
+                  <span>Managing Transactions</span>
+                </div>
+                <div class="nav-item" data-target="process-returns">
+                  <span>Processing Returns</span>
+                </div>
+              </div>
+
+              <div class="nav-section">
+                <div class="section-title">Inventory Management</div>
+                <div class="nav-item" data-target="add-products">
+                  <span>Adding Products</span>
+                </div>
+                <div class="nav-item" data-target="update-stock">
+                  <span>Updating Stock</span>
+                </div>
+                <div class="nav-item" data-target="import-export">
+                  <span>Import & Export</span>
+                </div>
+              </div>
+
+              <div class="nav-section">
+                <div class="section-title">Reports & Analytics</div>
+                <div class="nav-item" data-target="sales-reports">
+                  <span>Sales Reports</span>
+                </div>
+                <div class="nav-item" data-target="inventory-reports">
+                  <span>Inventory Reports</span>
+                </div>
+                <div class="nav-item" data-target="export-data">
+                  <span>Exporting Data</span>
+                </div>
+              </div>
+
+              <div class="nav-section">
+                <div class="section-title">System & Settings</div>
+                <div class="nav-item" data-target="user-management">
+                  <span>User Management</span>
+                </div>
+                <div class="nav-item" data-target="backup-restore">
+                  <span>Backup & Restore</span>
+                </div>
+                <div class="nav-item" data-target="offline-mode">
+                  <span>Offline Mode</span>
+                </div>
+                <div class="nav-item" data-target="sync-data">
+                  <span>Syncing Data</span>
+                </div>
+              </div>
+
+              <div class="nav-section">
+                <div class="section-title">Troubleshooting</div>
+                <div class="nav-item" data-target="common-issues">
+                  <span>Common Issues</span>
+                </div>
+                <div class="nav-item" data-target="error-messages">
+                  <span>Error Messages</span>
+                </div>
+                <div class="nav-item" data-target="contact-support">
+                  <span>Contact Support</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="help-content">
+            <!-- Welcome - Default visible section -->
+            <div id="welcome" class="help-section active">
+              <div class="help-header">
+                <h1>Welcome to MZLAD Billing System</h1>
+                <div class="help-meta">
+                  <span class="last-updated">Last updated: March 31, 2025</span>
+                </div>
+              </div>
+
+              <div class="help-body">
+                <p class="intro-text">
+                  Welcome to MZLAD Billing System, your all-in-one solution for
+                  managing sales, inventory, and business reporting. This help
+                  center will guide you through all the features and functions
+                  of the application.
+                </p>
+
+                <div class="feature-cards">
+                  <div class="feature-card">
+                    <div class="card-icon">💵</div>
+                    <h3>Sales & Billing</h3>
+                    <p>
+                      Create invoices, manage transactions, and process payments
+                      efficiently.
+                    </p>
+                  </div>
+
+                  <div class="feature-card">
+                    <div class="card-icon">📦</div>
+                    <h3>Inventory Management</h3>
+                    <p>
+                      Track stock levels, add products, and manage your
+                      inventory with ease.
+                    </p>
+                  </div>
+
+                  <div class="feature-card">
+                    <div class="card-icon">📊</div>
+                    <h3>Reports & Analytics</h3>
+                    <p>
+                      Generate detailed reports to gain insights into your
+                      business performance.
+                    </p>
+                  </div>
+
+                  <div class="feature-card">
+                    <div class="card-icon">🔄</div>
+                    <h3>Offline & Sync</h3>
+                    <p>
+                      Work offline and synchronize your data across devices when
+                      connected.
+                    </p>
+                  </div>
+                </div>
+
+                <h2>Getting Started</h2>
+                <p>
+                  To begin using MZLAD Billing System, we recommend following
+                  these steps:
+                </p>
+
+                <ol class="steps-list">
+                  <li>
+                    <strong>Set up your business information</strong>
+                    <p>
+                      Configure your business details in the Settings section.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Add your inventory</strong>
+                    <p>Add your products and set up initial stock levels.</p>
+                  </li>
+                  <li>
+                    <strong>Create user accounts</strong>
+                    <p>
+                      Add users and assign appropriate roles for your staff.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Customize receipt templates</strong>
+                    <p>
+                      Personalize your receipts with your business information
+                      and branding.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Start selling</strong>
+                    <p>Begin creating invoices and processing sales.</p>
+                  </li>
+                </ol>
+
+                <div class="help-callout">
+                  <div class="callout-icon">💡</div>
+                  <div class="callout-content">
+                    <strong>Pro Tip:</strong> Take some time to explore the
+                    application and familiarize yourself with its features
+                    before going live with real transactions.
+                  </div>
+                </div>
+
+                <h2>Key Features</h2>
+
+                <div class="features-list">
+                  <div class="feature-item">
+                    <h3>Multi-User Support</h3>
+                    <p>
+                      Create accounts with different roles (Admin, Manager,
+                      Cashier) to control access to sensitive functions.
+                    </p>
+                  </div>
+
+                  <div class="feature-item">
+                    <h3>Offline Mode</h3>
+                    <p>
+                      Continue operations even without internet connectivity.
+                      Data will sync automatically when connection is restored.
+                    </p>
+                  </div>
+
+                  <div class="feature-item">
+                    <h3>Detailed Reporting</h3>
+                    <p>
+                      Access daily, weekly, and monthly reports for sales,
+                      inventory, and profitability.
+                    </p>
+                  </div>
+
+                  <div class="feature-item">
+                    <h3>Receipt Printing</h3>
+                    <p>
+                      Generate and print professional receipts for customer
+                      transactions.
+                    </p>
+                  </div>
+
+                  <div class="feature-item">
+                    <h3>Data Backup</h3>
+                    <p>
+                      Automatically backup your data to prevent loss of
+                      important business information.
+                    </p>
+                  </div>
+
+                  <div class="feature-item">
+                    <h3>Multi-Device Sync</h3>
+                    <p>
+                      Synchronize data across multiple devices to keep your
+                      business information up-to-date everywhere.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="navigation-buttons">
+                  <a href="#" class="btn btn-primary" data-target="quick-start"
+                    >Get Started →</a
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Start Guide -->
+            <div id="quick-start" class="help-section">
+              <div class="help-header">
+                <h1>Quick Start Guide</h1>
+                <div class="help-meta">
+                  <span class="last-updated">Last updated: March 28, 2025</span>
+                </div>
+              </div>
+
+              <div class="help-body">
+                <p class="intro-text">
+                  This guide will help you quickly set up and start using MZLAD
+                  Billing System for your business operations.
+                </p>
+
+                <div class="table-of-contents">
+                  <h3>On this page:</h3>
+                  <ul>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#first-login">First Login</a></li>
+                    <li><a href="#business-setup">Business Setup</a></li>
+                    <li><a href="#adding-products">Adding Products</a></li>
+                    <li><a href="#creating-sales">Creating Sales</a></li>
+                  </ul>
+                </div>
+
+                <h2 id="installation">Installation</h2>
+                <p>
+                  MZLAD Billing System is a desktop application that requires
+                  installation on your computer:
+                </p>
+
+                <ol class="steps-list">
+                  <li>
+                    <strong>Download the installer</strong>
+                    <p>
+                      Visit our website and download the appropriate installer
+                      for your operating system (Windows, macOS, or Linux).
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Run the installer</strong>
+                    <p>
+                      Double-click the downloaded file and follow the on-screen
+                      instructions.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Complete the installation</strong>
+                    <p>
+                      Choose your installation location, create shortcuts, and
+                      complete the installation process.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Launch the application</strong>
+                    <p>
+                      Use the desktop shortcut or start menu entry to launch
+                      MZLAD Billing System.
+                    </p>
+                  </li>
+                </ol>
+
+                <div class="help-callout info">
+                  <div class="callout-icon">ℹ️</div>
+                  <div class="callout-content">
+                    <strong>Note:</strong> You may need administrator privileges
+                    to install the application on your computer.
+                  </div>
+                </div>
+
+                <h2 id="first-login">First Login</h2>
+                <p>
+                  When you launch MZLAD Billing System for the first time,
+                  you'll need to create an admin account:
+                </p>
+
+                <ol class="steps-list">
+                  <li>
+                    <strong>Create admin account</strong>
+                    <p>
+                      Enter your name, email, and create a secure password for
+                      the administrator account.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Verify your email</strong>
+                    <p>
+                      Check your email for a verification link and click it to
+                      verify your account.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Login with admin credentials</strong>
+                    <p>Use your email and password to log into the system.</p>
+                  </li>
+                </ol>
+
+                <div class="help-screenshot">
+                  <img
+                    src="../assets/images/help/login-screen.png"
+                    alt="Login Screen"
+                    class="screenshot-placeholder"
+                  />
+                  <div class="screenshot-caption">
+                    Login screen of MZLAD Billing System
+                  </div>
+                </div>
+
+                <h2 id="business-setup">Business Setup</h2>
+                <p>
+                  Configure your business information in the Settings section:
+                </p>
+
+                <ol class="steps-list">
+                  <li>
+                    <strong>Navigate to Settings</strong>
+                    <p>Click on the "Settings" icon in the sidebar menu.</p>
+                  </li>
+                  <li>
+                    <strong>Go to Business Information</strong>
+                    <p>
+                      Select the "Business Info" tab from the settings sidebar.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Enter business details</strong>
+                    <p>
+                      Enter your business name, address, contact information,
+                      and tax ID.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Upload your logo</strong>
+                    <p>
+                      Add your business logo which will appear on invoices and
+                      receipts.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Set currency and tax settings</strong>
+                    <p>Configure your default currency and tax rates.</p>
+                  </li>
+                  <li>
+                    <strong>Save changes</strong>
+                    <p>
+                      Click the "Save Changes" button to apply your business
+                      settings.
+                    </p>
+                  </li>
+                </ol>
+
+                <h2 id="adding-products">Adding Products</h2>
+                <p>Start building your inventory by adding products:</p>
+
+                <ol class="steps-list">
+                  <li>
+                    <strong>Go to Inventory</strong>
+                    <p>Click on the "Inventory" icon in the sidebar menu.</p>
+                  </li>
+                  <li>
+                    <strong>Add a new product</strong>
+                    <p>
+                      Click the "Add Product" button to open the product form.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Enter product details</strong>
+                    <p>
+                      Add the product name, SKU, category, price, cost, and
+                      initial stock quantity.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Save the product</strong>
+                    <p>Click "Save" to add the product to your inventory.</p>
+                  </li>
+                </ol>
+
+                <div class="help-callout tip">
+                  <div class="callout-icon">💡</div>
+                  <div class="callout-content">
+                    <strong>Pro Tip:</strong> You can also import multiple
+                    products at once using the "Import Products" feature with a
+                    CSV file.
+                  </div>
+                </div>
+
+                <h2 id="creating-sales">Creating Sales</h2>
+                <p>Process sales and generate invoices:</p>
+
+                <ol class="steps-list">
+                  <li>
+                    <strong>Go to New Sale</strong>
+                    <p>Click on the "New Sale" icon in the sidebar menu.</p>
+                  </li>
+                  <li>
+                    <strong>Add items to cart</strong>
+                    <p>
+                      Search for products and click on them to add to the cart,
+                      or scan barcodes if available.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Adjust quantities</strong>
+                    <p>Change the quantity of items as needed.</p>
+                  </li>
+                  <li>
+                    <strong>Add customer information</strong>
+                    <p>Enter customer details if desired for the receipt.</p>
+                  </li>
+                  <li>
+                    <strong>Apply discounts if needed</strong>
+                    <p>
+                      Add any applicable discounts to individual items or the
+                      entire sale.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Complete the sale</strong>
+                    <p>
+                      Click "Complete Sale" button to process the transaction.
+                    </p>
+                  </li>
+                  <li>
+                    <strong>Print or email receipt</strong>
+                    <p>
+                      Generate a receipt that can be printed or emailed to the
+                      customer.
+                    </p>
+                  </li>
+                </ol>
+
+                <div class="navigation-buttons">
+                  <a href="#" class="btn btn-outline" data-target="welcome"
+                    >← Back to Welcome</a
+                  >
+                  <a
+                    href="#"
+                    class="btn btn-primary"
+                    data-target="system-requirements"
+                    >Next: System Requirements →</a
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- System Requirements Section -->
+            <div id="system-requirements" class="help-section">
+              <div class="help-header">
+                <h1>System Requirements</h1>
+                <div class="help-meta">
+                  <span class="last-updated">Last updated: March 20, 2025</span>
+                </div>
+              </div>
+
+              <div class="help-body">
+                <p class="intro-text">
+                  MZLAD Billing System is designed to run efficiently on modern
+                  computers. Check if your system meets the requirements below.
+                </p>
+
+                <h2>Minimum Requirements</h2>
+
+                <div class="requirements-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Component</th>
+                        <th>Minimum Requirement</th>
+                        <th>Recommended</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Operating System</td>
+                        <td>
+                          <ul>
+                            <li>Windows 10 (64-bit)</li>
+                            <li>macOS 11 (Big Sur) or later</li>
+                            <li>Ubuntu 20.04 LTS or later</li>
+                          </ul>
+                        </td>
+                        <td>
+                          <ul>
+                            <li>Windows 11 (64-bit)</li>
+                            <li>macOS 12 (Monterey) or later</li>
+                            <li>Ubuntu 22.04 LTS or later</li>
+                          </ul>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Processor</td>
+                        <td>Intel Core i3 or equivalent</td>
+                        <td>Intel Core i5/i7 or equivalent</td>
+                      </tr>
+                      <tr>
+                        <td>Memory (RAM)</td>
+                        <td>4 GB</td>
+                        <td>8 GB or more</td>
+                      </tr>
+                      <tr>
+                        <td>Disk Space</td>
+                        <td>500 MB free space</td>
+                        <td>1 GB or more free space</td>
+                      </tr>
+                      <tr>
+                        <td>Display</td>
+                        <td>1366 x 768 resolution</td>
+                        <td>1920 x 1080 resolution or higher</td>
+                      </tr>
+                      <tr>
+                        <td>Internet Connection</td>
+                        <td>Required for initial setup and synchronization</td>
+                        <td>Broadband connection for optimal performance</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <h2>Additional Requirements for Specific Features</h2>
+
+                <div class="additional-requirements">
+                  <div class="requirement-item">
+                    <h3>Receipt Printing</h3>
+                    <ul>
+                      <li>
+                        Thermal receipt printer (compatible with ESC/POS
+                        commands)
+                      </li>
+                      <li>
+                        Standard desktop printer for A4/Letter paper receipts
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="requirement-item">
+                    <h3>Barcode Scanning</h3>
+                    <ul>
+                      <li>
+                        USB Barcode Scanner compatible with your operating
+                        system
+                      </li>
+                      <li>
+                        Webcam with at least 720p resolution for QR code
+                        scanning
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="requirement-item">
+                    <h3>Multi-Device Sync</h3>
+                    <ul>
+                      <li>Internet connection on all devices</li>
+                      <li>
+                        Firebase account (free tier is sufficient for small
+                        businesses)
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="requirement-item">
+                    <h3>Data Backup</h3>
+                    <ul>
+                      <li>External storage device or cloud storage account</li>
+                      <li>Sufficient storage space for regular backups</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <h2>Supported Browsers (for Web Sync Portal)</h2>
+                <p>
+                  If you use the optional web sync portal, it's supported on the
+                  following browsers:
+                </p>
+
+                <ul class="browser-support">
+                  <li>Google Chrome (latest 2 versions)</li>
+                  <li>Mozilla Firefox (latest 2 versions)</li>
+                  <li>Microsoft Edge (latest 2 versions)</li>
+                  <li>Safari (latest 2 versions)</li>
+                </ul>
+
+                <div class="help-callout warning">
+                  <div class="callout-icon">⚠️</div>
+                  <div class="callout-content">
+                    <strong>Important:</strong> While MZLAD Billing System can
+                    operate offline, an internet connection is required for
+                    initial setup, updates, and data synchronization between
+                    devices.
+                  </div>
+                </div>
+
+                <h2>Performance Considerations</h2>
+                <p>
+                  The performance of MZLAD Billing System may vary based on:
+                </p>
+
+                <ul class="performance-list">
+                  <li>
+                    The size of your product database (5,000+ products may
+                    require more RAM)
+                  </li>
+                  <li>
+                    The number of concurrent users if multiple terminals are in
+                    use
+                  </li>
+                  <li>The frequency of synchronization between devices</li>
+                  <li>The size and number of images stored for products</li>
+                </ul>
+
+                <p>
+                  For large businesses with 10,000+ products or high transaction
+                  volumes, we recommend upgrading to the recommended
+                  specifications for optimal performance.
+                </p>
+
+                <div class="navigation-buttons">
+                  <a href="#" class="btn btn-outline" data-target="quick-start"
+                    >← Back to Quick Start</a
+                  >
+                  <a
+                    href="#"
+                    class="btn btn-primary"
+                    data-target="create-invoice"
+                    >Next: Creating Invoices →</a
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- Create Invoice Section -->
+            <div id="create-invoice" class="help-section">
+              <div class="help-header">
+                <h1>Creating Invoices</h1>
+                <div class="help-meta">
+                  <span class="last-updated">Last updated: March 25, 2025</span>
+                </div>
+              </div>
+
+              <div class="help-body">
+                <p class="intro-text">
+                  Learn how to create and manage invoices for your customers in
+                  MZLAD Billing System.
+                </p>
+
+                <!-- Content would go here -->
+                <p>
+                  This section is under development. Check back soon for
+                  complete instructions on creating invoices.
+                </p>
+              </div>
+            </div>
+
+            <!-- Contact Support Section -->
+            <div id="contact-support" class="help-section">
+              <div class="help-header">
+                <h1>Contact Support</h1>
+                <div class="help-meta">
+                  <span class="last-updated">Last updated: March 15, 2025</span>
+                </div>
+              </div>
+
+              <div class="help-body">
+                <p class="intro-text">
+                  Need help with MZLAD Billing System? Our support team is ready
+                  to assist you.
+                </p>
+
+                <div class="support-options">
+                  <div class="support-card">
+                    <div class="support-icon">📧</div>
+                    <h3>Email Support</h3>
+                    <p>Send us a detailed description of your issue.</p>
+                    <a href="mailto:support@mzlad.com" class="btn btn-outline"
+                      >support@mzlad.com</a
+                    >
+                  </div>
+
+                  <div class="support-card">
+                    <div class="support-icon">💬</div>
+                    <h3>Live Chat</h3>
+                    <p>Chat with our support team during business hours.</p>
+                    <button class="btn btn-primary" id="start-chat-btn">
+                      Start Chat
+                    </button>
+                  </div>
+
+                  <div class="support-card">
+                    <div class="support-icon">📞</div>
+                    <h3>Phone Support</h3>
+                    <p>Call us for immediate assistance.</p>
+                    <a href="tel:+15551234567" class="btn btn-outline"
+                      >+1 (555) 123-4567</a
+                    >
+                  </div>
+                </div>
+
+                <h2>Support Hours</h2>
+                <div class="support-hours">
+                  <div class="hours-row">
+                    <div class="day">Monday - Friday</div>
+                    <div class="time">9:00 AM - 6:00 PM EST</div>
+                  </div>
+                  <div class="hours-row">
+                    <div class="day">Saturday</div>
+                    <div class="time">10:00 AM - 4:00 PM EST</div>
+                  </div>
+                  <div class="hours-row">
+                    <div class="day">Sunday</div>
+                    <div class="time">Closed</div>
+                  </div>
+                </div>
+
+                <h2>Submit a Support Ticket</h2>
+                <div class="support-form-container">
+                  <form id="support-form" class="support-form">
+                    <div class="form-group">
+                      <label for="support-name">Your Name</label>
+                      <input
+                        type="text"
+                        id="support-name"
+                        placeholder="Enter your name"
+                        required
+                      />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="support-email">Email Address</label>
+                      <input
+                        type="email"
+                        id="support-email"
+                        placeholder="Enter your email"
+                        required
+                      />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="support-subject">Subject</label>
+                      <input
+                        type="text"
+                        id="support-subject"
+                        placeholder="Brief description of your issue"
+                        required
+                      />
+                    </div>
+
+                    <div class="form-group">
+                      <label for="support-category">Category</label>
+                      <select id="support-category" required>
+                        <option value="">Select category</option>
+                        <option value="account">Account Issues</option>
+                        <option value="billing">Sales & Billing</option>
+                        <option value="inventory">Inventory Management</option>
+                        <option value="reports">Reports & Analytics</option>
+                        <option value="sync">Sync & Offline Mode</option>
+                        <option value="technical">Technical Problems</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="support-message">Message</label>
+                      <textarea
+                        id="support-message"
+                        rows="6"
+                        placeholder="Describe your issue in detail..."
+                        required
+                      ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="support-attachments"
+                        >Attachments (Optional)</label
+                      >
+                      <input type="file" id="support-attachments" multiple />
+                      <div class="file-info">
+                        You can attach screenshots or documents (Max 3 files,
+                        5MB each)
+                      </div>
+                    </div>
+
+                    <div class="form-actions">
+                      <button type="submit" class="btn btn-primary">
+                        Submit Ticket
+                      </button>
+                      <button type="reset" class="btn btn-outline">
+                        Clear Form
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                <h2>Frequently Asked Support Questions</h2>
+                <div class="support-faq">
+                  <div class="faq-item">
+                    <div class="faq-question">
+                      <span
+                        >How long does it typically take to get a
+                        response?</span
+                      >
+                      <span class="toggle-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                      <p>
+                        We aim to respond to all support tickets within 24
+                        business hours. For urgent issues, we recommend using
+                        the live chat or phone support options for faster
+                        assistance.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="faq-item">
+                    <div class="faq-question">
+                      <span>Do you offer remote assistance?</span>
+                      <span class="toggle-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                      <p>
+                        Yes, our support team can provide remote assistance for
+                        complex technical issues. This service is available for
+                        customers with active support plans.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="faq-item">
+                    <div class="faq-question">
+                      <span
+                        >What information should I include when reporting an
+                        issue?</span
+                      >
+                      <span class="toggle-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                      <p>
+                        To help us resolve your issue quickly, please include:
+                      </p>
+                      <ul>
+                        <li>Your operating system and version</li>
+                        <li>
+                          The version of MZLAD Billing System you're using
+                        </li>
+                        <li>
+                          Step-by-step details of what you were doing when the
+                          issue occurred
+                        </li>
+                        <li>Any error messages you received</li>
+                        <li>Screenshots if applicable</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Support Modal -->
+    <div id="chat-modal" class="modal">
+      <div class="modal-content chat-modal-content">
+        <div class="modal-header">
+          <h2>Live Support Chat</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div class="chat-container">
+          <div class="chat-messages" id="chat-messages">
+            <div class="message system">
+              <div class="message-content">
+                <p>
+                  Welcome to MZLAD Support! An agent will be with you shortly.
+                </p>
+                <div class="message-time">12:30 PM</div>
+              </div>
+            </div>
+            <div class="message agent">
+              <div class="agent-avatar">👨‍💼</div>
+              <div class="message-content">
+                <div class="agent-name">John (Support Agent)</div>
+                <p>
+                  Hello! How can I help you with MZLAD Billing System today?
+                </p>
+                <div class="message-time">12:31 PM</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input">
+            <textarea
+              id="chat-message-input"
+              placeholder="Type your message here..."
+            ></textarea>
+            <button id="send-message-btn" class="btn btn-primary">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load Scripts -->
+    <script src="../scripts/layout.js"></script>
+    <script src="../scripts/help.js"></script>
+  </body>
+</html>

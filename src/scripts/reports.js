@@ -6,12 +6,12 @@ let products = [];
 let filteredInvoices = [];
 let dateRange = {
   from: null,
-  to: null
+  to: null,
 };
 let salesChart = null;
-let currentChartView = 'daily'; // Tracks the current chart view (daily, weekly, monthly)
+let currentChartView = "daily"; // Tracks the current chart view (daily, weekly, monthly)
 // Initialize the page
-document.addEventListener("DOMContentLoaded", async function() {
+document.addEventListener("DOMContentLoaded", async function () {
   try {
     // First validate user access
     const user = await window.api.getCurrentUser();
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Initialize layout with current page identifier
     if (window.LayoutManager) {
-      await window.LayoutManager.init('reports');
+      await window.LayoutManager.init("reports");
     }
 
     // Initialize sync UI (if exists)
@@ -49,7 +49,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     console.log("Reports page initialized");
   } catch (error) {
     console.error("Error initializing reports page:", error);
-    showError("An error occurred initializing the page. Please refresh and try again.");
+    showError(
+      "An error occurred initializing the page. Please refresh and try again."
+    );
   }
 });
 
@@ -61,24 +63,37 @@ async function loadInitialData() {
     // Load invoices and products in parallel
     const [allInvoices, allProducts] = await Promise.all([
       window.api.getInvoices(),
-      window.api.getProducts()
+      window.api.getProducts(),
     ]);
 
     // Store data in global variables
     invoices = allInvoices || [];
     products = allProducts || [];
-
+    // Update inventory badge in sidebar if LayoutManager is available
+    if (window.LayoutManager) {
+      const lowStockCount = products.filter(
+        (product) => product.stock <= 5
+      ).length;
+      window.LayoutManager.updateInventoryBadge(lowStockCount);
+    }
     // Calculate costs and profits for all invoices
-    calculateInvoiceCosts();  // Add this line
+    calculateInvoiceCosts(); // Add this line
 
     // Set default date range (current month)
     const today = new Date();
     dateRange.from = new Date(today.getFullYear(), today.getMonth(), 1);
-    dateRange.to = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+    dateRange.to = new Date(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      0,
+      23,
+      59,
+      59
+    );
 
     // Update date inputs
-    const dateFrom = document.getElementById('date-from');
-    const dateTo = document.getElementById('date-to');
+    const dateFrom = document.getElementById("date-from");
+    const dateTo = document.getElementById("date-to");
 
     if (dateFrom && dateTo) {
       dateFrom.valueAsDate = dateRange.from;
@@ -88,7 +103,9 @@ async function loadInitialData() {
     // Filter invoices for current date range
     applyDateFilter();
 
-    console.log(`Loaded ${invoices.length} invoices and ${products.length} products`);
+    console.log(
+      `Loaded ${invoices.length} invoices and ${products.length} products`
+    );
   } catch (error) {
     console.error("Error loading initial data:", error);
     showError("Failed to load data. Please try again.");
@@ -98,7 +115,7 @@ async function loadInitialData() {
 // Apply date filter to invoices
 function applyDateFilter() {
   // Filter invoices by date range
-  filteredInvoices = invoices.filter(invoice => {
+  filteredInvoices = invoices.filter((invoice) => {
     const invoiceDate = new Date(invoice.date || invoice.createdAt);
     return invoiceDate >= dateRange.from && invoiceDate <= dateRange.to;
   });
@@ -134,23 +151,23 @@ function generateAllReports() {
 
 // Setup tab navigation
 function setupTabNavigation() {
-  const tabs = document.querySelectorAll('.report-tab');
-  const tabContents = document.querySelectorAll('.tab-content');
+  const tabs = document.querySelectorAll(".report-tab");
+  const tabContents = document.querySelectorAll(".tab-content");
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
       // Remove active class from all tabs and contents
-      tabs.forEach(t => t.classList.remove('active'));
-      tabContents.forEach(c => c.classList.remove('active'));
+      tabs.forEach((t) => t.classList.remove("active"));
+      tabContents.forEach((c) => c.classList.remove("active"));
 
       // Add active class to clicked tab
-      tab.classList.add('active');
+      tab.classList.add("active");
 
       // Show corresponding content
       const tabContentId = tab.dataset.tab;
       const content = document.getElementById(tabContentId);
       if (content) {
-        content.classList.add('active');
+        content.classList.add("active");
       }
     });
   });
@@ -158,10 +175,10 @@ function setupTabNavigation() {
 
 // Setup date filter controls
 function setupDateFilters() {
-  const periodSelect = document.getElementById('report-period');
-  const customDateRange = document.getElementById('custom-date-range');
-  const dateFrom = document.getElementById('date-from');
-  const dateTo = document.getElementById('date-to');
+  const periodSelect = document.getElementById("report-period");
+  const customDateRange = document.getElementById("custom-date-range");
+  const dateFrom = document.getElementById("date-from");
+  const dateTo = document.getElementById("date-to");
 
   if (!periodSelect || !customDateRange || !dateFrom || !dateTo) {
     console.error("Date filter elements not found");
@@ -169,11 +186,11 @@ function setupDateFilters() {
   }
 
   // Show/hide custom date range based on selection
-  periodSelect.addEventListener('change', function() {
-    if (this.value === 'custom') {
-      customDateRange.style.display = 'flex';
+  periodSelect.addEventListener("change", function () {
+    if (this.value === "custom") {
+      customDateRange.style.display = "flex";
     } else {
-      customDateRange.style.display = 'none';
+      customDateRange.style.display = "none";
 
       // Set date range based on selection
       const dates = getDateRangeFromPeriod(this.value);
@@ -185,40 +202,46 @@ function setupDateFilters() {
   });
 
   // Apply filters button
-  document.getElementById('apply-filters').addEventListener('click', function() {
-    // Update date range from inputs
-    const from = dateFrom.valueAsDate;
-    const to = dateTo.valueAsDate;
+  document
+    .getElementById("apply-filters")
+    .addEventListener("click", function () {
+      // Update date range from inputs
+      const from = dateFrom.valueAsDate;
+      const to = dateTo.valueAsDate;
 
-    if (!from || !to) {
-      alert("Please select valid dates");
-      return;
-    }
+      if (!from || !to) {
+        alert("Please select valid dates");
+        return;
+      }
 
-    if (from > to) {
-      alert("Start date must be before end date");
-      return;
-    }
+      if (from > to) {
+        alert("Start date must be before end date");
+        return;
+      }
 
-    // Set global date range
-    dateRange.from = new Date(from);
-    dateRange.to = new Date(to);
-    // Set time to end of day for the end date
-    dateRange.to.setHours(23, 59, 59);
+      // Set global date range
+      dateRange.from = new Date(from);
+      dateRange.to = new Date(to);
+      // Set time to end of day for the end date
+      dateRange.to.setHours(23, 59, 59);
 
-    // Apply filter
-    applyDateFilter();
-  });
+      // Apply filter
+      applyDateFilter();
+    });
 
   // Export button
-  document.getElementById('export-report').addEventListener('click', function() {
-    exportReportData();
-  });
+  document
+    .getElementById("export-report")
+    .addEventListener("click", function () {
+      exportReportData();
+    });
 
   // Print button
-  document.getElementById('print-report').addEventListener('click', function() {
-    window.print();
-  });
+  document
+    .getElementById("print-report")
+    .addEventListener("click", function () {
+      window.print();
+    });
 }
 
 // Helper function to get date range from period selection
@@ -226,41 +249,81 @@ function getDateRangeFromPeriod(period) {
   const today = new Date();
   let from, to;
 
-  switch(period) {
-    case 'today':
+  switch (period) {
+    case "today":
       from = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      to = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      to = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        23,
+        59,
+        59
+      );
       break;
 
-    case 'yesterday':
-      from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
-      to = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 23, 59, 59);
+    case "yesterday":
+      from = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - 1
+      );
+      to = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - 1,
+        23,
+        59,
+        59
+      );
       break;
 
-    case 'this-week':
+    case "this-week":
       // Start of week (Sunday)
       const dayOfWeek = today.getDay();
-      from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek);
-      to = new Date(today.getFullYear(), today.getMonth(), today.getDate() + (6 - dayOfWeek), 23, 59, 59);
+      from = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - dayOfWeek
+      );
+      to = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() + (6 - dayOfWeek),
+        23,
+        59,
+        59
+      );
       break;
 
-    case 'last-week':
+    case "last-week":
       const lastWeekDay = today.getDay();
-      from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - lastWeekDay - 7);
-      to = new Date(today.getFullYear(), today.getMonth(), today.getDate() - lastWeekDay - 1, 23, 59, 59);
+      from = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - lastWeekDay - 7
+      );
+      to = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - lastWeekDay - 1,
+        23,
+        59,
+        59
+      );
       break;
 
-    case 'this-month':
+    case "this-month":
       from = new Date(today.getFullYear(), today.getMonth(), 1);
       to = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
       break;
 
-    case 'last-month':
+    case "last-month":
       from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       to = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59);
       break;
 
-    case 'this-year':
+    case "this-year":
       from = new Date(today.getFullYear(), 0, 1);
       to = new Date(today.getFullYear(), 11, 31, 23, 59, 59);
       break;
@@ -275,16 +338,17 @@ function getDateRangeFromPeriod(period) {
 
 // Show loading state in all report sections
 function showLoading() {
-  const loadingHTML = '<tr><td colspan="7" class="loading">Loading data...</td></tr>';
+  const loadingHTML =
+    '<tr><td colspan="7" class="loading">Loading data...</td></tr>';
   const elements = [
-    'daily-sales-table',
-    'product-sales-table',
-    'category-sales-table',
-    'top-selling-table',
-    'low-stock-table'
+    "daily-sales-table",
+    "product-sales-table",
+    "category-sales-table",
+    "top-selling-table",
+    "low-stock-table",
   ];
 
-  elements.forEach(id => {
+  elements.forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
       element.innerHTML = loadingHTML;
@@ -296,14 +360,14 @@ function showLoading() {
 function showError(message) {
   const errorHTML = `<tr><td colspan="7" class="error">${message}</td></tr>`;
   const elements = [
-    'daily-sales-table',
-    'product-sales-table',
-    'category-sales-table',
-    'top-selling-table',
-    'low-stock-table'
+    "daily-sales-table",
+    "product-sales-table",
+    "category-sales-table",
+    "top-selling-table",
+    "low-stock-table",
   ];
 
-  elements.forEach(id => {
+  elements.forEach((id) => {
     const element = document.getElementById(id);
     if (element) {
       element.innerHTML = errorHTML;
@@ -314,11 +378,15 @@ function showError(message) {
 // Generate sales summary statistics
 function generateSalesSummary() {
   // Current period totals
-  const totalSales = filteredInvoices.reduce((sum, invoice) => sum + (invoice.total || 0), 0);
+  const totalSales = filteredInvoices.reduce(
+    (sum, invoice) => sum + (invoice.total || 0),
+    0
+  );
   const totalTransactions = filteredInvoices.length;
-  const averageSale = totalTransactions > 0 ? totalSales / totalTransactions : 0;
+  const averageSale =
+    totalTransactions > 0 ? totalSales / totalTransactions : 0;
   const totalProfit = filteredInvoices.reduce((sum, invoice) => {
-    const profit = invoice.profit || (invoice.total - (invoice.totalCost || 0));
+    const profit = invoice.profit || invoice.total - (invoice.totalCost || 0);
     return sum + profit;
   }, 0);
 
@@ -328,31 +396,54 @@ function generateSalesSummary() {
   const prevPeriodTo = new Date(dateRange.to.getTime() - periodLength);
 
   // Get previous period invoices
-  const prevPeriodInvoices = invoices.filter(invoice => {
+  const prevPeriodInvoices = invoices.filter((invoice) => {
     const invoiceDate = new Date(invoice.date || invoice.createdAt);
     return invoiceDate >= prevPeriodFrom && invoiceDate <= prevPeriodTo;
   });
 
   // Previous period totals
-  const prevTotalSales = prevPeriodInvoices.reduce((sum, invoice) => sum + (invoice.total || 0), 0);
+  const prevTotalSales = prevPeriodInvoices.reduce(
+    (sum, invoice) => sum + (invoice.total || 0),
+    0
+  );
   const prevTotalTransactions = prevPeriodInvoices.length;
-  const prevAverageSale = prevTotalTransactions > 0 ? prevTotalSales / prevTotalTransactions : 0;
+  const prevAverageSale =
+    prevTotalTransactions > 0 ? prevTotalSales / prevTotalTransactions : 0;
   const prevTotalProfit = prevPeriodInvoices.reduce((sum, invoice) => {
-    const profit = invoice.profit || (invoice.total - (invoice.totalCost || 0));
+    const profit = invoice.profit || invoice.total - (invoice.totalCost || 0);
     return sum + profit;
   }, 0);
 
   // Calculate trends
-  const salesTrend = prevTotalSales > 0 ? ((totalSales - prevTotalSales) / prevTotalSales) * 100 : 0;
-  const transactionsTrend = prevTotalTransactions > 0 ? ((totalTransactions - prevTotalTransactions) / prevTotalTransactions) * 100 : 0;
-  const averageTrend = prevAverageSale > 0 ? ((averageSale - prevAverageSale) / prevAverageSale) * 100 : 0;
-  const profitTrend = prevTotalProfit > 0 ? ((totalProfit - prevTotalProfit) / prevTotalProfit) * 100 : 0;
+  const salesTrend =
+    prevTotalSales > 0
+      ? ((totalSales - prevTotalSales) / prevTotalSales) * 100
+      : 0;
+  const transactionsTrend =
+    prevTotalTransactions > 0
+      ? ((totalTransactions - prevTotalTransactions) / prevTotalTransactions) *
+        100
+      : 0;
+  const averageTrend =
+    prevAverageSale > 0
+      ? ((averageSale - prevAverageSale) / prevAverageSale) * 100
+      : 0;
+  const profitTrend =
+    prevTotalProfit > 0
+      ? ((totalProfit - prevTotalProfit) / prevTotalProfit) * 100
+      : 0;
 
   // Update UI
-  document.getElementById('total-sales').textContent = `$${totalSales.toFixed(2)}`;
-  document.getElementById('total-transactions').textContent = totalTransactions;
-  document.getElementById('average-sale').textContent = `$${averageSale.toFixed(2)}`;
-  document.getElementById('total-profit').textContent = `$${totalProfit.toFixed(2)}`;
+  document.getElementById("total-sales").textContent = `$${totalSales.toFixed(
+    2
+  )}`;
+  document.getElementById("total-transactions").textContent = totalTransactions;
+  document.getElementById("average-sale").textContent = `$${averageSale.toFixed(
+    2
+  )}`;
+  document.getElementById("total-profit").textContent = `$${totalProfit.toFixed(
+    2
+  )}`;
 
   // Update trends with formatting
   const formatTrend = (trend, element) => {
@@ -360,40 +451,43 @@ function generateSalesSummary() {
     if (!el) return;
 
     if (trend > 0) {
-      el.className = 'trend-up';
+      el.className = "trend-up";
       el.textContent = `+${trend.toFixed(1)}% vs. previous period`;
     } else if (trend < 0) {
-      el.className = 'trend-down';
+      el.className = "trend-down";
       el.textContent = `${trend.toFixed(1)}% vs. previous period`;
     } else {
-      el.className = '';
+      el.className = "";
       el.textContent = `0% vs. previous period`;
     }
   };
 
-  formatTrend(salesTrend, 'sales-trend');
-  formatTrend(transactionsTrend, 'transactions-trend');
-  formatTrend(averageTrend, 'average-trend');
-  formatTrend(profitTrend, 'profit-trend');
+  formatTrend(salesTrend, "sales-trend");
+  formatTrend(transactionsTrend, "transactions-trend");
+  formatTrend(averageTrend, "average-trend");
+  formatTrend(profitTrend, "profit-trend");
 }
 
 // Generate daily sales report
 function generateDailySalesReport() {
-  const tableElement = document.getElementById('daily-sales-table');
+  const tableElement = document.getElementById("daily-sales-table");
   if (!tableElement) return;
 
   if (filteredInvoices.length === 0) {
-    tableElement.innerHTML = '<tr><td colspan="7" class="centered">No sales data for this period</td></tr>';
+    tableElement.innerHTML =
+      '<tr><td colspan="7" class="centered">No sales data for this period</td></tr>';
     return;
   }
 
   // Group sales by date
   const salesByDate = {};
 
-  filteredInvoices.forEach(invoice => {
+  filteredInvoices.forEach((invoice) => {
     const date = new Date(invoice.date || invoice.createdAt);
     // Use YYYY-MM-DD format as the key for proper sorting
-    const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const dateKey = `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     const formattedDate = formatDate(date); // Use our custom formatter
 
     if (!salesByDate[dateKey]) {
@@ -404,18 +498,21 @@ function generateDailySalesReport() {
         itemsSold: 0,
         sales: 0,
         cost: 0,
-        profit: 0
+        profit: 0,
       };
     }
 
     // Sum values
     salesByDate[dateKey].transactions += 1;
-    salesByDate[dateKey].itemsSold += invoice.items.reduce((sum, item) => sum + item.quantity, 0);
+    salesByDate[dateKey].itemsSold += invoice.items.reduce(
+      (sum, item) => sum + item.quantity,
+      0
+    );
     salesByDate[dateKey].sales += invoice.total || 0;
     salesByDate[dateKey].cost += invoice.totalCost || 0;
 
     // Calculate profit if not already available
-    const profit = invoice.profit || (invoice.total - (invoice.totalCost || 0));
+    const profit = invoice.profit || invoice.total - (invoice.totalCost || 0);
     salesByDate[dateKey].profit += profit;
   });
 
@@ -423,9 +520,9 @@ function generateDailySalesReport() {
   const salesData = Object.values(salesByDate).sort((a, b) => a.date - b.date);
 
   // Generate table rows
-  let tableHTML = '';
+  let tableHTML = "";
 
-  salesData.forEach(day => {
+  salesData.forEach((day) => {
     const margin = day.sales > 0 ? (day.profit / day.sales) * 100 : 0;
 
     tableHTML += `
@@ -442,7 +539,10 @@ function generateDailySalesReport() {
   });
 
   // Add totals row
-  const totalTransactions = salesData.reduce((sum, day) => sum + day.transactions, 0);
+  const totalTransactions = salesData.reduce(
+    (sum, day) => sum + day.transactions,
+    0
+  );
   const totalItems = salesData.reduce((sum, day) => sum + day.itemsSold, 0);
   const totalSales = salesData.reduce((sum, day) => sum + day.sales, 0);
   const totalCost = salesData.reduce((sum, day) => sum + day.cost, 0);
@@ -467,38 +567,43 @@ function generateDailySalesReport() {
 
 // Generate product sales report
 function generateProductSalesReport() {
-  const tableElement = document.getElementById('product-sales-table');
+  const tableElement = document.getElementById("product-sales-table");
   if (!tableElement) return;
 
   if (filteredInvoices.length === 0) {
-    tableElement.innerHTML = '<tr><td colspan="7" class="centered">No sales data for this period</td></tr>';
+    tableElement.innerHTML =
+      '<tr><td colspan="7" class="centered">No sales data for this period</td></tr>';
     return;
   }
 
   // Create a product map for quick lookups
   const productMap = {};
-  products.forEach(product => {
+  products.forEach((product) => {
     productMap[product.id] = product;
   });
 
   // Aggregate sales by product
   const productSales = {};
 
-  filteredInvoices.forEach(invoice => {
-    invoice.items.forEach(item => {
+  filteredInvoices.forEach((invoice) => {
+    invoice.items.forEach((item) => {
       const productId = item.id;
 
       if (!productSales[productId]) {
-        const product = productMap[productId] || { name: item.name, sku: item.sku || 'N/A', category: item.category || 'Uncategorized' };
+        const product = productMap[productId] || {
+          name: item.name,
+          sku: item.sku || "N/A",
+          category: item.category || "Uncategorized",
+        };
 
         productSales[productId] = {
           id: productId,
           name: product.name || item.name,
-          sku: product.sku || item.sku || 'N/A',
-          category: product.category || item.category || 'Uncategorized',
+          sku: product.sku || item.sku || "N/A",
+          category: product.category || item.category || "Uncategorized",
           quantity: 0,
           revenue: 0,
-          profit: 0
+          profit: 0,
         };
       }
 
@@ -508,20 +613,26 @@ function generateProductSalesReport() {
       productSales[productId].revenue += itemTotal;
 
       // Calculate profit if cost is available
-      const itemCost = (item.cost || (productMap[productId] ? productMap[productId].cost : 0)) * item.quantity;
+      const itemCost =
+        (item.cost ||
+          (productMap[productId] ? productMap[productId].cost : 0)) *
+        item.quantity;
       const itemProfit = itemTotal - itemCost;
       productSales[productId].profit += itemProfit;
     });
   });
 
   // Convert to array and sort by revenue (highest first)
-  const productData = Object.values(productSales).sort((a, b) => b.revenue - a.revenue);
+  const productData = Object.values(productSales).sort(
+    (a, b) => b.revenue - a.revenue
+  );
 
   // Generate table rows
-  let tableHTML = '';
+  let tableHTML = "";
 
-  productData.forEach(product => {
-    const margin = product.revenue > 0 ? (product.profit / product.revenue) * 100 : 0;
+  productData.forEach((product) => {
+    const margin =
+      product.revenue > 0 ? (product.profit / product.revenue) * 100 : 0;
 
     tableHTML += `
       <tr>
@@ -537,9 +648,18 @@ function generateProductSalesReport() {
   });
 
   // Add totals row
-  const totalQuantity = productData.reduce((sum, product) => sum + product.quantity, 0);
-  const totalRevenue = productData.reduce((sum, product) => sum + product.revenue, 0);
-  const totalProfit = productData.reduce((sum, product) => sum + product.profit, 0);
+  const totalQuantity = productData.reduce(
+    (sum, product) => sum + product.quantity,
+    0
+  );
+  const totalRevenue = productData.reduce(
+    (sum, product) => sum + product.revenue,
+    0
+  );
+  const totalProfit = productData.reduce(
+    (sum, product) => sum + product.profit,
+    0
+  );
   const totalMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
   tableHTML += `
@@ -558,27 +678,28 @@ function generateProductSalesReport() {
 
 // Generate category sales report
 function generateCategorySalesReport() {
-  const tableElement = document.getElementById('category-sales-table');
+  const tableElement = document.getElementById("category-sales-table");
   if (!tableElement) return;
 
   if (filteredInvoices.length === 0) {
-    tableElement.innerHTML = '<tr><td colspan="5" class="centered">No sales data for this period</td></tr>';
+    tableElement.innerHTML =
+      '<tr><td colspan="5" class="centered">No sales data for this period</td></tr>';
     return;
   }
 
   // Aggregate sales by category
   const categorySales = {};
 
-  filteredInvoices.forEach(invoice => {
-    invoice.items.forEach(item => {
-      const category = item.category || 'Uncategorized';
+  filteredInvoices.forEach((invoice) => {
+    invoice.items.forEach((item) => {
+      const category = item.category || "Uncategorized";
 
       if (!categorySales[category]) {
         categorySales[category] = {
           category,
           quantity: 0,
           revenue: 0,
-          profit: 0
+          profit: 0,
         };
       }
 
@@ -595,13 +716,16 @@ function generateCategorySalesReport() {
   });
 
   // Convert to array and sort by revenue (highest first)
-  const categoryData = Object.values(categorySales).sort((a, b) => b.revenue - a.revenue);
+  const categoryData = Object.values(categorySales).sort(
+    (a, b) => b.revenue - a.revenue
+  );
 
   // Generate table rows
-  let tableHTML = '';
+  let tableHTML = "";
 
-  categoryData.forEach(category => {
-    const margin = category.revenue > 0 ? (category.profit / category.revenue) * 100 : 0;
+  categoryData.forEach((category) => {
+    const margin =
+      category.revenue > 0 ? (category.profit / category.revenue) * 100 : 0;
 
     tableHTML += `
       <tr>
@@ -615,9 +739,18 @@ function generateCategorySalesReport() {
   });
 
   // Add totals row
-  const totalQuantity = categoryData.reduce((sum, category) => sum + category.quantity, 0);
-  const totalRevenue = categoryData.reduce((sum, category) => sum + category.revenue, 0);
-  const totalProfit = categoryData.reduce((sum, category) => sum + category.profit, 0);
+  const totalQuantity = categoryData.reduce(
+    (sum, category) => sum + category.quantity,
+    0
+  );
+  const totalRevenue = categoryData.reduce(
+    (sum, category) => sum + category.revenue,
+    0
+  );
+  const totalProfit = categoryData.reduce(
+    (sum, category) => sum + category.profit,
+    0
+  );
   const totalMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
   tableHTML += `
@@ -638,21 +771,31 @@ function generateCategorySalesReport() {
 function generateInventoryReport() {
   // Calculate inventory stats
   const totalProducts = products.length;
-  const totalValue = products.reduce((sum, product) => sum + product.price * product.stock, 0);
-  const totalCost = products.reduce((sum, product) => sum + (product.cost || 0) * product.stock, 0);
-  const lowStockItems = products.filter(product => product.stock <= 5).length;
+  const totalValue = products.reduce(
+    (sum, product) => sum + product.price * product.stock,
+    0
+  );
+  const totalCost = products.reduce(
+    (sum, product) => sum + (product.cost || 0) * product.stock,
+    0
+  );
+  const lowStockItems = products.filter((product) => product.stock <= 5).length;
 
   // Update inventory summary
-  document.getElementById('total-products').textContent = totalProducts;
-  document.getElementById('inventory-value').textContent = `$${totalValue.toFixed(2)}`;
-  document.getElementById('inventory-cost').textContent = `$${totalCost.toFixed(2)}`;
-  document.getElementById('low-stock-count').textContent = lowStockItems;
+  document.getElementById("total-products").textContent = totalProducts;
+  document.getElementById(
+    "inventory-value"
+  ).textContent = `$${totalValue.toFixed(2)}`;
+  document.getElementById("inventory-cost").textContent = `$${totalCost.toFixed(
+    2
+  )}`;
+  document.getElementById("low-stock-count").textContent = lowStockItems;
 
   // Calculate product sales quantities
   const productSales = {};
 
-  filteredInvoices.forEach(invoice => {
-    invoice.items.forEach(item => {
+  filteredInvoices.forEach((invoice) => {
+    invoice.items.forEach((item) => {
       const productId = item.id;
 
       if (!productSales[productId]) {
@@ -660,7 +803,7 @@ function generateInventoryReport() {
           id: productId,
           name: item.name,
           quantity: 0,
-          revenue: 0
+          revenue: 0,
         };
       }
 
@@ -670,21 +813,22 @@ function generateInventoryReport() {
   });
 
   // Generate top selling products table
-  const topSellingTable = document.getElementById('top-selling-table');
+  const topSellingTable = document.getElementById("top-selling-table");
   if (topSellingTable) {
-    let topSellingHTML = '';
+    let topSellingHTML = "";
 
     // Convert to array and sort by quantity sold (highest first)
     const topProducts = Object.values(productSales)
-        .sort((a, b) => b.quantity - a.quantity)
-        .slice(0, 5); // Top 5
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 5); // Top 5
 
     if (topProducts.length === 0) {
-      topSellingHTML = '<tr><td colspan="5" class="centered">No sales data available</td></tr>';
+      topSellingHTML =
+        '<tr><td colspan="5" class="centered">No sales data available</td></tr>';
     } else {
-      topProducts.forEach(item => {
+      topProducts.forEach((item) => {
         // Find product details
-        const product = products.find(p => p.id === item.id) || {};
+        const product = products.find((p) => p.id === item.id) || {};
 
         topSellingHTML += `
           <tr>
@@ -703,24 +847,25 @@ function generateInventoryReport() {
   }
 
   // Generate low stock products table
-  const lowStockTable = document.getElementById('low-stock-table');
+  const lowStockTable = document.getElementById("low-stock-table");
   if (lowStockTable) {
-    let lowStockHTML = '';
+    let lowStockHTML = "";
 
     // Get products with low stock and sort by stock level (lowest first)
     const lowStockProducts = products
-        .filter(product => product.stock <= 5)
-        .sort((a, b) => a.stock - b.stock)
-        .slice(0, 10); // Top 10 lowest stock
+      .filter((product) => product.stock <= 5)
+      .sort((a, b) => a.stock - b.stock)
+      .slice(0, 10); // Top 10 lowest stock
 
     if (lowStockProducts.length === 0) {
-      lowStockHTML = '<tr><td colspan="4" class="centered">No low stock products</td></tr>';
+      lowStockHTML =
+        '<tr><td colspan="4" class="centered">No low stock products</td></tr>';
     } else {
-      lowStockProducts.forEach(product => {
+      lowStockProducts.forEach((product) => {
         lowStockHTML += `
           <tr>
             <td>${product.name}</td>
-            <td>${product.sku || 'N/A'}</td>
+            <td>${product.sku || "N/A"}</td>
             <td>$${product.price.toFixed(2)}</td>
             <td class="low-stock">${product.stock}</td>
           </tr>
@@ -735,19 +880,19 @@ function generateInventoryReport() {
 
 // Create sales chart (placeholder for now)
 function createSalesChart() {
-  const chartContainer = document.getElementById('sales-chart');
+  const chartContainer = document.getElementById("sales-chart");
   if (!chartContainer) return;
 
   // Clear previous chart if it exists
-  chartContainer.innerHTML = '';
+  chartContainer.innerHTML = "";
 
   // Create canvas element for the chart
-  const canvas = document.createElement('canvas');
-  canvas.id = 'sales-performance-chart';
+  const canvas = document.createElement("canvas");
+  canvas.id = "sales-performance-chart";
   chartContainer.appendChild(canvas);
 
   // Get the context for Chart.js
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
 
   // Set up chart data based on current view
   const chartData = processChartData();
@@ -757,94 +902,110 @@ function createSalesChart() {
 
   // Create the chart
   salesChart = new Chart(ctx, {
-    type: 'bar', // Use bar chart for better performance
+    type: "bar", // Use bar chart for better performance
     data: {
       labels: chartData.labels,
-      datasets: [{
-        label: 'Revenue ($)',
-        data: chartData.revenue,
-        backgroundColor: 'rgba(99, 102, 241, 0.7)',
-        borderColor: 'rgb(99, 102, 241)',
-        borderWidth: 1
-      },
+      datasets: [
         {
-          label: 'Profit ($)',
+          label: "Revenue ($)",
+          data: chartData.revenue,
+          backgroundColor: "rgba(99, 102, 241, 0.7)",
+          borderColor: "rgb(99, 102, 241)",
+          borderWidth: 1,
+        },
+        {
+          label: "Profit ($)",
           data: chartData.profit,
-          backgroundColor: 'rgba(16, 185, 129, 0.7)',
-          borderColor: 'rgb(16, 185, 129)',
-          borderWidth: 1
-        }]
+          backgroundColor: "rgba(16, 185, 129, 0.7)",
+          borderColor: "rgb(16, 185, 129)",
+          borderWidth: 1,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       animation: {
-        duration: 500 // Shorter animations for better performance
+        duration: 500, // Shorter animations for better performance
       },
       plugins: {
         legend: {
-          position: 'top',
+          position: "top",
           labels: {
-            color: getComputedStyle(document.body).getPropertyValue('--text-primary')
-          }
+            color: getComputedStyle(document.body).getPropertyValue(
+              "--text-primary"
+            ),
+          },
         },
         tooltip: {
-          mode: 'index',
+          mode: "index",
           intersect: false,
-          backgroundColor: getComputedStyle(document.body).getPropertyValue('--base-100'),
-          titleColor: getComputedStyle(document.body).getPropertyValue('--text-primary'),
-          bodyColor: getComputedStyle(document.body).getPropertyValue('--text-secondary'),
-          borderColor: getComputedStyle(document.body).getPropertyValue('--primary'),
+          backgroundColor: getComputedStyle(document.body).getPropertyValue(
+            "--base-100"
+          ),
+          titleColor: getComputedStyle(document.body).getPropertyValue(
+            "--text-primary"
+          ),
+          bodyColor: getComputedStyle(document.body).getPropertyValue(
+            "--text-secondary"
+          ),
+          borderColor: getComputedStyle(document.body).getPropertyValue(
+            "--primary"
+          ),
           borderWidth: 1,
           callbacks: {
-            label: function(context) {
-              let label = context.dataset.label || '';
+            label: function (context) {
+              let label = context.dataset.label || "";
               if (label) {
-                label += ': ';
+                label += ": ";
               }
               if (context.parsed.y !== null) {
-                label += '$' + context.parsed.y.toFixed(2);
+                label += "$" + context.parsed.y.toFixed(2);
               }
               return label;
-            }
-          }
-        }
+            },
+          },
+        },
       },
       scales: {
         x: {
           grid: {
-            display: false // Hide grid for better performance
+            display: false, // Hide grid for better performance
           },
           ticks: {
-            color: getComputedStyle(document.body).getPropertyValue('--text-secondary')
-          }
+            color: getComputedStyle(document.body).getPropertyValue(
+              "--text-secondary"
+            ),
+          },
         },
         y: {
           beginAtZero: true,
           grid: {
-            color: 'rgba(0, 0, 0, 0.05)',
-            lineWidth: 0.5 // Thinner lines for better performance
+            color: "rgba(0, 0, 0, 0.05)",
+            lineWidth: 0.5, // Thinner lines for better performance
           },
           ticks: {
-            color: getComputedStyle(document.body).getPropertyValue('--text-secondary'),
-            callback: function(value) {
-              return '$' + value.toFixed(0);
-            }
-          }
-        }
-      }
-    }
+            color: getComputedStyle(document.body).getPropertyValue(
+              "--text-secondary"
+            ),
+            callback: function (value) {
+              return "$" + value.toFixed(0);
+            },
+          },
+        },
+      },
+    },
   });
 
   // Set up chart view buttons
-  const dailyBtn = document.getElementById('view-daily');
-  const weeklyBtn = document.getElementById('view-weekly');
-  const monthlyBtn = document.getElementById('view-monthly');
+  const dailyBtn = document.getElementById("view-daily");
+  const weeklyBtn = document.getElementById("view-weekly");
+  const monthlyBtn = document.getElementById("view-monthly");
 
   if (dailyBtn) {
-    dailyBtn.addEventListener('click', () => {
-      if (currentChartView !== 'daily') {
-        currentChartView = 'daily';
+    dailyBtn.addEventListener("click", () => {
+      if (currentChartView !== "daily") {
+        currentChartView = "daily";
         updateChartViewButtons();
         updateChart();
       }
@@ -852,9 +1013,9 @@ function createSalesChart() {
   }
 
   if (weeklyBtn) {
-    weeklyBtn.addEventListener('click', () => {
-      if (currentChartView !== 'weekly') {
-        currentChartView = 'weekly';
+    weeklyBtn.addEventListener("click", () => {
+      if (currentChartView !== "weekly") {
+        currentChartView = "weekly";
         updateChartViewButtons();
         updateChart();
       }
@@ -862,9 +1023,9 @@ function createSalesChart() {
   }
 
   if (monthlyBtn) {
-    monthlyBtn.addEventListener('click', () => {
-      if (currentChartView !== 'monthly') {
-        currentChartView = 'monthly';
+    monthlyBtn.addEventListener("click", () => {
+      if (currentChartView !== "monthly") {
+        currentChartView = "monthly";
         updateChartViewButtons();
         updateChart();
       }
@@ -874,11 +1035,11 @@ function createSalesChart() {
 
 // Export report data to CSV
 function exportReportData() {
-  const activeTabs = document.querySelectorAll('.report-tab');
-  let activeTab = '';
+  const activeTabs = document.querySelectorAll(".report-tab");
+  let activeTab = "";
 
   for (const tab of activeTabs) {
-    if (tab.classList.contains('active')) {
+    if (tab.classList.contains("active")) {
       activeTab = tab.dataset.tab;
       break;
     }
@@ -888,31 +1049,37 @@ function exportReportData() {
 
   // Get data based on active tab
   switch (activeTab) {
-    case 'daily-sales':
-      data = exportTableToCSV('daily-sales-table');
-      filename = `daily_sales_report_${formatDateForFilename(dateRange.from)}_to_${formatDateForFilename(dateRange.to)}.csv`;
+    case "daily-sales":
+      data = exportTableToCSV("daily-sales-table");
+      filename = `daily_sales_report_${formatDateForFilename(
+        dateRange.from
+      )}_to_${formatDateForFilename(dateRange.to)}.csv`;
       break;
-    case 'product-sales':
-      data = exportTableToCSV('product-sales-table');
-      filename = `product_sales_report_${formatDateForFilename(dateRange.from)}_to_${formatDateForFilename(dateRange.to)}.csv`;
+    case "product-sales":
+      data = exportTableToCSV("product-sales-table");
+      filename = `product_sales_report_${formatDateForFilename(
+        dateRange.from
+      )}_to_${formatDateForFilename(dateRange.to)}.csv`;
       break;
-    case 'category-sales':
-      data = exportTableToCSV('category-sales-table');
-      filename = `category_sales_report_${formatDateForFilename(dateRange.from)}_to_${formatDateForFilename(dateRange.to)}.csv`;
+    case "category-sales":
+      data = exportTableToCSV("category-sales-table");
+      filename = `category_sales_report_${formatDateForFilename(
+        dateRange.from
+      )}_to_${formatDateForFilename(dateRange.to)}.csv`;
       break;
     default:
-      alert('No data to export');
+      alert("No data to export");
       return;
   }
 
   // Create download
   if (data) {
-    const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([data], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -924,53 +1091,57 @@ function exportTableToCSV(tableId) {
   const table = document.getElementById(tableId);
   if (!table) return null;
 
-  const rows = table.querySelectorAll('tr');
+  const rows = table.querySelectorAll("tr");
   if (rows.length === 0) return null;
 
   let csv = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = [];
-    const cols = rows[i].querySelectorAll('td, th');
+    const cols = rows[i].querySelectorAll("td, th");
 
     for (let j = 0; j < cols.length; j++) {
       // Get text and clean it
       let data = cols[j].innerText;
-      data = data.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ');
+      data = data.replace(/(\r\n|\n|\r)/gm, "").replace(/(\s\s)/gm, " ");
       data = data.replace(/"/g, '""'); // Escape double quotes
 
       // Wrap in quotes if contains comma
-      row.push(data.includes(',') ? `"${data}"` : data);
+      row.push(data.includes(",") ? `"${data}"` : data);
     }
 
-    csv.push(row.join(','));
+    csv.push(row.join(","));
   }
 
-  return csv.join('\n');
+  return csv.join("\n");
 }
 
 // Helper function to format date for filenames
 function formatDateForFilename(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 // Add this function after the loadInitialData function
 function calculateInvoiceCosts() {
   // Create a map of products for quick lookup
   const productMap = {};
-  products.forEach(product => {
+  products.forEach((product) => {
     productMap[product.id] = product;
   });
 
   // Calculate cost for each invoice if not already set
-  invoices.forEach(invoice => {
+  invoices.forEach((invoice) => {
     if (!invoice.totalCost || invoice.totalCost === 0) {
       let totalCost = 0;
 
       // Sum the cost of each item
-      invoice.items.forEach(item => {
+      invoice.items.forEach((item) => {
         // Get cost either from the item itself or from the product catalog
-        const itemCost = item.cost || (productMap[item.id] ? productMap[item.id].cost : 0);
+        const itemCost =
+          item.cost || (productMap[item.id] ? productMap[item.id].cost : 0);
         totalCost += itemCost * item.quantity;
       });
 
@@ -986,11 +1157,11 @@ function calculateInvoiceCosts() {
 // Add this function to your reports.js file
 function formatDate(date) {
   if (!(date instanceof Date) || isNaN(date)) {
-    return 'Invalid date';
+    return "Invalid date";
   }
 
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   const year = date.getFullYear();
 
   return `${month}/${day}/${year}`;
@@ -1000,9 +1171,9 @@ function formatDate(date) {
 function processChartData() {
   // Default empty data
   const emptyData = {
-    labels: ['No data'],
+    labels: ["No data"],
     revenue: [0],
-    profit: [0]
+    profit: [0],
   };
 
   if (!filteredInvoices || filteredInvoices.length === 0) {
@@ -1018,22 +1189,30 @@ function processChartData() {
   });
 
   // Group data based on view type
-  sortedInvoices.forEach(invoice => {
+  sortedInvoices.forEach((invoice) => {
     const date = new Date(invoice.date || invoice.createdAt);
     let key;
 
-    if (currentChartView === 'daily') {
+    if (currentChartView === "daily") {
       // Group by day - use YYYY-MM-DD format
-      key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    } else if (currentChartView === 'weekly') {
+      key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${String(date.getDate()).padStart(2, "0")}`;
+    } else if (currentChartView === "weekly") {
       // Group by week - calculate week number
       const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
       const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
-      const weekNum = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+      const weekNum = Math.ceil(
+        (pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7
+      );
       key = `Week ${weekNum}, ${date.getFullYear()}`;
     } else {
       // Group by month - use YYYY-MM format
-      key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}`;
     }
 
     if (!groupedData[key]) {
@@ -1041,14 +1220,14 @@ function processChartData() {
         key,
         date, // Store a date for sorting
         revenue: 0,
-        profit: 0
+        profit: 0,
       };
     }
 
     groupedData[key].revenue += invoice.total || 0;
 
     // Calculate profit
-    const profit = invoice.profit || (invoice.total - (invoice.totalCost || 0));
+    const profit = invoice.profit || invoice.total - (invoice.totalCost || 0);
     groupedData[key].profit += profit;
   });
 
@@ -1059,23 +1238,26 @@ function processChartData() {
   dataArray.sort((a, b) => a.date - b.date);
 
   // Format labels based on view type
-  const labels = dataArray.map(item => {
-    if (currentChartView === 'daily') {
+  const labels = dataArray.map((item) => {
+    if (currentChartView === "daily") {
       // Format as MM/DD
       const date = item.date;
       return `${date.getMonth() + 1}/${date.getDate()}`;
-    } else if (currentChartView === 'weekly') {
+    } else if (currentChartView === "weekly") {
       return item.key; // Already formatted as "Week X, YYYY"
     } else {
       // Format as Month YYYY
       const date = item.date;
-      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      });
     }
   });
 
   // Create datasets
-  const revenue = dataArray.map(item => item.revenue);
-  const profit = dataArray.map(item => item.profit);
+  const revenue = dataArray.map((item) => item.revenue);
+  const profit = dataArray.map((item) => item.profit);
 
   // If we have too many data points, reduce the number
   if (labels.length > 15) {
@@ -1102,14 +1284,14 @@ function processChartData() {
     return {
       labels: reducedLabels,
       revenue: reducedRevenue,
-      profit: reducedProfit
+      profit: reducedProfit,
     };
   }
 
   return {
     labels,
     revenue,
-    profit
+    profit,
   };
 }
 
@@ -1128,23 +1310,23 @@ function updateChart() {
 
 // Update button states based on current view
 function updateChartViewButtons() {
-  const dailyBtn = document.getElementById('view-daily');
-  const weeklyBtn = document.getElementById('view-weekly');
-  const monthlyBtn = document.getElementById('view-monthly');
+  const dailyBtn = document.getElementById("view-daily");
+  const weeklyBtn = document.getElementById("view-weekly");
+  const monthlyBtn = document.getElementById("view-monthly");
 
   if (dailyBtn && weeklyBtn && monthlyBtn) {
     // Reset all buttons
-    dailyBtn.className = 'btn btn-ghost';
-    weeklyBtn.className = 'btn btn-ghost';
-    monthlyBtn.className = 'btn btn-ghost';
+    dailyBtn.className = "btn btn-ghost";
+    weeklyBtn.className = "btn btn-ghost";
+    monthlyBtn.className = "btn btn-ghost";
 
     // Set active button
-    if (currentChartView === 'daily') {
-      dailyBtn.className = 'btn btn-primary';
-    } else if (currentChartView === 'weekly') {
-      weeklyBtn.className = 'btn btn-primary';
+    if (currentChartView === "daily") {
+      dailyBtn.className = "btn btn-primary";
+    } else if (currentChartView === "weekly") {
+      weeklyBtn.className = "btn btn-primary";
     } else {
-      monthlyBtn.className = 'btn btn-primary';
+      monthlyBtn.className = "btn btn-primary";
     }
   }
 }
