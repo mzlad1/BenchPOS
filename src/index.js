@@ -459,7 +459,7 @@ setupIpcHandlers();
 function setupIpcHandlers() {
   // Online status and sync handlers
   ipcMain.handle("get-online-status", () => {
-    console.log("IPC: get-online-status called, returning:", isOnline);
+    console.log("Main process: get-online-status called, returning:", isOnline);
     return isOnline;
   });
 
@@ -639,6 +639,32 @@ function setupIpcHandlers() {
       }
 
       return false;
+    }
+  });
+
+  ipcMain.handle("send-password-reset", async (event, email) => {
+    try {
+      console.log("Main process: Handling send-password-reset for", email);
+
+      // Call the sendPasswordReset function from Firebase service
+      if (
+        firebaseService &&
+        typeof firebaseService.sendPasswordReset === "function"
+      ) {
+        return await firebaseService.sendPasswordReset(email);
+      } else {
+        console.error("Firebase password reset service not available");
+        return {
+          success: false,
+          message: "Password reset service is not available",
+        };
+      }
+    } catch (error) {
+      console.error("Error in send-password-reset handler:", error);
+      return {
+        success: false,
+        message: "An error occurred. Please try again.",
+      };
     }
   });
 

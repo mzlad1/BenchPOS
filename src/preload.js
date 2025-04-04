@@ -41,12 +41,25 @@ contextBridge.exposeInMainWorld("api", {
     console.log("Preload: Calling update-invoice", invoice.id);
     return await safeIpcInvoke("update-invoice", invoice);
   },
-
+  sendPasswordReset: async (email) => {
+    console.log("Preload: Calling send-password-reset", email);
+    try {
+      return await safeIpcInvoke("send-password-reset", email);
+    } catch (error) {
+      console.error("Error in sendPasswordReset:", error);
+      return {
+        success: false,
+        message: "Failed to send password reset: " + error.message,
+      };
+    }
+  },
   // Online/Offline and sync functions
   getOnlineStatus: async () => {
     console.log("Preload: Calling get-online-status");
     try {
-      return await safeIpcInvoke("get-online-status");
+      const status = await safeIpcInvoke("get-online-status");
+      console.log("Preload: Online status received:", status);
+      return status;
     } catch (error) {
       console.error("Error getting online status:", error);
       return navigator.onLine; // Fallback to browser API
@@ -113,7 +126,7 @@ contextBridge.exposeInMainWorld("api", {
     // Register a one-time listener for a specific channel
     once: (channel, callback) => {
       ipcRenderer.once(channel, (event, ...args) => callback(...args));
-    }
+    },
   },
   getUsers: async (filters) => {
     console.log("Preload: Calling get-users");
@@ -142,7 +155,10 @@ contextBridge.exposeInMainWorld("api", {
       return await safeIpcInvoke("create-user", userData);
     } catch (error) {
       console.error("Error in createUser:", error);
-      return { success: false, message: "Failed to create user: " + error.message };
+      return {
+        success: false,
+        message: "Failed to create user: " + error.message,
+      };
     }
   },
 
@@ -152,7 +168,10 @@ contextBridge.exposeInMainWorld("api", {
       return await safeIpcInvoke("update-user", userData);
     } catch (error) {
       console.error("Error in updateUser:", error);
-      return { success: false, message: "Failed to update user: " + error.message };
+      return {
+        success: false,
+        message: "Failed to update user: " + error.message,
+      };
     }
   },
 
@@ -162,7 +181,10 @@ contextBridge.exposeInMainWorld("api", {
       return await safeIpcInvoke("delete-user", userId);
     } catch (error) {
       console.error("Error in deleteUser:", error);
-      return { success: false, message: "Failed to delete user: " + error.message };
+      return {
+        success: false,
+        message: "Failed to delete user: " + error.message,
+      };
     }
   },
   // Event listeners for online status and sync events
@@ -181,14 +203,13 @@ contextBridge.exposeInMainWorld("api", {
       console.log("Removing online-status-changed listener");
       ipcRenderer.removeListener("online-status-changed", subscription);
     };
-
   },
 
   onUnsyncedDataAvailable: (callback) => {
     const subscription = (event, data) => callback(data);
     ipcRenderer.on("unsynced-data-available", subscription);
     return () =>
-        ipcRenderer.removeListener("unsynced-data-available", subscription);
+      ipcRenderer.removeListener("unsynced-data-available", subscription);
   },
 
   onSyncStarted: (callback) => {

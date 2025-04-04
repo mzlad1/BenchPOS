@@ -2,8 +2,13 @@
 
 let isOnline = false;
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Set up event listeners
+document.addEventListener("DOMContentLoaded", async () => {
+  document.getElementById("register-button").disabled = true;
+
+  // Wait for connection check to complete
+  await checkConnectionStatus();
+
+  // Now set up event listeners
   document
     .getElementById("register-form")
     .addEventListener("submit", handleRegister);
@@ -14,8 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ).length;
     window.LayoutManager.updateInventoryBadge(lowStockCount);
   }
-  // Check connection status
-  checkConnectionStatus();
 });
 
 async function checkConnectionStatus() {
@@ -60,21 +63,52 @@ async function checkConnectionStatus() {
 }
 
 function updateConnectionUI(online) {
+  // First, enable/disable the register button regardless of UI updates
+  const registerButton = document.getElementById("register-button");
+  if (registerButton) {
+    if (online) {
+      registerButton.disabled = false;
+      // You might want to clear any previous error messages
+      const errorEl = document.getElementById("error-message");
+      if (errorEl) errorEl.style.display = "none";
+    } else {
+      registerButton.disabled = true;
+      // Show error if offline
+      showError(
+        "Account creation requires internet connection. Please connect and try again."
+      );
+    }
+  }
+
+  // Now safely update connection indicators if they exist
   const indicator = document.getElementById("connection-indicator");
   const statusText = document.getElementById("connection-text");
   const connectionStatus = document.getElementById("connection-status");
 
-  if (online) {
-    indicator.classList.remove("offline");
-    indicator.classList.add("online");
-    statusText.textContent = "Online Mode";
-    connectionStatus.classList.remove("offline");
-  } else {
-    indicator.classList.remove("online");
-    indicator.classList.add("offline");
-    statusText.textContent = "Offline Mode";
-    connectionStatus.classList.add("offline");
+  if (indicator) {
+    if (online) {
+      indicator.classList.remove("offline");
+      indicator.classList.add("online");
+    } else {
+      indicator.classList.remove("online");
+      indicator.classList.add("offline");
+    }
   }
+
+  if (statusText) {
+    statusText.textContent = online ? "Online Mode" : "Offline Mode";
+  }
+
+  if (connectionStatus) {
+    if (online) {
+      connectionStatus.classList.remove("offline");
+    } else {
+      connectionStatus.classList.add("offline");
+    }
+  }
+
+  // Important: Log the connection status for debugging
+  console.log("Connection status updated:", online ? "Online" : "Offline");
 }
 
 function showError(message) {
@@ -105,6 +139,12 @@ function showSuccess(message) {
 
 async function handleRegister(event) {
   event.preventDefault();
+
+  // Check online status again right before registration
+  if (window.api && typeof window.api.getOnlineStatus === "function") {
+    isOnline = await window.api.getOnlineStatus();
+    console.log("Registration - current online status:", isOnline);
+  }
 
   if (!isOnline) {
     showError(

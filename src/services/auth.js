@@ -8,10 +8,15 @@ const {
 } = require("firebase/auth");
 const {
   getFirestore,
+  collection,
   doc,
   setDoc,
   getDoc,
+  getDocs,
   updateDoc,
+  deleteDoc,
+  query,
+  where,
 } = require("firebase/firestore");
 const bcrypt = require("bcryptjs");
 const ElectronStore = require("electron-store");
@@ -128,18 +133,21 @@ async function loginUser(credentials) {
         // Set current user
         currentUser = { ...userData, authProvider: "firebase" };
 
+        // Sync users with Firebase for better local data
+        await syncUsersWithFirebase(firebaseUser.uid, isOnline);
+
         return { success: true, user: userData };
       } catch (firebaseError) {
         console.error("Firebase login failed:", firebaseError);
 
         // Fall back to local login if Firebase authentication fails
         console.log("Falling back to local login");
-        return localLogin(email, password);
+        return await localLogin(email, password, isOnline);
       }
     } else {
       // Offline mode: use local authentication
       console.log("Using local login (offline)");
-      return localLogin(email, password);
+      return await localLogin(email, password, isOnline);
     }
   } catch (error) {
     console.error("Login error:", error);
@@ -201,8 +209,94 @@ function getCurrentUser() {
   return null;
 }
 
+/**
+ * Synchronize Firebase users with local storage
+ * This should be called after login when online
+ * @param {string} currentUserId - ID of the currently logged in user
+ * @returns {Promise<boolean>} - Success status
+ */
+async function syncUsersWithFirebase(currentUserId, isOnline) {
+  try {
+    if (!db || !isFirebaseConfigured() || !isOnline) {
+      console.log("Cannot sync users: Firebase not available or offline");
+      return false;
+    }
+
+    console.log("Syncing users with Firebase...");
+
+    // Get all users from Firestore
+    const userCollection = collection(db, "users");
+    const snapshot = await getDocs(userCollection);
+    const firebaseUsers = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Get local users
+    const localUsers = localStore.get("users") || [];
+
+    // Create a map of Firebase users by ID and email
+    const firebaseUserMap = new Map();
+    const firebaseEmailMap = new Map();
+
+    firebaseUsers.forEach((user) => {
+      firebaseUserMap.set(user.id, user);
+      if (user.email) {
+        firebaseEmailMap.set(user.email.toLowerCase(), user);
+      }
+    });
+
+    // Filter local users to keep only those that exist in Firebase
+    // (except for the current user which we always keep)
+    const validLocalUsers = localUsers.filter((localUser) => {
+      // Always keep the current user
+      if (localUser.id === currentUserId) {
+        return true;
+      }
+
+      // Keep users that exist in Firebase by ID or email
+      return (
+        firebaseUserMap.has(localUser.id) ||
+        (localUser.email && firebaseEmailMap.has(localUser.email.toLowerCase()))
+      );
+    });
+
+    // Add any Firebase users that don't exist locally
+    // (we can't add password hashes, but this makes them visible in UI)
+    firebaseUsers.forEach((fbUser) => {
+      const existsLocally = validLocalUsers.some(
+        (localUser) =>
+          localUser.id === fbUser.id ||
+          (localUser.email &&
+            fbUser.email &&
+            localUser.email.toLowerCase() === fbUser.email.toLowerCase())
+      );
+
+      if (!existsLocally && fbUser.email) {
+        // Add skeleton user - they'll need to login online once to set password
+        validLocalUsers.push({
+          ...fbUser,
+          // Use a hash that will never match any password
+          passwordHash: "$2a$10$INVALID_USER_NEEDS_ONLINE_LOGIN",
+          syncedFromFirebase: true,
+        });
+      }
+    });
+
+    // Update local storage
+    localStore.set("users", validLocalUsers);
+    console.log(`User sync completed: ${validLocalUsers.length} valid users`);
+
+    return true;
+  } catch (error) {
+    console.error("Error syncing users with Firebase:", error);
+    return false;
+  }
+}
+
 // Local login fallback
-function localLogin(email, password) {
+// Update to make this function async
+async function localLogin(email, password, isOnline) {
   try {
     const users = localStore.get("users") || [];
     const user = users.find(
@@ -215,6 +309,40 @@ function localLogin(email, password) {
         message:
           "User not found. Login requires internet connection for first-time users.",
       };
+    }
+
+    // Check if we're online and should validate against Firebase
+    if (isOnline && auth && isFirebaseConfigured()) {
+      try {
+        // Check if user exists in Firebase
+        const firebaseUserQuery = query(
+          collection(db, "users"),
+          where("email", "==", email.toLowerCase())
+        );
+        const querySnapshot = await getDocs(firebaseUserQuery);
+
+        // If user doesn't exist in Firebase but exists locally, they might have been deleted
+        if (querySnapshot.empty) {
+          console.log(
+            "User exists locally but not in Firebase. Account may have been deleted."
+          );
+
+          // Remove from local storage only if we confirm they don't exist in Firebase
+          const updatedUsers = users.filter(
+            (u) => u.email.toLowerCase() !== email.toLowerCase()
+          );
+          localStore.set("users", updatedUsers);
+
+          return {
+            success: false,
+            message:
+              "Your account appears to have been deleted. Please contact administrator.",
+          };
+        }
+      } catch (error) {
+        console.error("Error validating user against Firebase:", error);
+        // Continue with local login as fallback
+      }
     }
 
     // Verify password
@@ -295,27 +423,65 @@ async function registerUser(userData) {
 }
 
 // Sync Firebase user to local storage
-function syncUserToLocal(userData, plainPassword) {
+function syncUserToLocal(userData, plainPassword = null) {
   try {
     const users = localStore.get("users") || [];
 
-    // Remove existing user with same ID or email if exists
-    const filteredUsers = users.filter(
+    // Find existing user
+    const existingUserIndex = users.findIndex(
       (u) =>
-        u.id !== userData.id &&
-        u.email.toLowerCase() !== userData.email.toLowerCase()
+        u.id === userData.id ||
+        (u.email &&
+          userData.email &&
+          u.email.toLowerCase() === userData.email.toLowerCase())
     );
 
-    // Hash password for local storage
-    const salt = bcrypt.genSaltSync(10);
-    const userWithHash = {
-      ...userData,
-      passwordHash: bcrypt.hashSync(plainPassword, salt),
-    };
+    let updatedUser;
 
-    // Add user to local storage
-    filteredUsers.push(userWithHash);
-    localStore.set("users", filteredUsers);
+    if (existingUserIndex >= 0) {
+      // Update existing user
+      const existingUser = users[existingUserIndex];
+
+      // Only update password if a new one is provided
+      if (plainPassword) {
+        const salt = bcrypt.genSaltSync(10);
+        updatedUser = {
+          ...existingUser,
+          ...userData,
+          passwordHash: bcrypt.hashSync(plainPassword, salt),
+          updatedAt: new Date().toISOString(),
+        };
+      } else {
+        // Keep existing password hash
+        updatedUser = {
+          ...existingUser,
+          ...userData,
+          passwordHash: existingUser.passwordHash,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+
+      // Replace the user in the array
+      users[existingUserIndex] = updatedUser;
+    } else {
+      // Add new user
+      if (!plainPassword) {
+        console.error("Cannot add new user without password");
+        return false;
+      }
+
+      const salt = bcrypt.genSaltSync(10);
+      updatedUser = {
+        ...userData,
+        passwordHash: bcrypt.hashSync(plainPassword, salt),
+        createdAt: new Date().toISOString(),
+      };
+
+      users.push(updatedUser);
+    }
+
+    // Save updated users to local storage
+    localStore.set("users", users);
 
     console.log("User synced to local storage:", userData.email);
     return true;

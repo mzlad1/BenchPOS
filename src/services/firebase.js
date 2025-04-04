@@ -1,5 +1,7 @@
 // services/firebase.js
 const { initializeApp } = require("firebase/app");
+const { sendPasswordResetEmail } = require("firebase/auth");
+
 const {
   getFirestore,
   collection,
@@ -104,6 +106,7 @@ const initializeFirebase = async () => {
 
 // Update online status
 const updateOnlineStatus = (status) => {
+  console.log("Updating online status to:", status);
   isOnline = status;
   notifySyncListeners();
 };
@@ -180,7 +183,56 @@ const syncData = async () => {
     notifySyncListeners();
   }
 };
+/**
+ * Send password reset email
+ * @param {string} email - User's email address
+ * @returns {Promise<Object>} - Result of the operation
+ */
+const sendPasswordReset = async (email) => {
+  try {
+    // Check if Firebase is initialized
+    if (!firebaseInitialized || !auth) {
+      return {
+        success: false,
+        message: "Firebase Auth not initialized",
+      };
+    }
 
+    // Check if we're online
+    if (!isOnline) {
+      return {
+        success: false,
+        message: "You must be online to reset your password",
+      };
+    }
+
+    // Send password reset email
+    await sendPasswordResetEmail(auth, email);
+
+    return {
+      success: true,
+      message: "Password reset email sent successfully",
+    };
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+
+    // Handle different Firebase errors
+    let errorMessage = "An error occurred. Please try again.";
+
+    if (error.code === "auth/user-not-found") {
+      errorMessage = "No account found with this email address.";
+    } else if (error.code === "auth/invalid-email") {
+      errorMessage = "The email address is not valid.";
+    } else if (error.code === "auth/too-many-requests") {
+      errorMessage = "Too many unsuccessful attempts. Please try again later.";
+    }
+
+    return {
+      success: false,
+      message: errorMessage,
+    };
+  }
+};
 // Sync a specific collection between Firebase and local storage
 const syncCollection = async (collectionName) => {
   try {
@@ -512,6 +564,7 @@ module.exports = {
   getLastSyncTime,
   subscribeToCollection,
   isFirebaseConfigured,
+  sendPasswordReset,
 };
 /**
  * Ensure Firebase authentication when online
