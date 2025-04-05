@@ -1,613 +1,689 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta
-          http-equiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
-  />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+    />
 
+    <link rel="stylesheet" href="../styles/global.css" />
+    <link rel="stylesheet" href="../styles/billing.css" />
+    <link rel="stylesheet" href="../styles/dark-mode.css" />
 
-  <link rel="stylesheet" href="../styles/global.css" />
-  <link rel="stylesheet" href="../styles/billing.css" />
-  <link rel="stylesheet" href="../styles/dark-mode.css" />
+    <title>New Sale - MZLAD Billing System</title>
+  </head>
+  <body class="light-mode">
+    <div class="app-container">
+      <!-- Sidebar Container (will be populated by layout.js) -->
+      <div id="sidebar-container"></div>
 
-  <title>New Sale - MZLAD Billing System</title>
-</head>
-<body class="light-mode">
-<div class="app-container">
-  <!-- Sidebar Container (will be populated by layout.js) -->
-  <div id="sidebar-container"></div>
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header Container (will be populated by layout.js) -->
+        <div id="header-container"></div>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Header Container (will be populated by layout.js) -->
-    <div id="header-container"></div>
+        <main>
+          <div class="container">
+            <header>
+              <div class="header-right">
+                <span id="current-date"></span>
+              </div>
+            </header>
 
-    <main>
-      <div class="container">
-        <header>
+            <div class="billing-container">
+              <div class="product-selection">
+                <h2>Products</h2>
 
-          <div class="header-right">
-            <span id="current-date"></span>
-          </div>
-        </header>
+                <div class="search-bar">
+                  <input
+                    type="text"
+                    id="product-search"
+                    placeholder="Search products..."
+                  />
+                </div>
 
-        <div class="billing-container">
-          <div class="product-selection">
-            <h2>Products</h2>
+                <div id="products-list" class="products-grid">
+                  <!-- Products will be loaded here dynamically -->
+                  <div class="loading">Loading products...</div>
+                </div>
+              </div>
 
+              <div class="invoice-panel">
+                <h2>Current Invoice</h2>
+                <div class="invoice-details">
+                  <div class="invoice-header">
+                    <div class="invoice-id">
+                      <label>Invoice #:</label>
+                      <span id="invoice-id">Auto-generated</span>
+                    </div>
+                    <div class="invoice-date">
+                      <label>Date:</label>
+                      <span id="invoice-date"></span>
+                    </div>
+                  </div>
 
-            <div class="search-bar">
-              <input
+                  <div class="customer-info">
+                    <label for="customer-name">Customer:</label>
+                    <input
                       type="text"
-                      id="product-search"
-                      placeholder="Search products..."
-              />
-            </div>
+                      id="customer-name"
+                      placeholder="Customer name (optional)"
+                    />
+                  </div>
 
-            <div id="products-list" class="products-grid">
-              <!-- Products will be loaded here dynamically -->
-              <div class="loading">Loading products...</div>
-            </div>
-          </div>
+                  <div class="cart-items">
+                    <table id="cart-table">
+                      <thead>
+                        <tr>
+                          <th>Item</th>
+                          <th>Price</th>
+                          <th>Qty</th>
+                          <th>Total</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="cart-items">
+                        <!-- Cart items will be added here -->
+                        <tr class="empty-cart">
+                          <td colspan="6">No items added yet</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
-          <div class="invoice-panel">
-            <h2>Current Invoice</h2>
-            <div class="invoice-details">
-              <div class="invoice-header">
-                <div class="invoice-id">
-                  <label>Invoice #:</label>
-                  <span id="invoice-id">Auto-generated</span>
+                  <div class="invoice-summary">
+                    <div class="summary-row">
+                      <span>Subtotal:</span>
+                      <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                      <span>Discount:</span>
+                      <span id="discount-value">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                      <span>Tax (0):</span>
+                      <span id="tax">$0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                      <span>Total:</span>
+                      <span id="total">$0.00</span>
+                    </div>
+                  </div>
+
+                  <div class="payment-actions">
+                    <button id="clear-invoice" class="btn secondary-btn">
+                      Clear
+                    </button>
+                    <button id="complete-sale" class="btn primary-btn" disabled>
+                      Complete Sale
+                    </button>
+                  </div>
                 </div>
-                <div class="invoice-date">
-                  <label>Date:</label>
-                  <span id="invoice-date"></span>
-                </div>
-              </div>
-
-              <div class="customer-info">
-                <label for="customer-name">Customer:</label>
-                <input
-                        type="text"
-                        id="customer-name"
-                        placeholder="Customer name (optional)"
-                />
-              </div>
-
-              <div class="cart-items">
-                <table id="cart-table">
-                  <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Price</th>
-                    <th>Qty</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                  </tr>
-                  </thead>
-                  <tbody id="cart-items">
-                  <!-- Cart items will be added here -->
-                  <tr class="empty-cart">
-                    <td colspan="6">No items added yet</td>
-                  </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="invoice-summary">
-                <div class="summary-row">
-                  <span>Subtotal:</span>
-                  <span id="subtotal">$0.00</span>
-                </div>
-                <div class="summary-row">
-                  <span>Discount:</span>
-                  <span id="discount-value">$0.00</span>
-                </div>
-                <div class="summary-row">
-                  <span>Tax (0):</span>
-                  <span id="tax">$0.00</span>
-                </div>
-                <div class="summary-row total">
-                  <span>Total:</span>
-                  <span id="total">$0.00</span>
-                </div>
-              </div>
-
-
-              <div class="payment-actions">
-                <button id="clear-invoice" class="btn secondary-btn">
-                  Clear
-                </button>
-                <button id="complete-sale" class="btn primary-btn" disabled>
-                  Complete Sale
-                </button>
               </div>
             </div>
           </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div id="receipt-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Receipt</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div id="receipt-container" class="receipt">
+          <!-- Receipt content will be generated here -->
+        </div>
+        <div class="modal-footer">
+          <button id="print-receipt" class="btn primary-btn">
+            Print Receipt <span class="shortcut-indicator">(F8)</span>
+          </button>
+          <button id="email-receipt" class="btn secondary-btn">
+            Email Receipt
+          </button>
+          <button id="new-sale" class="btn">New Sale</button>
         </div>
       </div>
-    </main>
-  </div>
-</div>
-
-<!-- Receipt Modal -->
-<div id="receipt-modal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Receipt</h2>
-      <span class="close">&times;</span>
     </div>
-    <div id="receipt-container" class="receipt">
-      <!-- Receipt content will be generated here -->
-    </div>
-    <div class="modal-footer">
-      <button id="print-receipt" class="btn primary-btn">
-        Print Receipt <span class="shortcut-indicator">(F8)</span>
-      </button>
-      <button id="email-receipt" class="btn secondary-btn">
-        Email Receipt
-      </button>
-      <button id="new-sale" class="btn">New Sale</button>
-    </div>
-  </div>
-</div>
 
+    <script>
+      // Add this as a separate script to fix the scrolling issue
+      (function () {
+        // Keep track of the current scroll position
+        let lastScrollX = 0;
+        let lastScrollY = 0;
 
-<script>
-  // Add this as a separate script to fix the scrolling issue
-  (function () {
-    // Keep track of the current scroll position
-    let lastScrollX = 0;
-    let lastScrollY = 0;
+        // Save scroll position when user scrolls
+        window.addEventListener(
+          "scroll",
+          function () {
+            lastScrollX = window.scrollX;
+            lastScrollY = window.scrollY;
+          },
+          { passive: true }
+        );
 
-    // Save scroll position when user scrolls
-    window.addEventListener(
-            "scroll",
-            function () {
-              lastScrollX = window.scrollX;
-              lastScrollY = window.scrollY;
-            },
-            { passive: true }
-    );
+        // Override the focus method to preserve scroll position
+        const originalFocus = HTMLElement.prototype.focus;
+        HTMLElement.prototype.focus = function () {
+          // Save current scroll position before focusing
+          const scrollX = window.scrollX || lastScrollX;
+          const scrollY = window.scrollY || lastScrollY;
 
-    // Override the focus method to preserve scroll position
-    const originalFocus = HTMLElement.prototype.focus;
-    HTMLElement.prototype.focus = function () {
-      // Save current scroll position before focusing
-      const scrollX = window.scrollX || lastScrollX;
-      const scrollY = window.scrollY || lastScrollY;
+          // Call the original focus method
+          originalFocus.apply(this, arguments);
 
-      // Call the original focus method
-      originalFocus.apply(this, arguments);
+          // Restore scroll position after a tiny delay
+          // This is necessary because browsers may scroll after focus is called
+          setTimeout(function () {
+            window.scrollTo(scrollX, scrollY);
+          }, 0);
+        };
 
-      // Restore scroll position after a tiny delay
-      // This is necessary because browsers may scroll after focus is called
-      setTimeout(function () {
-        window.scrollTo(scrollX, scrollY);
-      }, 0);
-    };
+        // Also handle the hidden input specifically
+        function fixHiddenInputs() {
+          const inputs = document.querySelectorAll(
+            'input[style*="position: absolute"]'
+          );
 
-    // Also handle the hidden input specifically
-    function fixHiddenInputs() {
-      const inputs = document.querySelectorAll(
-              'input[style*="position: absolute"]'
-      );
+          inputs.forEach((input) => {
+            // Check if this might be the hidden barcode input
+            if (
+              input.style.top === "-100px" ||
+              input.style.opacity === "0" ||
+              input.style.position === "absolute"
+            ) {
+              // Add more specific fixes for the hidden barcode input
+              input.style.pointerEvents = "none";
 
-      inputs.forEach((input) => {
-        // Check if this might be the hidden barcode input
-        if (
-                input.style.top === "-100px" ||
-                input.style.opacity === "0" ||
-                input.style.position === "absolute"
-        ) {
-          // Add more specific fixes for the hidden barcode input
-          input.style.pointerEvents = "none";
-
-          // Add an extra event listener to restore scroll after this input is focused
-          input.addEventListener("focus", function () {
-            setTimeout(function () {
-              window.scrollTo(lastScrollX, lastScrollY);
-            }, 10);
+              // Add an extra event listener to restore scroll after this input is focused
+              input.addEventListener("focus", function () {
+                setTimeout(function () {
+                  window.scrollTo(lastScrollX, lastScrollY);
+                }, 10);
+              });
+            }
           });
         }
-      });
-    }
 
-    // Run the fix when DOM is fully loaded
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fixHiddenInputs);
-    } else {
-      fixHiddenInputs();
-    }
-
-    // Also run it again after everything is loaded
-    window.addEventListener("load", fixHiddenInputs);
-
-    // And periodically check for the hidden input (in case it's added dynamically)
-    setInterval(fixHiddenInputs, 2000);
-
-    console.log("Scroll position fix applied");
-  })();
-</script>
-
-<!-- F3 key receipt format fix -->
-<script>
-  // This script fixes the F3 key receipt format issue
-  (function() {
-    // Wait for everything to be fully loaded
-    window.addEventListener('load', function() {
-      console.log('F3 Fix: Starting direct injection fix...');
-
-      // Get reference to the Complete Sale button
-      const completeBtn = document.getElementById('complete-sale');
-      if (!completeBtn) {
-        console.error('F3 Fix: Complete Sale button not found!');
-        return;
-      }
-
-      // Create a function that simulates clicking the button
-      function clickCompleteSaleButton() {
-        if (completeBtn && !completeBtn.disabled) {
-          console.log('F3 Fix: Clicking Complete Sale button...');
-          completeBtn.click();
+        // Run the fix when DOM is fully loaded
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", fixHiddenInputs);
+        } else {
+          fixHiddenInputs();
         }
-      }
 
-      // Very high priority event listener to catch F3 before anything else
-      window.addEventListener('keydown', function(event) {
-        if (event.key === 'F3') {
-          console.log('F3 Fix: F3 key intercepted!');
+        // Also run it again after everything is loaded
+        window.addEventListener("load", fixHiddenInputs);
 
-          // Stop the event from propagating to other handlers
-          event.preventDefault();
-          event.stopPropagation();
-          event.stopImmediatePropagation();
+        // And periodically check for the hidden input (in case it's added dynamically)
+        setInterval(fixHiddenInputs, 2000);
 
-          // Skip if viewing invoice without being in edit mode
-          if (window.isViewingInvoice && !window.isEditingInvoice) {
-            alert("Please click 'Edit' first before making changes.");
-            return false;
-          }
+        console.log("Scroll position fix applied");
+      })();
+    </script>
 
-          // Trigger the button click
-          clickCompleteSaleButton();
+    <!-- F3 key receipt format fix -->
+    <script>
+      // This script fixes the F3 key receipt format issue
+      (function () {
+        // Wait for everything to be fully loaded
+        window.addEventListener("load", function () {
+          console.log("F3 Fix: Starting direct injection fix...");
 
-          return false;
-        }
-      }, true); // true = capture phase, ensures this runs first
-
-      console.log('F3 Fix: Fix applied successfully!');
-    });
-
-    console.log('F3 Fix: Script loaded');
-  })();
-</script>
-
-<!-- Load Scripts -->
-<script src="../scripts/layout.js"></script>
-<script src="../scripts/Billing/core.js"></script>
-<script src="../scripts/Billing/productManager.js"></script>
-<script src="../scripts/Billing/cartManager.js"></script>
-<script src="../scripts/Billing/payment-and-receipts.js"></script>
-<script src="../scripts/Billing/barcodeHandler.js"></script>
-<script src="../scripts/Billing/discountManager.js"></script>
-<script src="../scripts/Billing/keyboardController.js"></script>
-<script src="../scripts/Billing/invoiceNavigator.js"></script>
-<script src="../scripts/Billing/ui-fixes.js"></script>
-<script src="../scripts/professional-receipt.js"></script>
-<script>
-  // Initialize page with correct layout
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize layout manager first
-    if (window.LayoutManager) {
-      window.LayoutManager.init('billing');
-    }
-
-    // Set the current date
-    const today = new Date();
-    const currentDateEl = document.getElementById('current-date');
-    if (currentDateEl) {
-      currentDateEl.textContent = formatDate(today);
-    }
-
-    function formatDate(date) {
-      if (!(date instanceof Date) || isNaN(date)) {
-        return 'Invalid date';
-      }
-
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const year = date.getFullYear();
-
-      return `${month}/${day}/${year}`;
-    }
-
-    // Move barcode form to products section
-    const barcodeForm = document.getElementById('barcode-form');
-    const productsList = document.getElementById('products-list');
-
-    if (barcodeForm && productsList) {
-      barcodeForm.classList.remove('hidden');
-      productsList.parentNode.insertBefore(barcodeForm, productsList);
-    }
-
-    // Focus barcode input if it exists
-    setTimeout(() => {
-      const barcodeInput = document.getElementById('barcode-input');
-      if (barcodeInput) {
-        barcodeInput.focus();
-      }
-    }, 500);
-  });
-</script>
-<script>
-  (function() {
-    // Debug function to capture current state
-    function debugPrintState() {
-      console.group('===== RECEIPT SYSTEM DEBUG =====');
-
-      // Check viewing invoice state
-      console.log('isViewingInvoice:', window.isViewingInvoice);
-      console.log('currentInvoiceIndex:', window.currentInvoiceIndex);
-
-      // Check invoices array
-      if (typeof window.allInvoices !== 'undefined') {
-        console.log('allInvoices.length:', window.allInvoices.length);
-        if (window.currentInvoiceIndex >= 0 && window.currentInvoiceIndex < window.allInvoices.length) {
-          console.log('Current invoice ID:', window.allInvoices[window.currentInvoiceIndex].id);
-        }
-      } else {
-        console.log('allInvoices: undefined');
-      }
-
-      // Check cart state
-      if (typeof window.cart !== 'undefined') {
-        console.log('cart.length:', window.cart.length);
-      } else {
-        console.log('cart: undefined');
-      }
-
-      // Check receipt container
-      const receiptContainer = document.getElementById('receipt-container');
-      console.log('receipt-container exists:', !!receiptContainer);
-      if (receiptContainer) {
-        console.log('receipt-container has content:', receiptContainer.innerHTML.trim() !== '');
-      }
-
-      console.groupEnd();
-    }
-
-    // Override the printReceipt function to add debugging
-    const originalPrintReceipt = window.printReceipt;
-
-    window.printReceipt = function() {
-      console.log('Print receipt called - running diagnostics...');
-      debugPrintState();
-
-      // Call the original function
-      return originalPrintReceipt.apply(this, arguments);
-    };
-
-    // Add an F8 press counter
-    let f8PressCount = 0;
-
-    document.addEventListener('keydown', function(event) {
-      if (event.key === 'F8') {
-        f8PressCount++;
-        console.log(`F8 pressed (${f8PressCount} times)`);
-        setTimeout(debugPrintState, 100); // Run debug after a short delay
-      }
-    }, true);
-
-    // Add a debug button to the UI for convenience
-    function addDebugButton() {
-      if (document.getElementById('debug-receipt-btn')) return;
-
-      const button = document.createElement('button');
-      button.id = 'debug-receipt-btn';
-      button.textContent = 'Debug Receipt System';
-      button.style.position = 'fixed';
-      button.style.bottom = '10px';
-      button.style.left = '10px';
-      button.style.zIndex = '9999';
-      button.style.backgroundColor = '#ff5722';
-      button.style.color = 'white';
-      button.style.border = 'none';
-      button.style.borderRadius = '4px';
-      button.style.padding = '8px 12px';
-      button.style.cursor = 'pointer';
-
-      button.addEventListener('click', function() {
-        debugPrintState();
-        alert('Debug info logged to console. Press F12 to view.');
-      });
-
-      document.body.appendChild(button);
-    }
-
-    // Fix the most common issues
-    function applyPossibleFixes() {
-      // Fix 1: Ensure global flag is set correctly on invoice navigation
-      const originalLoadInvoice = window.loadInvoice;
-      if (typeof originalLoadInvoice === 'function') {
-        window.loadInvoice = function(invoice) {
-          console.log('Loading invoice:', invoice.id);
-          window.isViewingInvoice = true;
-          return originalLoadInvoice.apply(this, arguments);
-        };
-      }
-
-      // Fix 2: Ensure currentInvoiceIndex is set correctly
-      const originalShowPreviousInvoice = window.showPreviousInvoice;
-      if (typeof originalShowPreviousInvoice === 'function') {
-        window.showPreviousInvoice = function() {
-          console.log('Previous invoice navigation');
-          const result = originalShowPreviousInvoice.apply(this, arguments);
-          console.log('After navigation, currentInvoiceIndex:', window.currentInvoiceIndex);
-          return result;
-        };
-      }
-
-      const originalShowNextInvoice = window.showNextInvoice;
-      if (typeof originalShowNextInvoice === 'function') {
-        window.showNextInvoice = function() {
-          console.log('Next invoice navigation');
-          const result = originalShowNextInvoice.apply(this, arguments);
-          console.log('After navigation, currentInvoiceIndex:', window.currentInvoiceIndex);
-          return result;
-        };
-      }
-
-      // Fix 3: Make sure new sale resets the viewing flag
-      const originalStartNewInvoice = window.startNewInvoice;
-      if (typeof originalStartNewInvoice === 'function') {
-        window.startNewInvoice = function() {
-          console.log('Starting new invoice');
-          window.isViewingInvoice = false;
-          return originalStartNewInvoice.apply(this, arguments);
-        };
-      }
-
-      // Fix 4: Force proper context check in printReceipt
-      const fixedPrintReceipt = function() {
-        console.log("FIXED printReceipt called");
-        debugPrintState();
-
-        try {
-          let receiptHtml;
-          let styles = '';
-
-          // Check if professional styles are available
-          if (typeof professionalReceiptStyles !== 'undefined') {
-            styles = professionalReceiptStyles;
-          }
-
-          // Explicitly check our state and log it
-          console.log("CONTEXT CHECK:");
-          console.log("  - window.isViewingInvoice:", window.isViewingInvoice);
-          console.log("  - currentInvoiceIndex:", window.currentInvoiceIndex);
-          console.log("  - allInvoices exists:", typeof window.allInvoices !== 'undefined');
-          console.log("  - allInvoices length:", typeof window.allInvoices !== 'undefined' ? window.allInvoices.length : 'N/A');
-          console.log("  - cart exists:", typeof window.cart !== 'undefined');
-          console.log("  - cart length:", typeof window.cart !== 'undefined' ? window.cart.length : 'N/A');
-
-          // FIRST CASE: Check if we are viewing a specific invoice - with explicit window references
-          if (window.isViewingInvoice === true &&
-                  typeof window.currentInvoiceIndex !== 'undefined' && window.currentInvoiceIndex >= 0 &&
-                  typeof window.allInvoices !== 'undefined' && window.allInvoices && window.allInvoices.length > 0 &&
-                  window.currentInvoiceIndex < window.allInvoices.length) {
-
-            console.log("USING SPECIFIC INVOICE:", window.currentInvoiceIndex);
-            const invoiceData = window.allInvoices[window.currentInvoiceIndex];
-            console.log("Invoice ID:", invoiceData.id);
-
-            // Generate receipt HTML for the specific invoice
-            if (typeof generateProfessionalReceipt === 'function') {
-              receiptHtml = generateProfessionalReceipt(invoiceData);
-            } else {
-              receiptHtml = generateReceiptHtml(invoiceData);
-            }
-
-            // Print receipt directly to printer
-            printReceiptDirectly(receiptHtml, styles);
-
-            // Show notification
-            showToastNotification("Printing invoice #" + invoiceData.id);
+          // Get reference to the Complete Sale button
+          const completeBtn = document.getElementById("complete-sale");
+          if (!completeBtn) {
+            console.error("F3 Fix: Complete Sale button not found!");
             return;
           }
 
-          // SECOND CASE: Check if cart exists and has items - with explicit window references
-          if (typeof window.cart !== 'undefined' && window.cart && window.cart.length > 0) {
-            console.log("USING CURRENT CART:", window.cart.length, "items");
+          // Create a function that simulates clicking the button
+          function clickCompleteSaleButton() {
+            if (completeBtn && !completeBtn.disabled) {
+              console.log("F3 Fix: Clicking Complete Sale button...");
+              completeBtn.click();
+            }
+          }
 
-            // Create invoice data from current cart
-            const invoiceData = {
-              items: window.cart.map(item => ({
-                ...item,
-                originalPrice: item.price,
-                finalPrice: item.price
-              })),
-              customer: typeof window.customerNameEl !== 'undefined' && window.customerNameEl ?
-                      window.customerNameEl.value || "Guest Customer" : "Guest Customer",
-              subtotal: typeof window.subtotalEl !== 'undefined' && window.subtotalEl ?
-                      parseFloat(window.subtotalEl.textContent.replace("$", "")) :
-                      window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-              tax: typeof window.taxEl !== 'undefined' && window.taxEl ?
-                      parseFloat(window.taxEl.textContent.replace("$", "")) : 0,
-              total: typeof window.totalEl !== 'undefined' && window.totalEl ?
-                      parseFloat(window.totalEl.textContent.replace("$", "")) :
-                      window.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-              date: new Date().toISOString(),
-              id: "CART-" + new Date().getTime(),
-              isRefund: window.cart.some(item => item.price < 0)
+          // Very high priority event listener to catch F3 before anything else
+          window.addEventListener(
+            "keydown",
+            function (event) {
+              if (event.key === "F3") {
+                console.log("F3 Fix: F3 key intercepted!");
+
+                // Stop the event from propagating to other handlers
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+
+                // Skip if viewing invoice without being in edit mode
+                if (window.isViewingInvoice && !window.isEditingInvoice) {
+                  alert("Please click 'Edit' first before making changes.");
+                  return false;
+                }
+
+                // Trigger the button click
+                clickCompleteSaleButton();
+
+                return false;
+              }
+            },
+            true
+          ); // true = capture phase, ensures this runs first
+
+          console.log("F3 Fix: Fix applied successfully!");
+        });
+
+        console.log("F3 Fix: Script loaded");
+      })();
+    </script>
+
+    <!-- Load Scripts -->
+    <script src="../scripts/layout.js"></script>
+    <script src="../scripts/Billing/core.js"></script>
+    <script src="../scripts/Billing/productManager.js"></script>
+    <script src="../scripts/Billing/cartManager.js"></script>
+    <script src="../scripts/Billing/payment-and-receipts.js"></script>
+    <script src="../scripts/Billing/barcodeHandler.js"></script>
+    <script src="../scripts/Billing/discountManager.js"></script>
+    <script src="../scripts/Billing/keyboardController.js"></script>
+    <script src="../scripts/Billing/invoiceNavigator.js"></script>
+    <script src="../scripts/Billing/ui-fixes.js"></script>
+    <script src="../scripts/professional-receipt.js"></script>
+    <script>
+      // Initialize page with correct layout
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize layout manager first
+        if (window.LayoutManager) {
+          window.LayoutManager.init("billing");
+        }
+
+        // Set the current date
+        const today = new Date();
+        const currentDateEl = document.getElementById("current-date");
+        if (currentDateEl) {
+          currentDateEl.textContent = formatDate(today);
+        }
+
+        function formatDate(date) {
+          if (!(date instanceof Date) || isNaN(date)) {
+            return "Invalid date";
+          }
+
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          const year = date.getFullYear();
+
+          return `${month}/${day}/${year}`;
+        }
+
+        // Move barcode form to products section
+        const barcodeForm = document.getElementById("barcode-form");
+        const productsList = document.getElementById("products-list");
+
+        if (barcodeForm && productsList) {
+          barcodeForm.classList.remove("hidden");
+          productsList.parentNode.insertBefore(barcodeForm, productsList);
+        }
+
+        // Focus barcode input if it exists
+        setTimeout(() => {
+          const barcodeInput = document.getElementById("barcode-input");
+          if (barcodeInput) {
+            barcodeInput.focus();
+          }
+        }, 500);
+      });
+    </script>
+    <!-- <script>
+      (function () {
+        // Debug function to capture current state
+        function debugPrintState() {
+          console.group("===== RECEIPT SYSTEM DEBUG =====");
+
+          // Check viewing invoice state
+          console.log("isViewingInvoice:", window.isViewingInvoice);
+          console.log("currentInvoiceIndex:", window.currentInvoiceIndex);
+
+          // Check invoices array
+          if (typeof window.allInvoices !== "undefined") {
+            console.log("allInvoices.length:", window.allInvoices.length);
+            if (
+              window.currentInvoiceIndex >= 0 &&
+              window.currentInvoiceIndex < window.allInvoices.length
+            ) {
+              console.log(
+                "Current invoice ID:",
+                window.allInvoices[window.currentInvoiceIndex].id
+              );
+            }
+          } else {
+            console.log("allInvoices: undefined");
+          }
+
+          // Check cart state
+          if (typeof window.cart !== "undefined") {
+            console.log("cart.length:", window.cart.length);
+          } else {
+            console.log("cart: undefined");
+          }
+
+          // Check receipt container
+          const receiptContainer = document.getElementById("receipt-container");
+          console.log("receipt-container exists:", !!receiptContainer);
+          if (receiptContainer) {
+            console.log(
+              "receipt-container has content:",
+              receiptContainer.innerHTML.trim() !== ""
+            );
+          }
+
+          console.groupEnd();
+        }
+
+        // Override the printReceipt function to add debugging
+        const originalPrintReceipt = window.printReceipt;
+
+        window.printReceipt = function () {
+          console.log("Print receipt called - running diagnostics...");
+          debugPrintState();
+
+          // Call the original function
+          return originalPrintReceipt.apply(this, arguments);
+        };
+
+        // Add an F8 press counter
+        let f8PressCount = 0;
+
+        document.addEventListener(
+          "keydown",
+          function (event) {
+            if (event.key === "F8") {
+              f8PressCount++;
+              console.log(`F8 pressed (${f8PressCount} times)`);
+              setTimeout(debugPrintState, 100); // Run debug after a short delay
+            }
+          },
+          true
+        );
+
+        // Add a debug button to the UI for convenience
+        function addDebugButton() {
+          if (document.getElementById("debug-receipt-btn")) return;
+
+          const button = document.createElement("button");
+          button.id = "debug-receipt-btn";
+          button.textContent = "Debug Receipt System";
+          button.style.position = "fixed";
+          button.style.bottom = "10px";
+          button.style.left = "10px";
+          button.style.zIndex = "9999";
+          button.style.backgroundColor = "#ff5722";
+          button.style.color = "white";
+          button.style.border = "none";
+          button.style.borderRadius = "4px";
+          button.style.padding = "8px 12px";
+          button.style.cursor = "pointer";
+
+          button.addEventListener("click", function () {
+            debugPrintState();
+            alert("Debug info logged to console. Press F12 to view.");
+          });
+
+          document.body.appendChild(button);
+        }
+
+        // Fix the most common issues
+        function applyPossibleFixes() {
+          // Fix 1: Ensure global flag is set correctly on invoice navigation
+          const originalLoadInvoice = window.loadInvoice;
+          if (typeof originalLoadInvoice === "function") {
+            window.loadInvoice = function (invoice) {
+              console.log("Loading invoice:", invoice.id);
+              window.isViewingInvoice = true;
+              return originalLoadInvoice.apply(this, arguments);
             };
+          }
 
-            // Generate receipt HTML
-            if (typeof generateProfessionalReceipt === 'function') {
-              receiptHtml = generateProfessionalReceipt(invoiceData);
-            } else {
-              receiptHtml = generateReceiptHtml(invoiceData);
+          // Fix 2: Ensure currentInvoiceIndex is set correctly
+          const originalShowPreviousInvoice = window.showPreviousInvoice;
+          if (typeof originalShowPreviousInvoice === "function") {
+            window.showPreviousInvoice = function () {
+              console.log("Previous invoice navigation");
+              const result = originalShowPreviousInvoice.apply(this, arguments);
+              console.log(
+                "After navigation, currentInvoiceIndex:",
+                window.currentInvoiceIndex
+              );
+              return result;
+            };
+          }
+
+          const originalShowNextInvoice = window.showNextInvoice;
+          if (typeof originalShowNextInvoice === "function") {
+            window.showNextInvoice = function () {
+              console.log("Next invoice navigation");
+              const result = originalShowNextInvoice.apply(this, arguments);
+              console.log(
+                "After navigation, currentInvoiceIndex:",
+                window.currentInvoiceIndex
+              );
+              return result;
+            };
+          }
+
+          // Fix 3: Make sure new sale resets the viewing flag
+          const originalStartNewInvoice = window.startNewInvoice;
+          if (typeof originalStartNewInvoice === "function") {
+            window.startNewInvoice = function () {
+              console.log("Starting new invoice");
+              window.isViewingInvoice = false;
+              return originalStartNewInvoice.apply(this, arguments);
+            };
+          }
+
+          // Fix 4: Force proper context check in printReceipt
+          const fixedPrintReceipt = function () {
+            console.log("FIXED printReceipt called");
+            debugPrintState();
+
+            try {
+              let receiptHtml;
+              let styles = "";
+
+              // Check if professional styles are available
+              if (typeof professionalReceiptStyles !== "undefined") {
+                styles = professionalReceiptStyles;
+              }
+
+              // Explicitly check our state and log it
+              console.log("CONTEXT CHECK:");
+              console.log(
+                "  - window.isViewingInvoice:",
+                window.isViewingInvoice
+              );
+              console.log(
+                "  - currentInvoiceIndex:",
+                window.currentInvoiceIndex
+              );
+              console.log(
+                "  - allInvoices exists:",
+                typeof window.allInvoices !== "undefined"
+              );
+              console.log(
+                "  - allInvoices length:",
+                typeof window.allInvoices !== "undefined"
+                  ? window.allInvoices.length
+                  : "N/A"
+              );
+              console.log(
+                "  - cart exists:",
+                typeof window.cart !== "undefined"
+              );
+              console.log(
+                "  - cart length:",
+                typeof window.cart !== "undefined" ? window.cart.length : "N/A"
+              );
+
+              // FIRST CASE: Check if we are viewing a specific invoice - with explicit window references
+              if (
+                window.isViewingInvoice === true &&
+                typeof window.currentInvoiceIndex !== "undefined" &&
+                window.currentInvoiceIndex >= 0 &&
+                typeof window.allInvoices !== "undefined" &&
+                window.allInvoices &&
+                window.allInvoices.length > 0 &&
+                window.currentInvoiceIndex < window.allInvoices.length
+              ) {
+                console.log(
+                  "USING SPECIFIC INVOICE:",
+                  window.currentInvoiceIndex
+                );
+                const invoiceData =
+                  window.allInvoices[window.currentInvoiceIndex];
+                console.log("Invoice ID:", invoiceData.id);
+
+                // Generate receipt HTML for the specific invoice
+                if (typeof generateProfessionalReceipt === "function") {
+                  receiptHtml = generateProfessionalReceipt(invoiceData);
+                } else {
+                  receiptHtml = generateReceiptHtml(invoiceData);
+                }
+
+                // Print receipt directly to printer
+                printReceiptDirectly(receiptHtml, styles);
+
+                // Show notification
+                showToastNotification("Printing invoice #" + invoiceData.id);
+                return;
+              }
+
+              // SECOND CASE: Check if cart exists and has items - with explicit window references
+              if (
+                typeof window.cart !== "undefined" &&
+                window.cart &&
+                window.cart.length > 0
+              ) {
+                console.log("USING CURRENT CART:", window.cart.length, "items");
+
+                // Create invoice data from current cart
+                const invoiceData = {
+                  items: window.cart.map((item) => ({
+                    ...item,
+                    originalPrice: item.price,
+                    finalPrice: item.price,
+                  })),
+                  customer:
+                    typeof window.customerNameEl !== "undefined" &&
+                    window.customerNameEl
+                      ? window.customerNameEl.value || "Guest Customer"
+                      : "Guest Customer",
+                  subtotal:
+                    typeof window.subtotalEl !== "undefined" &&
+                    window.subtotalEl
+                      ? parseFloat(
+                          window.subtotalEl.textContent.replace("$", "")
+                        )
+                      : window.cart.reduce(
+                          (sum, item) => sum + item.price * item.quantity,
+                          0
+                        ),
+                  tax:
+                    typeof window.taxEl !== "undefined" && window.taxEl
+                      ? parseFloat(window.taxEl.textContent.replace("$", ""))
+                      : 0,
+                  total:
+                    typeof window.totalEl !== "undefined" && window.totalEl
+                      ? parseFloat(window.totalEl.textContent.replace("$", ""))
+                      : window.cart.reduce(
+                          (sum, item) => sum + item.price * item.quantity,
+                          0
+                        ),
+                  date: new Date().toISOString(),
+                  id: "CART-" + new Date().getTime(),
+                  isRefund: window.cart.some((item) => item.price < 0),
+                };
+
+                // Generate receipt HTML
+                if (typeof generateProfessionalReceipt === "function") {
+                  receiptHtml = generateProfessionalReceipt(invoiceData);
+                } else {
+                  receiptHtml = generateReceiptHtml(invoiceData);
+                }
+
+                // Print receipt directly to printer
+                printReceiptDirectly(receiptHtml, styles);
+
+                // Show notification
+                showToastNotification("Printing current cart items...");
+                return;
+              }
+
+              // THIRD CASE: Check if there's a receipt in the container
+              const receiptContainer =
+                document.getElementById("receipt-container");
+              if (
+                receiptContainer &&
+                receiptContainer.innerHTML.trim() !== ""
+              ) {
+                console.log("USING RECEIPT CONTAINER");
+                receiptHtml = receiptContainer.innerHTML;
+                printReceiptDirectly(receiptHtml, styles);
+                showToastNotification("Printing receipt...");
+                return;
+              }
+
+              // If we get here, there's nothing to print
+              console.log("NOTHING TO PRINT");
+              showToastNotification(
+                "No items to print. Add items to cart first.",
+                true
+              );
+            } catch (error) {
+              console.error("Error printing receipt:", error);
+              showToastNotification(
+                "Error printing receipt. Check console for details.",
+                true
+              );
             }
+          };
 
-            // Print receipt directly to printer
-            printReceiptDirectly(receiptHtml, styles);
-
-            // Show notification
-            showToastNotification("Printing current cart items...");
-            return;
-          }
-
-          // THIRD CASE: Check if there's a receipt in the container
-          const receiptContainer = document.getElementById('receipt-container');
-          if (receiptContainer && receiptContainer.innerHTML.trim() !== '') {
-            console.log("USING RECEIPT CONTAINER");
-            receiptHtml = receiptContainer.innerHTML;
-            printReceiptDirectly(receiptHtml, styles);
-            showToastNotification("Printing receipt...");
-            return;
-          }
-
-          // If we get here, there's nothing to print
-          console.log("NOTHING TO PRINT");
-          showToastNotification("No items to print. Add items to cart first.", true);
-
-        } catch (error) {
-          console.error("Error printing receipt:", error);
-          showToastNotification("Error printing receipt. Check console for details.", true);
+          // Apply the fixed print receipt function - but keep the original as a backup
+          window._originalPrintReceiptBeforeFix = window.printReceipt;
+          window.printReceipt = fixedPrintReceipt;
         }
-      };
 
-      // Apply the fixed print receipt function - but keep the original as a backup
-      window._originalPrintReceiptBeforeFix = window.printReceipt;
-      window.printReceipt = fixedPrintReceipt;
-    }
+        // Initialize our debug tools
+        function initDebugTools() {
+          console.log("Initializing receipt system debugger...");
 
-    // Initialize our debug tools
-    function initDebugTools() {
-      console.log('Initializing receipt system debugger...');
+          // Add debug button after a short delay
+          setTimeout(addDebugButton, 2000);
 
-      // Add debug button after a short delay
-      setTimeout(addDebugButton, 2000);
+          // Apply potential fixes
+          applyPossibleFixes();
 
-      // Apply potential fixes
-      applyPossibleFixes();
+          // Run initial diagnostics
+          setTimeout(debugPrintState, 1000);
 
-      // Run initial diagnostics
-      setTimeout(debugPrintState, 1000);
+          console.log("Receipt system debugger initialized.");
+        }
 
-      console.log('Receipt system debugger initialized.');
-    }
-
-    // Run on load
-    if (document.readyState === 'complete') {
-      initDebugTools();
-    } else {
-      window.addEventListener('load', initDebugTools);
-    }
-  })();
-</script>
-<script src="../scripts/print.js"></script>
-</body>
+        // Run on load
+        if (document.readyState === "complete") {
+          initDebugTools();
+        } else {
+          window.addEventListener("load", initDebugTools);
+        }
+      })();
+    </script> -->
+    <script src="../scripts/unified-print.js"></script>
+    <!-- <script src="../scripts/print.js"></script> -->
+  </body>
 </html>

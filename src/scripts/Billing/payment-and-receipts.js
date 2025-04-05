@@ -1,55 +1,102 @@
 // Complete sale
 // Fix for the completeSale function to update the invoices array
 async function completeSale() {
-    if (cart.length === 0) return;
+  if (cart.length === 0) return;
 
-    try {
-        const invoiceData = {
-            items: cart,
-            customer: customerNameEl.value || "Guest Customer",
-            subtotal: parseFloat(subtotalEl.textContent.replace("$", "")),
-            tax: parseFloat(taxEl.textContent.replace("$", "")),
-            total: parseFloat(totalEl.textContent.replace("$", "")),
-            date: new Date().toISOString(),
-        };
+  try {
+    const invoiceData = {
+      items: cart,
+      customer: customerNameEl.value || "Guest Customer",
+      subtotal: parseFloat(subtotalEl.textContent.replace("$", "")),
+      tax: parseFloat(taxEl.textContent.replace("$", "")),
+      total: parseFloat(totalEl.textContent.replace("$", "")),
+      date: new Date().toISOString(),
+    };
 
-        // Save invoice to database
-        const invoiceId = await window.api.createInvoice(invoiceData);
+    // Save invoice to database
+    const invoiceId = await window.api.createInvoice(invoiceData);
 
-        // *** Add this code to update the in-memory invoices array ***
-        const newInvoice = {
-            ...invoiceData,
-            id: invoiceId,
-            createdAt: new Date().toISOString(),
-        };
+    // *** Add this code to update the in-memory invoices array ***
+    const newInvoice = {
+      ...invoiceData,
+      id: invoiceId,
+      createdAt: new Date().toISOString(),
+    };
 
-        // Add the new invoice to the allInvoices array
-        allInvoices.unshift(newInvoice); // Add to beginning (newest first)
+    // Add the new invoice to the allInvoices array
+    allInvoices.unshift(newInvoice); // Add to beginning (newest first)
 
-        // Reset the current index to point to the new invoice
-        currentInvoiceIndex = 0;
-        // *** End of new code ***
+    // Reset the current index to point to the new invoice
+    currentInvoiceIndex = 0;
+    // *** End of new code ***
 
-        // Generate receipt HTML
-        const receiptHtml = generateReceiptHtml({
-            ...invoiceData,
-            id: invoiceId,
-        });
+    // Generate receipt HTML (store it but don't show modal)
+    const receiptHtml = generateReceiptHtml({
+      ...invoiceData,
+      id: invoiceId,
+    });
 
-        // Display receipt in modal
-        receiptContainerEl.innerHTML = receiptHtml;
-        receiptModal.style.display = "block";
-    } catch (error) {
-        console.error("Error completing sale:", error);
-        alert("Failed to complete sale. Please try again.");
-    }
+    // Still store the receipt HTML for F8 printing, but don't show the modal
+    receiptContainerEl.innerHTML = receiptHtml;
+    // receiptModal.style.display = "block"; // REMOVED THIS LINE
+
+    // Show a notification instead
+    showToastNotification("Sale completed successfully");
+
+    // Clear the cart
+    clearCart();
+  } catch (error) {
+    console.error("Error completing sale:", error);
+    alert("Failed to complete sale. Please try again.");
+  }
+}
+
+// Add a toast notification function if it doesn't exist yet
+function showToastNotification(message, isError = false, duration = 3000) {
+  let notification = document.getElementById("toast-notification");
+
+  if (!notification) {
+    notification = document.createElement("div");
+    notification.id = "toast-notification";
+    notification.style.position = "fixed";
+    notification.style.bottom = "20px";
+    notification.style.right = "20px";
+    notification.style.padding = "16px 24px";
+    notification.style.borderRadius = "4px";
+    notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    notification.style.zIndex = "10000";
+    notification.style.transition = "opacity 0.3s, transform 0.3s";
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(20px)";
+    notification.style.fontSize = "14px";
+    document.body.appendChild(notification);
+  }
+
+  // Set color based on message type
+  notification.style.backgroundColor = isError ? "#F44336" : "#4CAF50";
+  notification.style.color = "white";
+
+  // Update content
+  notification.textContent = message;
+
+  // Show with animation
+  setTimeout(() => {
+    notification.style.opacity = "1";
+    notification.style.transform = "translateY(0)";
+  }, 10);
+
+  // Hide after duration
+  setTimeout(() => {
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(20px)";
+  }, duration);
 }
 
 // Generate receipt HTML
 function generateReceiptHtml(invoice) {
-    const itemsHtml = invoice.items
-        .map(
-            (item) => `
+  const itemsHtml = invoice.items
+    .map(
+      (item) => `
     <tr>
       <td>${item.name}</td>
       <td>${item.quantity}</td>
@@ -57,10 +104,10 @@ function generateReceiptHtml(invoice) {
       <td>$${(item.price * item.quantity).toFixed(2)}</td>
     </tr>
   `
-        )
-        .join("");
+    )
+    .join("");
 
-    return `
+  return `
     <div class="receipt-header">
       <h2>MZLAD Billing System</h2>
       <p>123 Main Street, Anytown, USA</p>
@@ -110,42 +157,42 @@ function generateReceiptHtml(invoice) {
 // Print receipt
 // Completely revised print receipt function that bypasses the API
 async function printReceipt() {
-    try {
-        // Check if receipt container exists
-        if (!receiptContainerEl) {
-            console.error("Receipt container element not found");
-            alert("Error: Receipt container not found. Please try again.");
-            return;
-        }
-
-        const receiptHtml = receiptContainerEl.innerHTML;
-
-        // Generate a timestamp-based ID if we can't extract one from the receipt
-        let invoiceId = "receipt-" + new Date().toISOString().replace(/[:.]/g, "-");
-
-        // Try to extract the invoice ID if possible, but don't worry if it fails
-        try {
-            const idMatch = receiptHtml.match(/Receipt #:\s*([a-zA-Z0-9-]+)/);
-            if (idMatch && idMatch[1]) {
-                invoiceId = idMatch[1];
-            }
-        } catch (err) {
-            console.log("Couldn't extract invoice ID, using generated one instead");
-        }
-
-        // Skip the API call and use the direct download method
-        downloadReceiptAsHTML(receiptHtml, invoiceId);
-    } catch (error) {
-        console.error("Error handling receipt:", error);
-        alert("There was an error preparing the receipt. Please try again.");
+  try {
+    // Check if receipt container exists
+    if (!receiptContainerEl) {
+      console.error("Receipt container element not found");
+      alert("Error: Receipt container not found. Please try again.");
+      return;
     }
+
+    const receiptHtml = receiptContainerEl.innerHTML;
+
+    // Generate a timestamp-based ID if we can't extract one from the receipt
+    let invoiceId = "receipt-" + new Date().toISOString().replace(/[:.]/g, "-");
+
+    // Try to extract the invoice ID if possible, but don't worry if it fails
+    try {
+      const idMatch = receiptHtml.match(/Receipt #:\s*([a-zA-Z0-9-]+)/);
+      if (idMatch && idMatch[1]) {
+        invoiceId = idMatch[1];
+      }
+    } catch (err) {
+      console.log("Couldn't extract invoice ID, using generated one instead");
+    }
+
+    // Skip the API call and use the direct download method
+    downloadReceiptAsHTML(receiptHtml, invoiceId);
+  } catch (error) {
+    console.error("Error handling receipt:", error);
+    alert("There was an error preparing the receipt. Please try again.");
+  }
 }
 
 // Function to download receipt as HTML
 function downloadReceiptAsHTML(html, invoiceId) {
-    try {
-        // Create a styled HTML document
-        const fullHtml = `
+  try {
+    // Create a styled HTML document
+    const fullHtml = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -205,36 +252,36 @@ function downloadReceiptAsHTML(html, invoiceId) {
       </html>
     `;
 
-        // Create a Blob containing the HTML
-        const blob = new Blob([fullHtml], { type: "text/html" });
+    // Create a Blob containing the HTML
+    const blob = new Blob([fullHtml], { type: "text/html" });
 
-        // Create a link element to download the file
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = `receipt-${invoiceId}.html`;
+    // Create a link element to download the file
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `receipt-${invoiceId}.html`;
 
-        // Append to body, click to download, then remove
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+    // Append to body, click to download, then remove
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 
-        alert(
-            `Receipt downloaded as HTML file: receipt-${invoiceId}.html\n\nOpen the file in your browser and use your browser's print function to print it.`
-        );
-    } catch (error) {
-        console.error("Error creating downloadable receipt:", error);
-        alert("Failed to create downloadable receipt. Please try again.");
-    }
+    alert(
+      `Receipt downloaded as HTML file: receipt-${invoiceId}.html\n\nOpen the file in your browser and use your browser's print function to print it.`
+    );
+  } catch (error) {
+    console.error("Error creating downloadable receipt:", error);
+    alert("Failed to create downloadable receipt. Please try again.");
+  }
 }
 
 // This is a replacement for the emailReceipt function
 // that offers to download the receipt instead
 function emailReceipt() {
-    if (
-        confirm(
-            "Email functionality would be implemented in a real app. Would you like to download the receipt instead?"
-        )
-    ) {
-        printReceipt();
-    }
+  if (
+    confirm(
+      "Email functionality would be implemented in a real app. Would you like to download the receipt instead?"
+    )
+  ) {
+    printReceipt();
+  }
 }

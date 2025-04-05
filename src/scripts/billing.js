@@ -3307,7 +3307,6 @@ function addDiscountStyles() {
     
     .radio-group {
       display: flex;
-      flex-direction: column;
       gap: 10px;
       margin: 10px 0;
     }

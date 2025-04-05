@@ -102,265 +102,265 @@ window.completeSale = async function () {
 
 // ======== OVERRIDE PRINT RECEIPT FUNCTION ========
 // This completely replaces the original printReceipt function - CART ONLY!
-window.printReceipt = function () {
-  console.log("Direct cart printing: printReceipt called");
-  const debugInfo = {
-    isViewingInvoice: window.isViewingInvoice,
-    currentInvoiceIndex: window.currentInvoiceIndex,
-    hasAllInvoices: typeof window.allInvoices !== "undefined",
-    allInvoicesLength:
-      typeof window.allInvoices !== "undefined" ? window.allInvoices.length : 0,
-    hasCart: typeof window.cart !== "undefined",
-    cartLength: typeof window.cart !== "undefined" ? window.cart.length : 0,
-  };
-  console.log("Print context:", debugInfo);
+// window.printReceipt = function () {
+//   console.log("Direct cart printing: printReceipt called");
+//   const debugInfo = {
+//     isViewingInvoice: window.isViewingInvoice,
+//     currentInvoiceIndex: window.currentInvoiceIndex,
+//     hasAllInvoices: typeof window.allInvoices !== "undefined",
+//     allInvoicesLength:
+//       typeof window.allInvoices !== "undefined" ? window.allInvoices.length : 0,
+//     hasCart: typeof window.cart !== "undefined",
+//     cartLength: typeof window.cart !== "undefined" ? window.cart.length : 0,
+//   };
+//   console.log("Print context:", debugInfo);
 
-  try {
-    let receiptHtml;
-    let styles = "";
+//   try {
+//     let receiptHtml;
+//     let styles = "";
 
-    // Check if professional styles are available
-    if (typeof professionalReceiptStyles !== "undefined") {
-      styles = professionalReceiptStyles;
-    }
+//     // Check if professional styles are available
+//     if (typeof professionalReceiptStyles !== "undefined") {
+//       styles = professionalReceiptStyles;
+//     }
 
-    // FIRST CASE: Check if we are viewing a specific invoice (with strict conditions)
-    if (
-      window.isViewingInvoice === true &&
-      typeof window.currentInvoiceIndex === "number" &&
-      window.currentInvoiceIndex >= 0 &&
-      typeof window.allInvoices === "object" &&
-      Array.isArray(window.allInvoices) &&
-      window.allInvoices.length > 0 &&
-      window.currentInvoiceIndex < window.allInvoices.length
-    ) {
-      console.log("Printing specific invoice:", window.currentInvoiceIndex);
-      const invoiceData = window.allInvoices[window.currentInvoiceIndex];
-      console.log("Invoice being printed:", invoiceData.id);
+//     // FIRST CASE: Check if we are viewing a specific invoice (with strict conditions)
+//     if (
+//       window.isViewingInvoice === true &&
+//       typeof window.currentInvoiceIndex === "number" &&
+//       window.currentInvoiceIndex >= 0 &&
+//       typeof window.allInvoices === "object" &&
+//       Array.isArray(window.allInvoices) &&
+//       window.allInvoices.length > 0 &&
+//       window.currentInvoiceIndex < window.allInvoices.length
+//     ) {
+//       console.log("Printing specific invoice:", window.currentInvoiceIndex);
+//       const invoiceData = window.allInvoices[window.currentInvoiceIndex];
+//       console.log("Invoice being printed:", invoiceData.id);
 
-      // Generate receipt HTML for the specific invoice
-      if (typeof generateProfessionalReceipt === "function") {
-        receiptHtml = generateProfessionalReceipt(invoiceData);
-      } else {
-        receiptHtml = generateReceiptHtml(invoiceData);
-      }
+//       // Generate receipt HTML for the specific invoice
+//       if (typeof generateProfessionalReceipt === "function") {
+//         receiptHtml = generateProfessionalReceipt(invoiceData);
+//       } else {
+//         receiptHtml = generateReceiptHtml(invoiceData);
+//       }
 
-      // Print receipt directly to printer
-      printReceiptDirectly(receiptHtml, styles);
+//       // Print receipt directly to printer
+//       printReceiptDirectly(receiptHtml, styles);
 
-      // Show notification
-      showToastNotification("Printing invoice #" + invoiceData.id);
-      return;
-    }
+//       // Show notification
+//       showToastNotification("Printing invoice #" + invoiceData.id);
+//       return;
+//     }
 
-    // SECOND CASE: Check if cart exists and has items (with strict conditions)
-    if (
-      typeof window.cart === "object" &&
-      Array.isArray(window.cart) &&
-      window.cart.length > 0
-    ) {
-      console.log(
-        "Generating receipt from current cart items:",
-        window.cart.length,
-        "items"
-      );
+//     // SECOND CASE: Check if cart exists and has items (with strict conditions)
+//     if (
+//       typeof window.cart === "object" &&
+//       Array.isArray(window.cart) &&
+//       window.cart.length > 0
+//     ) {
+//       console.log(
+//         "Generating receipt from current cart items:",
+//         window.cart.length,
+//         "items"
+//       );
 
-      // Create invoice data from current cart
-      const invoiceData = {
-        items: window.cart.map((item) => ({
-          ...item,
-          originalPrice: item.price,
-          finalPrice: item.price,
-        })),
-        customer:
-          typeof window.customerNameEl !== "undefined" && window.customerNameEl
-            ? window.customerNameEl.value || "Guest Customer"
-            : "Guest Customer",
-        subtotal:
-          typeof window.subtotalEl !== "undefined" && window.subtotalEl
-            ? parseFloat(window.subtotalEl.textContent.replace("$", ""))
-            : window.cart.reduce(
-                (sum, item) => sum + item.price * item.quantity,
-                0
-              ),
-        tax:
-          typeof window.taxEl !== "undefined" && window.taxEl
-            ? parseFloat(window.taxEl.textContent.replace("$", ""))
-            : 0,
-        total:
-          typeof window.totalEl !== "undefined" && window.totalEl
-            ? parseFloat(window.totalEl.textContent.replace("$", ""))
-            : window.cart.reduce(
-                (sum, item) => sum + item.price * item.quantity,
-                0
-              ),
-        date: new Date().toISOString(),
-        id: "CART-" + new Date().getTime(),
-        isRefund: window.cart.some((item) => item.price < 0),
-      };
+//       // Create invoice data from current cart
+//       const invoiceData = {
+//         items: window.cart.map((item) => ({
+//           ...item,
+//           originalPrice: item.price,
+//           finalPrice: item.price,
+//         })),
+//         customer:
+//           typeof window.customerNameEl !== "undefined" && window.customerNameEl
+//             ? window.customerNameEl.value || "Guest Customer"
+//             : "Guest Customer",
+//         subtotal:
+//           typeof window.subtotalEl !== "undefined" && window.subtotalEl
+//             ? parseFloat(window.subtotalEl.textContent.replace("$", ""))
+//             : window.cart.reduce(
+//                 (sum, item) => sum + item.price * item.quantity,
+//                 0
+//               ),
+//         tax:
+//           typeof window.taxEl !== "undefined" && window.taxEl
+//             ? parseFloat(window.taxEl.textContent.replace("$", ""))
+//             : 0,
+//         total:
+//           typeof window.totalEl !== "undefined" && window.totalEl
+//             ? parseFloat(window.totalEl.textContent.replace("$", ""))
+//             : window.cart.reduce(
+//                 (sum, item) => sum + item.price * item.quantity,
+//                 0
+//               ),
+//         date: new Date().toISOString(),
+//         id: "CART-" + new Date().getTime(),
+//         isRefund: window.cart.some((item) => item.price < 0),
+//       };
 
-      // Generate receipt HTML
-      if (typeof generateProfessionalReceipt === "function") {
-        receiptHtml = generateProfessionalReceipt(invoiceData);
-      } else {
-        receiptHtml = generateReceiptHtml(invoiceData);
-      }
+//       // Generate receipt HTML
+//       if (typeof generateProfessionalReceipt === "function") {
+//         receiptHtml = generateProfessionalReceipt(invoiceData);
+//       } else {
+//         receiptHtml = generateReceiptHtml(invoiceData);
+//       }
 
-      // Print receipt directly to printer
-      printReceiptDirectly(receiptHtml, styles);
+//       // Print receipt directly to printer
+//       printReceiptDirectly(receiptHtml, styles);
 
-      // Show notification
-      showToastNotification("Printing current cart items...");
-      return;
-    }
+//       // Show notification
+//       showToastNotification("Printing current cart items...");
+//       return;
+//     }
 
-    // THIRD CASE: Check if there's a receipt in the container
-    const receiptContainer = document.getElementById("receipt-container");
-    if (receiptContainer && receiptContainer.innerHTML.trim() !== "") {
-      console.log("Using receipt from container");
-      receiptHtml = receiptContainer.innerHTML;
-      printReceiptDirectly(receiptHtml, styles);
-      showToastNotification("Printing receipt from container...");
-      return;
-    }
+//     // THIRD CASE: Check if there's a receipt in the container
+//     const receiptContainer = document.getElementById("receipt-container");
+//     if (receiptContainer && receiptContainer.innerHTML.trim() !== "") {
+//       console.log("Using receipt from container");
+//       receiptHtml = receiptContainer.innerHTML;
+//       printReceiptDirectly(receiptHtml, styles);
+//       showToastNotification("Printing receipt from container...");
+//       return;
+//     }
 
-    // FOURTH CASE: Check if there's a receipt in the hidden container
-    const hiddenContainer = document.getElementById("hidden-receipt-container");
-    if (hiddenContainer && hiddenContainer.innerHTML.trim() !== "") {
-      console.log("Using receipt from hidden container");
-      receiptHtml = hiddenContainer.innerHTML;
-      printReceiptDirectly(receiptHtml, styles);
-      showToastNotification("Printing last completed sale...");
-      return;
-    }
+//     // FOURTH CASE: Check if there's a receipt in the hidden container
+//     const hiddenContainer = document.getElementById("hidden-receipt-container");
+//     if (hiddenContainer && hiddenContainer.innerHTML.trim() !== "") {
+//       console.log("Using receipt from hidden container");
+//       receiptHtml = hiddenContainer.innerHTML;
+//       printReceiptDirectly(receiptHtml, styles);
+//       showToastNotification("Printing last completed sale...");
+//       return;
+//     }
 
-    // If we get here, there's nothing to print
-    console.warn(
-      "Nothing to print: No invoice being viewed, empty cart, and no receipt container"
-    );
-    showToastNotification("Nothing to print. Add items to cart first.", true);
-  } catch (error) {
-    console.error("Error printing receipt:", error);
-    showToastNotification("Error printing receipt: " + error.message, true);
+//     // If we get here, there's nothing to print
+//     console.warn(
+//       "Nothing to print: No invoice being viewed, empty cart, and no receipt container"
+//     );
+//     showToastNotification("Nothing to print. Add items to cart first.", true);
+//   } catch (error) {
+//     console.error("Error printing receipt:", error);
+//     showToastNotification("Error printing receipt: " + error.message, true);
 
-    // Try fallback method - download instead
-    try {
-      if (typeof downloadReceiptAsHTML === "function") {
-        console.log("Attempting fallback download method");
+//     // Try fallback method - download instead
+//     try {
+//       if (typeof downloadReceiptAsHTML === "function") {
+//         console.log("Attempting fallback download method");
 
-        // If we're viewing an invoice, use that data
-        if (
-          window.isViewingInvoice === true &&
-          typeof window.currentInvoiceIndex === "number" &&
-          window.currentInvoiceIndex >= 0 &&
-          typeof window.allInvoices === "object" &&
-          Array.isArray(window.allInvoices) &&
-          window.allInvoices.length > 0
-        ) {
-          const invoiceData = window.allInvoices[window.currentInvoiceIndex];
+//         // If we're viewing an invoice, use that data
+//         if (
+//           window.isViewingInvoice === true &&
+//           typeof window.currentInvoiceIndex === "number" &&
+//           window.currentInvoiceIndex >= 0 &&
+//           typeof window.allInvoices === "object" &&
+//           Array.isArray(window.allInvoices) &&
+//           window.allInvoices.length > 0
+//         ) {
+//           const invoiceData = window.allInvoices[window.currentInvoiceIndex];
 
-          // Generate receipt HTML
-          let receiptHtml;
-          if (typeof generateProfessionalReceipt === "function") {
-            receiptHtml = generateProfessionalReceipt(invoiceData);
-          } else {
-            receiptHtml = generateReceiptHtml(invoiceData);
-          }
+//           // Generate receipt HTML
+//           let receiptHtml;
+//           if (typeof generateProfessionalReceipt === "function") {
+//             receiptHtml = generateProfessionalReceipt(invoiceData);
+//           } else {
+//             receiptHtml = generateReceiptHtml(invoiceData);
+//           }
 
-          // Download as HTML
-          downloadReceiptAsHTML(receiptHtml, styles, invoiceData.id);
-          return;
-        }
+//           // Download as HTML
+//           downloadReceiptAsHTML(receiptHtml, styles, invoiceData.id);
+//           return;
+//         }
 
-        // Otherwise if we have cart items, use those
-        if (
-          typeof window.cart === "object" &&
-          Array.isArray(window.cart) &&
-          window.cart.length > 0
-        ) {
-          const invoiceData = {
-            items: window.cart.map((item) => ({
-              ...item,
-              originalPrice: item.price,
-              finalPrice: item.price,
-            })),
-            customer:
-              typeof window.customerNameEl !== "undefined" &&
-              window.customerNameEl
-                ? window.customerNameEl.value || "Guest Customer"
-                : "Guest Customer",
-            subtotal:
-              typeof window.subtotalEl !== "undefined" && window.subtotalEl
-                ? parseFloat(window.subtotalEl.textContent.replace("$", ""))
-                : window.cart.reduce(
-                    (sum, item) => sum + item.price * item.quantity,
-                    0
-                  ),
-            tax:
-              typeof window.taxEl !== "undefined" && window.taxEl
-                ? parseFloat(window.taxEl.textContent.replace("$", ""))
-                : 0,
-            total:
-              typeof window.totalEl !== "undefined" && window.totalEl
-                ? parseFloat(window.totalEl.textContent.replace("$", ""))
-                : window.cart.reduce(
-                    (sum, item) => sum + item.price * item.quantity,
-                    0
-                  ),
-            date: new Date().toISOString(),
-            id: "CART-" + new Date().getTime(),
-          };
+//         // Otherwise if we have cart items, use those
+//         if (
+//           typeof window.cart === "object" &&
+//           Array.isArray(window.cart) &&
+//           window.cart.length > 0
+//         ) {
+//           const invoiceData = {
+//             items: window.cart.map((item) => ({
+//               ...item,
+//               originalPrice: item.price,
+//               finalPrice: item.price,
+//             })),
+//             customer:
+//               typeof window.customerNameEl !== "undefined" &&
+//               window.customerNameEl
+//                 ? window.customerNameEl.value || "Guest Customer"
+//                 : "Guest Customer",
+//             subtotal:
+//               typeof window.subtotalEl !== "undefined" && window.subtotalEl
+//                 ? parseFloat(window.subtotalEl.textContent.replace("$", ""))
+//                 : window.cart.reduce(
+//                     (sum, item) => sum + item.price * item.quantity,
+//                     0
+//                   ),
+//             tax:
+//               typeof window.taxEl !== "undefined" && window.taxEl
+//                 ? parseFloat(window.taxEl.textContent.replace("$", ""))
+//                 : 0,
+//             total:
+//               typeof window.totalEl !== "undefined" && window.totalEl
+//                 ? parseFloat(window.totalEl.textContent.replace("$", ""))
+//                 : window.cart.reduce(
+//                     (sum, item) => sum + item.price * item.quantity,
+//                     0
+//                   ),
+//             date: new Date().toISOString(),
+//             id: "CART-" + new Date().getTime(),
+//           };
 
-          // Generate receipt HTML
-          let receiptHtml;
-          if (typeof generateProfessionalReceipt === "function") {
-            receiptHtml = generateProfessionalReceipt(invoiceData);
-          } else {
-            receiptHtml = generateReceiptHtml(invoiceData);
-          }
+//           // Generate receipt HTML
+//           let receiptHtml;
+//           if (typeof generateProfessionalReceipt === "function") {
+//             receiptHtml = generateProfessionalReceipt(invoiceData);
+//           } else {
+//             receiptHtml = generateReceiptHtml(invoiceData);
+//           }
 
-          // Download as HTML
-          downloadReceiptAsHTML(receiptHtml, styles, invoiceData.id);
-          return;
-        }
+//           // Download as HTML
+//           downloadReceiptAsHTML(receiptHtml, styles, invoiceData.id);
+//           return;
+//         }
 
-        // Try receipt containers
-        const receiptContainer = document.getElementById("receipt-container");
-        if (receiptContainer && receiptContainer.innerHTML.trim() !== "") {
-          downloadReceiptAsHTML(
-            receiptContainer.innerHTML,
-            styles,
-            "receipt-" + new Date().getTime()
-          );
-          return;
-        }
+//         // Try receipt containers
+//         const receiptContainer = document.getElementById("receipt-container");
+//         if (receiptContainer && receiptContainer.innerHTML.trim() !== "") {
+//           downloadReceiptAsHTML(
+//             receiptContainer.innerHTML,
+//             styles,
+//             "receipt-" + new Date().getTime()
+//           );
+//           return;
+//         }
 
-        const hiddenContainer = document.getElementById(
-          "hidden-receipt-container"
-        );
-        if (hiddenContainer && hiddenContainer.innerHTML.trim() !== "") {
-          downloadReceiptAsHTML(
-            hiddenContainer.innerHTML,
-            styles,
-            "receipt-" + new Date().getTime()
-          );
-          return;
-        }
+//         const hiddenContainer = document.getElementById(
+//           "hidden-receipt-container"
+//         );
+//         if (hiddenContainer && hiddenContainer.innerHTML.trim() !== "") {
+//           downloadReceiptAsHTML(
+//             hiddenContainer.innerHTML,
+//             styles,
+//             "receipt-" + new Date().getTime()
+//           );
+//           return;
+//         }
 
-        alert("No content to print. Please add items to the cart first.");
-      } else {
-        alert(
-          "Printing failed and fallback download not available. Please try again later."
-        );
-      }
-    } catch (fallbackError) {
-      console.error("Fallback printing also failed:", fallbackError);
-      alert(
-        "Unable to print or download receipt. Please check your system configuration."
-      );
-    }
-  }
-};
+//         alert("No content to print. Please add items to the cart first.");
+//       } else {
+//         alert(
+//           "Printing failed and fallback download not available. Please try again later."
+//         );
+//       }
+//     } catch (fallbackError) {
+//       console.error("Fallback printing also failed:", fallbackError);
+//       alert(
+//         "Unable to print or download receipt. Please check your system configuration."
+//       );
+//     }
+//   }
+// };
 function fixInvoiceNavigation() {
   // Fix loadInvoice function
   if (typeof window.loadInvoice === "function") {
