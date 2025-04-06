@@ -20,6 +20,9 @@ function fixKeyboardShortcuts() {
                         completeSale();
                     }
                 },
+                F4: function () {  // Add this new handler
+                    showDiscountModal();
+                },
                 F5: function () {
                     removeSelectedItem();
                 },
@@ -55,11 +58,6 @@ function fixKeyboardShortcuts() {
                 },
                 "/": function () {
                     document.getElementById("product-search").focus();
-                },
-                d: function () {
-                    if (!event.ctrlKey && !event.altKey && !event.shiftKey) {
-                        showDiscountModal();
-                    }
                 },
                 b: function () {
                     if (!event.ctrlKey && !event.altKey && !event.shiftKey) {
@@ -193,12 +191,12 @@ function handleKeyboardShortcut(event) {
             case "F1":
             case "F2":
             case "F3":
+            case "F4":  // Changed from "d" to "F4"
             case "F5":
             case "F7":
             case "F9":
             case "F10":
             case "Delete":
-            case "d":
                 event.preventDefault();
                 // Stop event propagation to prevent other handlers from running
                 event.stopImmediatePropagation();
@@ -271,7 +269,7 @@ function handleKeyboardShortcut(event) {
             document.getElementById("product-search").focus();
             break;
 
-        case "d":
+        case "F4":
             if (!event.ctrlKey && !event.altKey && !event.shiftKey) {
                 event.preventDefault();
                 showDiscountModal();
@@ -331,7 +329,7 @@ function showShortcutsHelp() {
         <tr><td>Delete</td><td>Clear cart</td></tr>
         <tr><td>/</td><td>Focus search box</td></tr>
         <tr><td>B</td><td>Focus barcode input</td></tr>
-        <tr><td>D</td><td>Add discount</td></tr>
+        <tr><td>F4</td><td>Add discount</td></tr>
       </table>
     `;
 

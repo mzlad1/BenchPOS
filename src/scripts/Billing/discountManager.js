@@ -25,11 +25,11 @@ function initDiscountFeature() {
 
   // Add discount row before the total row
   const discountRow = document.createElement("div");
-  discountRow.className = "summary-row";
-  discountRow.innerHTML = `
-    <span>Discount:</span>
-    <span id="discount-value">$0.00</span>
-  `;
+  // discountRow.className = "summary-row";
+  // discountRow.innerHTML = `
+  //   <span>Discount:</span>
+  //   <span id="discount-value">$0.00</span>
+  // `;
 
   // Insert before the total row
   invoiceSummary.insertBefore(discountRow, totalRow);
@@ -52,7 +52,7 @@ function initDiscountFeature() {
     addDiscountBtn.addEventListener("click", showDiscountModal);
 
     // Add shortcut indicator
-    addShortcutIndicator("add-discount-btn", "D");
+    addShortcutIndicator("add-discount-btn", "F4");
   } else {
     console.error("Discount button element not found after insertion");
   }
@@ -60,8 +60,8 @@ function initDiscountFeature() {
   // Add keyboard shortcut (D)
   document.addEventListener("keydown", function (event) {
     if (
-      event.key === "d" &&
-      !(event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA")
+        event.key === "F4" &&
+        !(event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA")
     ) {
       // First check if we're viewing an invoice without being in edit mode
       if (isViewingInvoice && !isEditingInvoice) {

@@ -46,22 +46,45 @@ document.addEventListener("DOMContentLoaded", async function () {
       document.querySelector(".help-content").scrollTop = 0;
     });
   });
-
-  // Navigation from content links
-  document.querySelectorAll("[data-target]").forEach((link) => {
-    if (link.tagName === "A") {
-      link.addEventListener("click", (e) => {
+  document.querySelectorAll("[data-target]").forEach((element) => {
+    element.addEventListener("click", function(e) {
+      // Prevent default for links
+      if (this.tagName === "A") {
         e.preventDefault();
-        const targetId = link.getAttribute("data-target");
+      }
+
+      const targetId = this.getAttribute("data-target");
+
+      // Find the matching section
+      const targetSection = document.getElementById(targetId) ||
+          document.getElementById("syncing-data"); // Special case for sync-data/syncing-data
+
+      if (targetSection) {
+        // Find the matching nav item
         const targetNav = Array.from(navItems).find(
-          (item) => item.getAttribute("data-target") === targetId
+            (item) => item.getAttribute("data-target") === targetId
         );
 
         if (targetNav) {
-          targetNav.click();
+          // Update active nav item
+          navItems.forEach((navItem) => navItem.classList.remove("active"));
+          targetNav.classList.add("active");
+
+          // Show target section
+          helpSections.forEach((section) => {
+            section.classList.remove("active");
+          });
+          targetSection.classList.add("active");
+          activeSectionId = targetId;
+
+          // Update URL hash
+          window.location.hash = targetId;
+
+          // Scroll to top of the content
+          document.querySelector(".help-content").scrollTop = 0;
         }
-      });
-    }
+      }
+    });
   });
 
   // Handle URL hash on page load
