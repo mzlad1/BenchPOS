@@ -517,16 +517,8 @@ function setupIpcHandlers() {
 
   ipcMain.handle("update-user", async (event, userData) => {
     try {
-      // Optionally remove the password field if it's empty so it isn't updated
-      if (userData.password === "") {
-        delete userData.password;
-      }
-      // Update the timestamp
-      userData.updatedAt = new Date().toISOString();
-
-      // Update the user document (using merge: true to update fields)
-      await setDoc(doc(db, "users", userData.id), userData, { merge: true });
-      return { success: true };
+      // Use authService.updateUser instead of directly using setDoc
+      return await authService.updateUser(userData);
     } catch (error) {
       console.error("Error in update-user:", error);
       return { success: false, message: error.message };
@@ -535,8 +527,8 @@ function setupIpcHandlers() {
 
   ipcMain.handle("delete-user", async (event, userId) => {
     try {
-      await deleteDoc(doc(db, "users", userId));
-      return { success: true };
+      // Use authService.deleteUser instead of deleteDoc
+      return await authService.deleteUser(userId);
     } catch (error) {
       console.error("Error in delete-user:", error);
       return { success: false, message: error.message };

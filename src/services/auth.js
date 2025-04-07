@@ -96,7 +96,26 @@ async function loginUser(credentials) {
 
         if (userDoc.exists()) {
           userData = userDoc.data();
+          // Add status checks here
+          if (userData.status === "deleted") {
+            // Sign out the user since they were authenticated but shouldn't be allowed in
+            await signOut(auth);
+            return {
+              success: false,
+              message:
+                "This account has been deleted. Please contact your administrator.",
+            };
+          }
 
+          if (userData.status === "inactive") {
+            // Sign out the user since they were authenticated but shouldn't be allowed in
+            await signOut(auth);
+            return {
+              success: false,
+              message:
+                "This account is inactive. Please contact your administrator to activate it.",
+            };
+          }
           // Update last login time
           await updateDoc(doc(db, "users", firebaseUser.uid), {
             lastLogin: new Date().toISOString(),
@@ -308,6 +327,23 @@ async function localLogin(email, password, isOnline) {
         success: false,
         message:
           "User not found. Login requires internet connection for first-time users.",
+      };
+    }
+
+    // Add these status checks
+    if (user.status === "deleted") {
+      return {
+        success: false,
+        message:
+          "This account has been deleted. Please contact your administrator.",
+      };
+    }
+
+    if (user.status === "inactive") {
+      return {
+        success: false,
+        message:
+          "This account is inactive. Please contact your administrator to activate it.",
       };
     }
 
@@ -656,5 +692,7 @@ module.exports = {
   logoutUser,
   checkPermission,
   checkPagePermission,
+  deleteUser,
+  updateUser,
   db,
 };

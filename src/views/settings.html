@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
     />
     <title>MZLAD Billing System - Settings</title>
     <link rel="stylesheet" href="../styles/index.css" />
+    <link rel="stylesheet" href="../styles/global.css" />
+    <link rel="stylesheet" href="../styles/advanced-settings.css" />
   </head>
   <body class="light-mode">
     <div class="app-container">
@@ -134,44 +136,129 @@
               </div>
             </div>
 
-            <!-- Receipt Settings -->
+            <!-- Receipt Settings - Space Efficient Layout -->
             <div class="settings-section">
               <div class="settings-section-header">
                 <div class="settings-icon">🧾</div>
                 <h3>Receipt Settings</h3>
               </div>
-              <div class="settings-option">
-                <label for="company-name">Company Name</label>
-                <input
-                  type="text"
-                  id="company-name"
-                  placeholder="Your Company"
-                />
-              </div>
-              <div class="settings-option">
-                <label for="company-address">Address</label>
-                <textarea
-                  id="company-address"
-                  rows="2"
-                  placeholder="Company Address"
-                ></textarea>
-              </div>
-              <div class="settings-option">
-                <label for="receipt-footer">Receipt Footer</label>
-                <textarea
-                  id="receipt-footer"
-                  rows="2"
-                  placeholder="Thank you for your business!"
-                ></textarea>
-              </div>
-              <div class="settings-option">
-                <label>Auto-print Receipt</label>
-                <div class="toggle-wrapper">
-                  <label class="toggle">
-                    <input type="checkbox" id="auto-print" />
-                    <span class="toggle-slider"></span>
-                  </label>
-                  <span>Print receipt after each sale</span>
+              <!-- Added container div for grid layout -->
+              <div class="settings-option-container">
+                <!-- First Column -->
+                <div class="settings-option">
+                  <label for="company-name">Company Name</label>
+                  <input
+                    type="text"
+                    id="company-name"
+                    placeholder="Your Company"
+                  />
+                </div>
+
+                <div class="settings-option">
+                  <label for="company-tagline">Company Tagline</label>
+                  <input
+                    type="text"
+                    id="company-tagline"
+                    placeholder="Retail Solutions"
+                  />
+                </div>
+
+                <div class="settings-option">
+                  <label for="company-address">Address</label>
+                  <textarea
+                    id="company-address"
+                    rows="2"
+                    placeholder="Company Address"
+                  ></textarea>
+                </div>
+
+                <div class="settings-option">
+                  <label for="company-phone">Phone Number</label>
+                  <input
+                    type="text"
+                    id="company-phone"
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+
+                <div class="settings-option">
+                  <label for="company-email">Email</label>
+                  <input
+                    type="email"
+                    id="company-email"
+                    placeholder="info@yourcompany.com"
+                  />
+                </div>
+
+                <div class="settings-option">
+                  <label for="company-website">Website</label>
+                  <input
+                    type="text"
+                    id="company-website"
+                    placeholder="www.yourcompany.com"
+                  />
+                </div>
+
+                <div class="settings-option">
+                  <label for="receipt-footer">Receipt Footer</label>
+                  <textarea
+                    id="receipt-footer"
+                    rows="2"
+                    placeholder="Thank you for your business!"
+                  ></textarea>
+                </div>
+
+                <div class="settings-option">
+                  <label for="company-logo">Company Logo</label>
+                  <div class="logo-upload-container">
+                    <div class="logo-preview" id="logo-preview">
+                      <div class="default-logo-text">No logo uploaded</div>
+                    </div>
+                    <div class="logo-controls">
+                      <div class="logo-upload-buttons">
+                        <input
+                          type="file"
+                          id="logo-file"
+                          accept="image/png, image/jpeg, image/jpg, image/svg+xml"
+                          style="display: none"
+                        />
+                        <button class="btn btn-outline" id="browse-logo">
+                          Browse
+                        </button>
+                        <button class="btn btn-outline" id="remove-logo">
+                          Remove
+                        </button>
+                      </div>
+                      <div class="logo-help-text">
+                        Recommended: 180×60px<br />Max: 500KB (PNG, JPG, SVG)
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-option">
+                  <label for="return-policy">Return Policy</label>
+                  <textarea
+                    id="return-policy"
+                    rows="2"
+                    placeholder="Items can be returned within 30 days with receipt."
+                  ></textarea>
+                </div>
+
+                <div class="settings-option">
+                  <label for="receipt-theme">Receipt Theme Color</label>
+                  <input type="color" id="receipt-theme" value="#3d5a80" />
+                </div>
+
+                <div class="settings-option">
+                  <label>Auto-print Receipt</label>
+                  <div class="toggle-wrapper">
+                    <label class="toggle">
+                      <input type="checkbox" id="auto-print" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <span>Print receipt after each sale</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -185,6 +272,18 @@
             <button class="btn btn-primary" id="save-settings">
               Save Settings
             </button>
+          </div>
+
+          <div class="receipt-preview-section">
+            <div class="receipt-preview-header">
+              <h3>Receipt Preview</h3>
+              <button class="btn btn-outline" id="update-preview">
+                Update Preview
+              </button>
+            </div>
+            <div class="receipt-preview-wrapper">
+              <div id="receipt-preview-container"></div>
+            </div>
           </div>
         </div>
       </div>

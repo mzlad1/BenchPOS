@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Set up event listeners
     setupEventListeners();
+    setTimeout(updateReceiptPreview, 500);
 
     console.log("Settings page initialized");
   } catch (error) {
@@ -47,7 +48,16 @@ function loadSettings() {
         themeSelect.value = darkMode ? "dark" : "light";
       }
     }
-
+    // Load logo if exists
+    const logoPreview = document.getElementById("logo-preview");
+    if (logoPreview) {
+      const savedLogo = localStorage.getItem("companyLogo");
+      if (savedLogo) {
+        logoPreview.innerHTML = `<img src="${savedLogo}" alt="Company Logo">`;
+      } else {
+        logoPreview.innerHTML = `<div class="default-logo-text">No logo uploaded</div>`;
+      }
+    }
     // Sidebar settings
     const sidebarCollapsed =
       localStorage.getItem("sidebarCollapsed") === "true";
@@ -92,9 +102,16 @@ function loadSettings() {
     }
 
     // Receipt settings
+    // Receipt settings
     const companyName = document.getElementById("company-name");
     if (companyName) {
       companyName.value = localStorage.getItem("companyName") || "";
+    }
+
+    const companyTagline = document.getElementById("company-tagline");
+    if (companyTagline) {
+      companyTagline.value =
+        localStorage.getItem("companyTagline") || "Retail Solutions";
     }
 
     const companyAddress = document.getElementById("company-address");
@@ -102,10 +119,37 @@ function loadSettings() {
       companyAddress.value = localStorage.getItem("companyAddress") || "";
     }
 
+    const companyPhone = document.getElementById("company-phone");
+    if (companyPhone) {
+      companyPhone.value = localStorage.getItem("companyPhone") || "";
+    }
+
+    const companyEmail = document.getElementById("company-email");
+    if (companyEmail) {
+      companyEmail.value = localStorage.getItem("companyEmail") || "";
+    }
+
+    const companyWebsite = document.getElementById("company-website");
+    if (companyWebsite) {
+      companyWebsite.value = localStorage.getItem("companyWebsite") || "";
+    }
+
     const receiptFooter = document.getElementById("receipt-footer");
     if (receiptFooter) {
       receiptFooter.value =
         localStorage.getItem("receiptFooter") || "Thank you for your business!";
+    }
+
+    const returnPolicy = document.getElementById("return-policy");
+    if (returnPolicy) {
+      returnPolicy.value =
+        localStorage.getItem("returnPolicy") ||
+        "Items can be returned within 30 days with receipt.";
+    }
+
+    const receiptTheme = document.getElementById("receipt-theme");
+    if (receiptTheme) {
+      receiptTheme.value = localStorage.getItem("receiptTheme") || "#3d5a80";
     }
 
     const autoPrint = localStorage.getItem("autoPrint") === "true";
@@ -118,6 +162,66 @@ function loadSettings() {
   } catch (error) {
     console.error("Error loading settings:", error);
   }
+}
+/* Additional event listener in settings.js */
+document
+  .getElementById("update-preview")
+  .addEventListener("click", updateReceiptPreview);
+
+function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // // Check file size (max 500KB)
+  // if (file.size > 500 * 1024) {
+  //   showToast("Logo file is too large. Max size is 500KB.", "error");
+  //   return;
+  // }
+
+  // Check file type
+  const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/svg+xml"];
+  if (!validTypes.includes(file.type)) {
+    showToast("Invalid file type. Please use PNG, JPG or SVG.", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function (e) {
+    const logoData = e.target.result;
+
+    // Preview the logo
+    const logoPreview = document.getElementById("logo-preview");
+    logoPreview.innerHTML = `<img src="${logoData}" alt="Company Logo">`;
+
+    // Store in localStorage
+    localStorage.setItem("companyLogo", logoData);
+
+    showToast("Logo uploaded successfully", "success");
+  };
+
+  reader.onerror = function () {
+    showToast("Error reading logo file", "error");
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+  // Remove from preview
+  const logoPreview = document.getElementById("logo-preview");
+  logoPreview.innerHTML = `<div class="default-logo-text">No logo uploaded</div>`;
+
+  // Remove from storage
+  localStorage.removeItem("companyLogo");
+
+  // Clear file input
+  const fileInput = document.getElementById("logo-file");
+  if (fileInput) {
+    fileInput.value = "";
+  }
+
+  showToast("Logo removed", "success");
 }
 
 // Save all settings
@@ -203,9 +307,29 @@ function saveSettings() {
       localStorage.setItem("companyName", companyName.value);
     }
 
+    const companyTagline = document.getElementById("company-tagline");
+    if (companyTagline) {
+      localStorage.setItem("companyTagline", companyTagline.value);
+    }
+
     const companyAddress = document.getElementById("company-address");
     if (companyAddress) {
       localStorage.setItem("companyAddress", companyAddress.value);
+    }
+
+    const companyPhone = document.getElementById("company-phone");
+    if (companyPhone) {
+      localStorage.setItem("companyPhone", companyPhone.value);
+    }
+
+    const companyEmail = document.getElementById("company-email");
+    if (companyEmail) {
+      localStorage.setItem("companyEmail", companyEmail.value);
+    }
+
+    const companyWebsite = document.getElementById("company-website");
+    if (companyWebsite) {
+      localStorage.setItem("companyWebsite", companyWebsite.value);
     }
 
     const receiptFooter = document.getElementById("receipt-footer");
@@ -213,10 +337,23 @@ function saveSettings() {
       localStorage.setItem("receiptFooter", receiptFooter.value);
     }
 
+    const returnPolicy = document.getElementById("return-policy");
+    if (returnPolicy) {
+      localStorage.setItem("returnPolicy", returnPolicy.value);
+    }
+
+    const receiptTheme = document.getElementById("receipt-theme");
+    if (receiptTheme) {
+      localStorage.setItem("receiptTheme", receiptTheme.value);
+    }
+
     const autoPrintCheckbox = document.getElementById("auto-print");
     if (autoPrintCheckbox) {
       localStorage.setItem("autoPrint", autoPrintCheckbox.checked);
     }
+
+    // Add receipt preview functionality
+    updateReceiptPreview();
 
     // Log the save activity
     if (window.api && window.api.logActivity) {
@@ -249,6 +386,7 @@ function resetSettings() {
 
     // Default values
     const defaults = {
+      // Previous defaults...
       themePreference: "light",
       darkMode: false,
       sidebarCollapsed: false,
@@ -258,9 +396,17 @@ function resetSettings() {
       autoSync: true,
       syncInterval: "30",
       dataStoragePath: "Default Location",
-      companyName: "",
-      companyAddress: "",
-      receiptFooter: "Thank you for your business!",
+
+      // Receipt defaults
+      companyName: "ShopSmart",
+      companyTagline: "Retail Solutions",
+      companyAddress: "123 Main Street, Anytown, USA 12345",
+      companyPhone: "(555) 123-4567",
+      companyEmail: "info@shopsmart.com",
+      companyWebsite: "www.shopsmart.com",
+      receiptFooter: "Thank you for shopping at ShopSmart!",
+      returnPolicy: "Items can be returned within 30 days with receipt.",
+      receiptTheme: "#3d5a80",
       autoPrint: false,
     };
 
@@ -272,15 +418,8 @@ function resetSettings() {
     // Reload settings in the UI
     loadSettings();
 
-    // Apply theme
-    document.body.classList.remove("dark-mode");
-    document.body.classList.add("light-mode");
-
-    // Apply sidebar state
-    const sidebar = document.getElementById("sidebar");
-    if (sidebar) {
-      sidebar.classList.remove("collapsed");
-    }
+    // Update receipt preview
+    updateReceiptPreview();
 
     // Log the reset activity
     if (window.api && window.api.logActivity) {
@@ -291,7 +430,12 @@ function resetSettings() {
         badgeClass: "badge-warning",
       });
     }
-
+    // Reset logo
+    localStorage.removeItem("companyLogo");
+    const logoPreview = document.getElementById("logo-preview");
+    if (logoPreview) {
+      logoPreview.innerHTML = `<div class="default-logo-text">No logo uploaded</div>`;
+    }
     // Show success message
     showToast("Settings reset to defaults", "success");
     console.log("Settings reset to defaults");
@@ -300,32 +444,254 @@ function resetSettings() {
     showToast("Error resetting settings", "error");
   }
 }
+// Add this to settings.js
+function previewReceiptTemplate(invoice) {
+  // Get custom settings from localStorage
+  const companyName = localStorage.getItem("companyName") || "ShopSmart";
+  const companyTagline =
+    localStorage.getItem("companyTagline") || "Retail Solutions";
+  const companyAddress =
+    localStorage.getItem("companyAddress") ||
+    "123 Main Street, Anytown, USA 12345";
+  const companyPhone = localStorage.getItem("companyPhone") || "(555) 123-4567";
+  const companyEmail =
+    localStorage.getItem("companyEmail") || "info@shopsmart.com";
+  const companyWebsite =
+    localStorage.getItem("companyWebsite") || "www.shopsmart.com";
+  const receiptFooter =
+    localStorage.getItem("receiptFooter") ||
+    "Thank you for shopping at ShopSmart!";
+  const returnPolicy =
+    localStorage.getItem("returnPolicy") ||
+    "Items can be returned within 30 days with receipt.";
+  const themeColor = localStorage.getItem("receiptTheme") || "#3d5a80";
+  const customLogo = localStorage.getItem("companyLogo");
 
+  // Format the date
+  const receiptDate = new Date(invoice.date);
+  const formattedDate = receiptDate.toLocaleDateString();
+  const formattedTime = receiptDate.toLocaleTimeString();
+
+  // Prepare logo - either custom or text
+  let logoHtml;
+  if (customLogo) {
+    // Use the custom uploaded logo
+    logoHtml = `<img src="${customLogo}" alt="${companyName}" style="max-width: 180px; max-height: 60px;" />`;
+  } else {
+    // Use text as fallback
+    logoHtml = `<div style="font-size: 24px; font-weight: bold; color: ${themeColor};">${companyName}</div>
+                <div style="font-size: 12px; color: #666;">${companyTagline}</div>`;
+  }
+
+  // Generate receipt HTML
+  return `
+    <div class="professional-receipt" style="font-family: Arial, sans-serif; max-width: 300px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+      <div style="text-align: center; margin-bottom: 15px;">
+        ${logoHtml}
+      </div>
+      
+      <div style="text-align: center; margin-bottom: 10px; font-size: 11px;">
+        <p style="margin: 2px 0;">${companyAddress}</p>
+        <p style="margin: 2px 0;">Tel: ${companyPhone} | Email: ${companyEmail}</p>
+        <p style="margin: 2px 0;">${companyWebsite}</p>
+      </div>
+      
+      <div style="background-color: #f0f0f0; padding: 3px; text-align: center; font-weight: bold; border-radius: 4px; margin: 8px 0;">
+        RECEIPT
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+          <div style="font-weight: bold;">Receipt #:</div>
+          <div>${invoice.id}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+          <div style="font-weight: bold;">Date:</div>
+          <div>${formattedDate}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+          <div style="font-weight: bold;">Time:</div>
+          <div>${formattedTime}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+          <div style="font-weight: bold;">Customer:</div>
+          <div>${invoice.customer}</div>
+        </div>
+      </div>
+      
+      <div style="border-bottom: 1px dashed #aaa; margin: 10px 0;"></div>
+      
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+        <tr>
+          <th style="text-align: left; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Item</th>
+          <th style="text-align: center; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Qty</th>
+          <th style="text-align: right; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Price</th>
+          <th style="text-align: right; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Total</th>
+        </tr>
+        
+        ${invoice.items
+          .map(
+            (item) => `
+          <tr>
+            <td>${item.name}</td>
+            <td style="text-align: center;">${item.quantity}</td>
+            <td style="text-align: right;">$${item.price.toFixed(2)}</td>
+            <td style="text-align: right;">$${(
+              item.price * item.quantity
+            ).toFixed(2)}</td>
+          </tr>
+        `
+          )
+          .join("")}
+        
+        <tr>
+          <td colspan="3" style="text-align: right; padding-top: 5px;">Subtotal:</td>
+          <td style="text-align: right; padding-top: 5px;">$${invoice.subtotal.toFixed(
+            2
+          )}</td>
+        </tr>
+        
+        ${
+          invoice.discount
+            ? `
+        <tr>
+          <td colspan="3" style="text-align: right; padding-top: 5px;">Discount:</td>
+          <td style="text-align: right; padding-top: 5px; color: #d32f2f;">-$${invoice.discount.toFixed(
+            2
+          )}</td>
+        </tr>
+        `
+            : ""
+        }
+        
+        <tr>
+          <td colspan="3" style="text-align: right; padding-top: 5px;">Tax:</td>
+          <td style="text-align: right; padding-top: 5px;">$${invoice.tax.toFixed(
+            2
+          )}</td>
+        </tr>
+        
+        <tr>
+          <td colspan="3" style="text-align: right; padding-top: 8px; font-weight: bold;">TOTAL:</td>
+          <td style="text-align: right; padding-top: 8px; font-weight: bold; color: ${themeColor};">$${invoice.total.toFixed(
+    2
+  )}</td>
+        </tr>
+      </table>
+      
+      <div style="border-bottom: 1px dashed #aaa; margin: 10px 0;"></div>
+      
+      <div style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+          <div style="font-weight: bold;">Payment Method:</div>
+          <div>Cash</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+          <div style="font-weight: bold;">Amount Tendered:</div>
+          <div>$${(Math.ceil(invoice.total / 5) * 5).toFixed(2)}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+          <div style="font-weight: bold;">Change:</div>
+          <div>$${(Math.ceil(invoice.total / 5) * 5 - invoice.total).toFixed(
+            2
+          )}</div>
+        </div>
+      </div>
+      
+      <div style="border-bottom: 1px dashed #aaa; margin: 10px 0;"></div>
+      
+      <div style="text-align: center; font-size: 10px;">
+        <p style="font-size: 12px; font-weight: bold; margin: 10px 0 5px; color: ${themeColor};">${receiptFooter}</p>
+        <p style="margin: 5px 0;">${returnPolicy}</p>
+        <p style="margin: 5px 0;">Customer support: ${companyEmail}</p>
+        <p style="margin-top: 15px; font-size: 9px; color: #999;">Powered by MZLAD Billing System v2.1</p>
+      </div>
+    </div>
+  `;
+}
+
+// Update the updateReceiptPreview function
+function updateReceiptPreview() {
+  const previewContainer = document.getElementById("receipt-preview-container");
+  if (!previewContainer) return;
+
+  // Create sample invoice data for preview
+  const sampleInvoice = {
+    id: "PREVIEW-1234",
+    date: new Date().toISOString(),
+    customer: "Sample Customer",
+    items: [
+      {
+        name: "Product Sample",
+        price: 19.99,
+        quantity: 1,
+      },
+      {
+        name: "Second Item",
+        price: 9.99,
+        quantity: 2,
+      },
+    ],
+    subtotal: 39.97,
+    discount: 10.0,
+    tax: 3.0,
+    total: 32.97,
+  };
+
+  // Use our simplified preview function
+  try {
+    const receiptHtml = previewReceiptTemplate(sampleInvoice);
+    previewContainer.innerHTML = receiptHtml;
+  } catch (error) {
+    console.error("Error generating receipt preview:", error);
+    previewContainer.innerHTML =
+      "<div style='padding: 20px; color: red;'>Could not generate receipt preview</div>";
+  }
+}
 // Setup all event listeners
 function setupEventListeners() {
   // Save settings button
-  const saveButton = document.getElementById("save-settings");
-  if (saveButton) {
-    saveButton.addEventListener("click", saveSettings);
+
+  // Logo upload handlers
+  const browseLogoButton = document.getElementById("browse-logo");
+  if (browseLogoButton) {
+    browseLogoButton.addEventListener("click", function () {
+      document.getElementById("logo-file").click();
+    });
   }
 
-  // Reset settings button
-  const resetButton = document.getElementById("reset-settings");
-  if (resetButton) {
-    resetButton.addEventListener("click", resetSettings);
+  const logoFileInput = document.getElementById("logo-file");
+  if (logoFileInput) {
+    logoFileInput.addEventListener("change", handleLogoUpload);
   }
 
-  // Browse for data storage path
-  const browseButton = document.getElementById("browse-data-path");
-  if (browseButton) {
-    browseButton.addEventListener("click", browseFolderPath);
+  const removeLogoButton = document.getElementById("remove-logo");
+  if (removeLogoButton) {
+    removeLogoButton.addEventListener("click", removeLogo);
   }
+}
 
-  // Theme select preview
-  const themeSelect = document.getElementById("theme-select");
-  if (themeSelect) {
-    themeSelect.addEventListener("change", previewTheme);
-  }
+const saveButton = document.getElementById("save-settings");
+if (saveButton) {
+  saveButton.addEventListener("click", saveSettings);
+}
+
+// Reset settings button
+const resetButton = document.getElementById("reset-settings");
+if (resetButton) {
+  resetButton.addEventListener("click", resetSettings);
+}
+
+// Browse for data storage path
+const browseButton = document.getElementById("browse-data-path");
+if (browseButton) {
+  browseButton.addEventListener("click", browseFolderPath);
+}
+
+// Theme select preview
+const themeSelect = document.getElementById("theme-select");
+if (themeSelect) {
+  themeSelect.addEventListener("change", previewTheme);
 }
 
 // Preview theme before saving
