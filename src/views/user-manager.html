@@ -1,149 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.gstatic.com https://apis.google.com https://www.googleapis.com; style-src 'self' 'unsafe-inline';">
-  <title>User Manager - MZLAD Billing System</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.gstatic.com https://apis.google.com https://www.googleapis.com; style-src 'self' 'unsafe-inline';"
+    />
+    <title>User Manager - MZLAD Billing System</title>
 
-  <link rel="stylesheet" href="../styles/global.css">
-  <link rel="stylesheet" href="../styles/user-manager.css">
-</head>
-<body class="light-mode">
-<div id="notification" class="notification"></div>
+    <link rel="stylesheet" href="../styles/global.css" />
+    <link rel="stylesheet" href="../styles/user-manager.css" />
+  </head>
+  <body class="light-mode">
+    <div id="notification" class="notification"></div>
 
-<div class="app-container">
-  <!-- Sidebar Container (will be populated by layout.js) -->
-  <div id="sidebar-container"></div>
+    <div class="app-container">
+      <!-- Sidebar Container (will be populated by layout.js) -->
+      <div id="sidebar-container"></div>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Header Container (will be populated by layout.js) -->
-    <div id="header-container"></div>
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header Container (will be populated by layout.js) -->
+        <div id="header-container"></div>
 
-    <!-- Users Content -->
-    <div class="users-container">
-      <div class="search-bar">
-        <input type="text" id="user-search" placeholder="Search users by name, email or role...">
-        <div class="filters">
-          <select id="role-filter">
-            <option value="all">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="cashier">Cashier</option>
-          </select>
-          <select id="status-filter">
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+        <!-- Users Content -->
+        <div class="users-container">
+          <div class="search-bar">
+            <input
+              type="text"
+              id="user-search"
+              placeholder="Search users by name, email or role..."
+            />
+            <div class="filters">
+              <select id="role-filter">
+                <option value="all">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="cashier">Cashier</option>
+              </select>
+              <select id="status-filter">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="deleted">Deleted</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="users-table-container">
+            <table id="users-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Last Login</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <!-- User data will be loaded here -->
+                <tr class="loading-row">
+                  <td colspan="6">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Loading users...</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="pagination-info">
+              <span id="pagination-details">Showing 0 of 0 users</span>
+            </div>
+            <div class="pagination-controls">
+              <button id="prev-page" class="btn pagination-btn" disabled>
+                Previous
+              </button>
+              <span id="page-indicator">Page 1</span>
+              <button id="next-page" class="btn pagination-btn" disabled>
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="users-table-container">
-        <table id="users-table">
-          <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Last Login</th>
-            <th>Actions</th>
-          </tr>
-          </thead>
-          <tbody id="users-table-body">
-          <!-- User data will be loaded here -->
-          <tr class="loading-row">
-            <td colspan="6">
-              <div class="loading-spinner"></div>
-              <div class="loading-text">Loading users...</div>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="pagination">
-        <div class="pagination-info">
-          <span id="pagination-details">Showing 0 of 0 users</span>
-        </div>
-        <div class="pagination-controls">
-          <button id="prev-page" class="btn pagination-btn" disabled>Previous</button>
-          <span id="page-indicator">Page 1</span>
-          <button id="next-page" class="btn pagination-btn" disabled>Next</button>
-        </div>
-      </div>
     </div>
-  </div>
-</div>
 
-<!-- User Modal -->
-<div id="user-modal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 id="modal-title">Add New User</h2>
-      <span class="close">&times;</span>
-    </div>
-    <div class="modal-body">
-      <form id="user-form">
-        <div class="form-group">
-          <label for="user-name">Full Name</label>
-          <input type="text" id="user-name" required>
+    <!-- User Modal -->
+    <div id="user-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Add New User</h2>
+          <span class="close">&times;</span>
         </div>
-        <div class="form-group">
-          <label for="user-email">Email</label>
-          <input type="email" id="user-email" required>
+        <div class="modal-body">
+          <form id="user-form">
+            <div class="form-group">
+              <label for="user-name">Full Name</label>
+              <input type="text" id="user-name" required />
+            </div>
+            <div class="form-group">
+              <label for="user-email">Email</label>
+              <input type="email" id="user-email" required />
+            </div>
+            <div class="form-group">
+              <label for="user-role">Role</label>
+              <select id="user-role" required>
+                <option value="">Select a role</option>
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="cashier">Cashier</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="user-password">Password</label>
+              <input
+                type="password"
+                id="user-password"
+                required
+                minlength="6"
+              />
+              <small id="password-info">Min. 6 characters</small>
+            </div>
+            <div class="form-group">
+              <label for="user-status">Status</label>
+              <select id="user-status" required>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button
+                type="button"
+                id="cancel-user-btn"
+                class="btn secondary-btn"
+              >
+                Cancel
+              </button>
+              <button type="submit" id="save-user-btn" class="btn primary-btn">
+                Save User
+              </button>
+            </div>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="user-role">Role</label>
-          <select id="user-role" required>
-            <option value="">Select a role</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="cashier">Cashier</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="user-password">Password</label>
-          <input type="password" id="user-password" required minlength="6">
-          <small id="password-info">Min. 6 characters</small>
-        </div>
-        <div class="form-group">
-          <label for="user-status">Status</label>
-          <select id="user-status" required>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-        <div class="form-actions">
-          <button type="button" id="cancel-user-btn" class="btn secondary-btn">Cancel</button>
-          <button type="submit" id="save-user-btn" class="btn primary-btn">Save User</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Confirmation Modal -->
-<div id="confirm-modal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Confirm Action</h2>
-      <span class="close">&times;</span>
-    </div>
-    <div class="modal-body">
-      <p id="confirm-message">Are you sure you want to proceed?</p>
-      <div class="form-actions">
-        <button id="cancel-confirm-btn" class="btn secondary-btn">Cancel</button>
-        <button id="confirm-action-btn" class="btn danger-btn">Confirm</button>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Load Scripts -->
-<script src="../scripts/layout.js"></script>
-<script src="../scripts/user-manager.js"></script>
-</body>
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Confirm Action</h2>
+          <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <p id="confirm-message">Are you sure you want to proceed?</p>
+          <div class="form-actions">
+            <button id="cancel-confirm-btn" class="btn secondary-btn">
+              Cancel
+            </button>
+            <button id="confirm-action-btn" class="btn danger-btn">
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load Scripts -->
+    <script src="../scripts/layout.js"></script>
+    <script src="../scripts/user-manager.js"></script>
+  </body>
 </html>

@@ -293,7 +293,45 @@ function loadInvoice(invoice) {
   // Update navigation buttons
   updateNavigationButtons();
 }
+function showToastNotification(message, isError = false, duration = 3000) {
+  let notification = document.getElementById("toast-notification");
 
+  if (!notification) {
+    notification = document.createElement("div");
+    notification.id = "toast-notification";
+    notification.style.position = "fixed";
+    notification.style.bottom = "20px";
+    notification.style.right = "20px";
+    notification.style.padding = "16px 24px";
+    notification.style.borderRadius = "4px";
+    notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    notification.style.zIndex = "10000";
+    notification.style.transition = "opacity 0.3s, transform 0.3s";
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(20px)";
+    notification.style.fontSize = "14px";
+    document.body.appendChild(notification);
+  }
+
+  // Set color based on message type
+  notification.style.backgroundColor = isError ? "#F44336" : "#4CAF50";
+  notification.style.color = "white";
+
+  // Update content
+  notification.textContent = message;
+
+  // Show with animation
+  setTimeout(() => {
+    notification.style.opacity = "1";
+    notification.style.transform = "translateY(0)";
+  }, 10);
+
+  // Hide after duration
+  setTimeout(() => {
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(20px)";
+  }, duration);
+}
 // Toggle edit mode for an invoice
 function toggleEditMode(invoice) {
   isEditingInvoice = !isEditingInvoice;

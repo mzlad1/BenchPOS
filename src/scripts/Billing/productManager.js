@@ -1,222 +1,260 @@
 // Add this near the beginning of your billing.js initialization
 if (window.api.subscribeToCollection) {
-    // Subscribe to invoice changes
-    window.api.subscribeToCollection("invoices", (changes) => {
-        // Refresh all invoices when changes occur
-        loadAllInvoices();
-    });
+  // Subscribe to invoice changes
+  window.api.subscribeToCollection("invoices", (changes) => {
+    // Refresh all invoices when changes occur
+    loadAllInvoices();
+  });
 }
 
 // Load products from database
 async function loadProducts() {
-    try {
-        products = await window.api.getProducts();
-        renderProducts(products);
-    } catch (error) {
-        console.error("Error loading products:", error);
-        productsListEl.innerHTML =
-            '<div class="error">Failed to load products. Please try again.</div>';
-    }
+  try {
+    products = await window.api.getProducts();
+    renderProducts(products);
+  } catch (error) {
+    console.error("Error loading products:", error);
+    productsListEl.innerHTML =
+      '<div class="error">Failed to load products. Please try again.</div>';
+  }
 }
 
 function fixProductCards() {
-    // Function to wrap product details
-    function wrapProductDetails(productItem) {
-        // Skip if already processed
-        if (productItem.querySelector(".product-details")) return;
+  // Function to wrap product details
+  function wrapProductDetails(productItem) {
+    // Skip if already processed
+    if (productItem.querySelector(".product-details")) return;
 
-        // Get all child elements except the button
-        const button = productItem.querySelector(".add-to-cart");
-        if (!button) return; // Skip if no button found
+    // Get all child elements except the button
+    const button = productItem.querySelector(".add-to-cart");
+    if (!button) return; // Skip if no button found
 
-        const otherElements = Array.from(productItem.children).filter(
-            (el) => el !== button
-        );
+    const otherElements = Array.from(productItem.children).filter(
+      (el) => el !== button
+    );
 
-        // Create a details container
-        const detailsContainer = document.createElement("div");
-        detailsContainer.className = "product-details";
+    // Create a details container
+    const detailsContainer = document.createElement("div");
+    detailsContainer.className = "product-details";
 
-        // Move other elements into the container
-        otherElements.forEach((el) => {
-            productItem.removeChild(el);
-            detailsContainer.appendChild(el);
-        });
-
-        // Insert the container at the beginning
-        productItem.insertBefore(detailsContainer, button);
-    }
-
-    // Process existing product items
-    document.querySelectorAll(".product-item").forEach(wrapProductDetails);
-
-    // Set up an observer to watch for new product items
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-                if (node.nodeType === 1 && node.classList.contains("product-item")) {
-                    wrapProductDetails(node);
-                }
-
-                // Check for product items added within the node
-                if (node.nodeType === 1) {
-                    node.querySelectorAll(".product-item").forEach(wrapProductDetails);
-                }
-            });
-        });
+    // Move other elements into the container
+    otherElements.forEach((el) => {
+      productItem.removeChild(el);
+      detailsContainer.appendChild(el);
     });
 
-    // Start observing the products list
-    const productsListEl = document.getElementById("products-list");
-    if (productsListEl) {
-        observer.observe(productsListEl, { childList: true, subtree: true });
-    }
+    // Insert the container at the beginning
+    productItem.insertBefore(detailsContainer, button);
+  }
+
+  // Process existing product items
+  document.querySelectorAll(".product-item").forEach(wrapProductDetails);
+
+  // Set up an observer to watch for new product items
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1 && node.classList.contains("product-item")) {
+          wrapProductDetails(node);
+        }
+
+        // Check for product items added within the node
+        if (node.nodeType === 1) {
+          node.querySelectorAll(".product-item").forEach(wrapProductDetails);
+        }
+      });
+    });
+  });
+
+  // Start observing the products list
+  const productsListEl = document.getElementById("products-list");
+  if (productsListEl) {
+    observer.observe(productsListEl, { childList: true, subtree: true });
+  }
 }
 
 // Render products to the products grid
 function renderProducts(productsToRender) {
-    if (!productsListEl) return;
-    productsListEl.innerHTML = "";
+  if (!productsListEl) return;
+  productsListEl.innerHTML = "";
 
-    if (productsToRender.length === 0) {
-        productsListEl.innerHTML =
-            '<div class="no-products">No products found</div>';
-        return;
-    }
+  if (productsToRender.length === 0) {
+    productsListEl.innerHTML =
+      '<div class="no-products">No products found</div>';
+    return;
+  }
 
-    // Calculate pagination values
-    const totalPages = Math.ceil(productsToRender.length / productsPerPage);
+  // Calculate pagination values
+  const totalPages = Math.ceil(productsToRender.length / productsPerPage);
 
-    // Make sure currentPage is within bounds
-    if (currentPage < 1) currentPage = 1;
-    if (currentPage > totalPages) currentPage = totalPages;
+  // Make sure currentPage is within bounds
+  if (currentPage < 1) currentPage = 1;
+  if (currentPage > totalPages) currentPage = totalPages;
 
-    // Calculate start and end indices for the current page
-    const startIndex = (currentPage - 1) * productsPerPage;
-    const endIndex = Math.min(
-        startIndex + productsPerPage,
-        productsToRender.length
-    );
+  // Calculate start and end indices for the current page
+  const startIndex = (currentPage - 1) * productsPerPage;
+  const endIndex = Math.min(
+    startIndex + productsPerPage,
+    productsToRender.length
+  );
 
-    // Only render products for the current page
-    const productsForCurrentPage = productsToRender.slice(startIndex, endIndex);
+  // Only render products for the current page
+  const productsForCurrentPage = productsToRender.slice(startIndex, endIndex);
 
-    // Render the product cards
-    productsForCurrentPage.forEach((product) => {
-        const productEl = document.createElement("div");
-        productEl.className = "product-item";
-        productEl.innerHTML = `
+  // Render the product cards
+  productsForCurrentPage.forEach((product) => {
+    const productEl = document.createElement("div");
+    productEl.className = "product-item";
+    productEl.innerHTML = `
       <div class="product-name">${product.name}</div>
       <div class="product-price">$${product.price.toFixed(2)}</div>
       <div class="product-stock">In stock: ${product.stock}</div>
       <button class="btn add-to-cart" data-id="${
-            product.id
-        }">Add to Cart</button>
+        product.id
+      }">Add to Cart</button>
     `;
 
-        productEl.querySelector(".add-to-cart").addEventListener("click", () => {
-            addToCart(product);
-        });
-
-        productsListEl.appendChild(productEl);
+    productEl.querySelector(".add-to-cart").addEventListener("click", () => {
+      addToCart(product);
     });
 
-    // Create and append pagination controls
-    createPaginationControls(productsToRender.length, totalPages);
+    productsListEl.appendChild(productEl);
+  });
+
+  // Create and append pagination controls
+  createPaginationControls(productsToRender.length, totalPages);
 }
 
 // Add this new function to create pagination controls
 function createPaginationControls(totalProducts, totalPages) {
-    // Check if pagination already exists and remove it
-    const existingPagination = document.querySelector(".pagination-controls");
-    if (existingPagination) {
-        existingPagination.remove();
+  // Check if pagination already exists and remove it
+  const existingPagination = document.querySelector(".pagination-controls");
+  if (existingPagination) {
+    existingPagination.remove();
+  }
+
+  // Create pagination container
+  const paginationEl = document.createElement("div");
+  paginationEl.className = "pagination-controls";
+
+  // Add product count information
+  const productCountEl = document.createElement("div");
+  productCountEl.className = "product-count";
+  productCountEl.textContent = `Showing ${Math.min(
+    productsPerPage,
+    totalProducts
+  )} of ${totalProducts} products`;
+  paginationEl.appendChild(productCountEl);
+
+  // Create page controls
+  const pageControlsEl = document.createElement("div");
+  pageControlsEl.className = "page-controls";
+
+  // Previous button
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "btn page-btn prev-btn";
+  prevBtn.textContent = "← Previous";
+  prevBtn.disabled = currentPage === 1;
+  prevBtn.addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderProducts(products); // Re-render with the same products but on a new page
     }
+  });
+  pageControlsEl.appendChild(prevBtn);
 
-    // Create pagination container
-    const paginationEl = document.createElement("div");
-    paginationEl.className = "pagination-controls";
+  // Page indicator
+  const pageIndicator = document.createElement("span");
+  pageIndicator.className = "page-indicator";
+  pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+  pageControlsEl.appendChild(pageIndicator);
 
-    // Add product count information
-    const productCountEl = document.createElement("div");
-    productCountEl.className = "product-count";
-    productCountEl.textContent = `Showing ${Math.min(
-        productsPerPage,
-        totalProducts
-    )} of ${totalProducts} products`;
-    paginationEl.appendChild(productCountEl);
-
-    // Create page controls
-    const pageControlsEl = document.createElement("div");
-    pageControlsEl.className = "page-controls";
-
-    // Previous button
-    const prevBtn = document.createElement("button");
-    prevBtn.className = "btn page-btn prev-btn";
-    prevBtn.textContent = "← Previous";
-    prevBtn.disabled = currentPage === 1;
-    prevBtn.addEventListener("click", () => {
-        if (currentPage > 1) {
-            currentPage--;
-            renderProducts(products); // Re-render with the same products but on a new page
-        }
-    });
-    pageControlsEl.appendChild(prevBtn);
-
-    // Page indicator
-    const pageIndicator = document.createElement("span");
-    pageIndicator.className = "page-indicator";
-    pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
-    pageControlsEl.appendChild(pageIndicator);
-
-    // Next button
-    const nextBtn = document.createElement("button");
-    nextBtn.className = "btn page-btn next-btn";
-    nextBtn.textContent = "Next →";
-    nextBtn.disabled = currentPage === totalPages;
-    nextBtn.addEventListener("click", () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            renderProducts(products); // Re-render with the same products but on a new page
-        }
-    });
-    pageControlsEl.appendChild(nextBtn);
-
-    paginationEl.appendChild(pageControlsEl);
-
-    // Insert pagination controls after the products list
-    if (productsListEl && productsListEl.parentNode) {
-        productsListEl.parentNode.insertBefore(
-            paginationEl,
-            productsListEl.nextSibling
-        );
+  // Next button
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "btn page-btn next-btn";
+  nextBtn.textContent = "Next →";
+  nextBtn.disabled = currentPage === totalPages;
+  nextBtn.addEventListener("click", () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderProducts(products); // Re-render with the same products but on a new page
     }
+  });
+  pageControlsEl.appendChild(nextBtn);
+
+  paginationEl.appendChild(pageControlsEl);
+
+  // Insert pagination controls after the products list
+  if (productsListEl && productsListEl.parentNode) {
+    productsListEl.parentNode.insertBefore(
+      paginationEl,
+      productsListEl.nextSibling
+    );
+  }
 }
+function showToastNotification(message, isError = false, duration = 3000) {
+  let notification = document.getElementById("toast-notification");
 
+  if (!notification) {
+    notification = document.createElement("div");
+    notification.id = "toast-notification";
+    notification.style.position = "fixed";
+    notification.style.bottom = "20px";
+    notification.style.right = "20px";
+    notification.style.padding = "16px 24px";
+    notification.style.borderRadius = "4px";
+    notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    notification.style.zIndex = "10000";
+    notification.style.transition = "opacity 0.3s, transform 0.3s";
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(20px)";
+    notification.style.fontSize = "14px";
+    document.body.appendChild(notification);
+  }
+
+  // Set color based on message type
+  notification.style.backgroundColor = isError ? "#F44336" : "#4CAF50";
+  notification.style.color = "white";
+
+  // Update content
+  notification.textContent = message;
+
+  // Show with animation
+  setTimeout(() => {
+    notification.style.opacity = "1";
+    notification.style.transform = "translateY(0)";
+  }, 10);
+
+  // Hide after duration
+  setTimeout(() => {
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(20px)";
+  }, duration);
+}
 // Filter products based on search input
 function filterProducts() {
-    const searchTerm = productSearchEl.value.toLowerCase();
-    currentPage = 1; // Reset to first page on search
+  const searchTerm = productSearchEl.value.toLowerCase();
+  currentPage = 1; // Reset to first page on search
 
-    if (!searchTerm) {
-        renderProducts(products);
-        return;
-    }
+  if (!searchTerm) {
+    renderProducts(products);
+    return;
+  }
 
-    const filteredProducts = products.filter(
-        (product) =>
-            product.name.toLowerCase().includes(searchTerm) ||
-            (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
-            (product.category && product.category.toLowerCase().includes(searchTerm))
-    );
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm) ||
+      (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
+      (product.category && product.category.toLowerCase().includes(searchTerm))
+  );
 
-    renderProducts(filteredProducts);
+  renderProducts(filteredProducts);
 }
 
 // Add these styles to your CSS
 function addPaginationStyles() {
-    const styleElement = document.createElement("style");
-    styleElement.textContent = `
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
     .pagination-controls {
       display: flex;
       flex-direction: column;
@@ -264,13 +302,13 @@ function addPaginationStyles() {
     }
     
   `;
-    document.head.appendChild(styleElement);
+  document.head.appendChild(styleElement);
 }
 
 function enhanceProductGrid() {
-    // Add enhanced styling for product grid
-    const styleElement = document.createElement("style");
-    styleElement.textContent = `
+  // Add enhanced styling for product grid
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
     .products-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -352,20 +390,20 @@ function enhanceProductGrid() {
       }
     }
   `;
-    document.head.appendChild(styleElement);
+  document.head.appendChild(styleElement);
 }
 
 function initProductPagination() {
-    addPaginationStyles();
-    // Reset to page 1 when doing a new search
-    productSearchEl.addEventListener("input", () => {
-        currentPage = 1;
-    });
+  addPaginationStyles();
+  // Reset to page 1 when doing a new search
+  productSearchEl.addEventListener("input", () => {
+    currentPage = 1;
+  });
 }
 
 function fixProductCardHeight() {
-    const styleElement = document.createElement("style");
-    styleElement.textContent = `
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
     /* Fix for products grid container */
     .products-grid {
       display: grid;
@@ -405,14 +443,14 @@ function fixProductCardHeight() {
       }
     }
   `;
-    document.head.appendChild(styleElement);
+  document.head.appendChild(styleElement);
 
-    console.log("Applied product card height fix");
+  console.log("Applied product card height fix");
 }
 
 function fixProductPageSpacing() {
-    const styleElement = document.createElement("style");
-    styleElement.textContent = `
+  const styleElement = document.createElement("style");
+  styleElement.textContent = `
     /* Main container adjustments */
     .product-selection {
       display: flex;
@@ -466,7 +504,7 @@ function fixProductPageSpacing() {
       }
     }
   `;
-    document.head.appendChild(styleElement);
+  document.head.appendChild(styleElement);
 
-    console.log("Applied product page spacing fix");
+  console.log("Applied product page spacing fix");
 }

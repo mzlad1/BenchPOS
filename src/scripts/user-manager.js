@@ -169,7 +169,6 @@ async function fetchUsers() {
     console.log("Sending filter parameters to backend:", filterParams);
 
     // Use IPC to get users from Firestore via main process
-    // This will apply role and status filters on the backend
     const users = await window.api.getUsers(filterParams);
 
     console.log(`Received ${users.length} users from API`);
@@ -182,7 +181,8 @@ async function fetchUsers() {
         (user) =>
           (user.name && user.name.toLowerCase().includes(searchTerm)) ||
           (user.email && user.email.toLowerCase().includes(searchTerm)) ||
-          (user.role && user.role.toLowerCase().includes(searchTerm))
+          (user.role && user.role.toLowerCase().includes(searchTerm)) ||
+          (user.status && user.status.toLowerCase().includes(searchTerm))
       );
       console.log(
         `Filtered to ${filteredUsers.length} users after client-side search for "${searchTerm}"`
@@ -198,7 +198,7 @@ async function fetchUsers() {
     renderUsers();
 
     if (users.length > 0) {
-      console.log("Users loaded:");
+      console.log("Users loaded successfully");
     } else {
       showNotification("No users match the current filters", "info");
     }
@@ -245,6 +245,11 @@ function renderUsers() {
   usersToDisplay.forEach((user) => {
     const row = document.createElement("tr");
 
+    // Add a class for deleted users to style them differently
+    if (user.status === "deleted") {
+      row.classList.add("deleted-user");
+    }
+
     // Format last login time
     let lastLoginText = "Never";
     if (user.lastLogin) {
@@ -261,24 +266,26 @@ function renderUsers() {
       });
     }
 
+    // Determine status display
+    const statusDisplay = user.status || "inactive";
+    const roleDisplay = user.role || "Unknown";
+
     row.innerHTML = `
       <td>${user.name || "N/A"}</td>
       <td>${user.email || "N/A"}</td>
-      <td><span class="user-role ${user.role || "unknown"}">${
-      user.role || "Unknown"
-    }</span></td>
-      <td><span class="user-status ${user.status || "inactive"}">${
-      user.status || "Inactive"
-    }</span></td>
+      <td><span class="user-role ${roleDisplay.toLowerCase()}">${roleDisplay}</span></td>
+      <td><span class="user-status ${statusDisplay.toLowerCase()}">${statusDisplay}</span></td>
       <td>${lastLoginText}</td>
       <td>
         <div class="action-buttons">
-          <button class="action-btn edit-btn" data-id="${
-            user.id
-          }" title="Edit">✏️</button>
-          <button class="action-btn delete-btn" data-id="${
-            user.id
-          }" title="Delete">🗑️</button>
+          <button class="action-btn edit-btn" data-id="${user.id}" 
+                  title="Edit" ${user.status === "deleted" ? "disabled" : ""}>
+            ✏️
+          </button>
+          <button class="action-btn delete-btn" data-id="${user.id}" 
+                  title="Delete" ${user.status === "deleted" ? "disabled" : ""}>
+            🗑️
+          </button>
         </div>
       </td>
     `;

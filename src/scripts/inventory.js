@@ -31,6 +31,16 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector(".close").addEventListener("click", () => {
     document.getElementById("product-modal").style.display = "none";
   });
+
+  document.querySelectorAll(".close").forEach((closeBtn) => {
+    closeBtn.addEventListener("click", () => {
+      // Find the parent modal
+      const modal = closeBtn.closest(".modal");
+      if (modal) {
+        modal.style.display = "none";
+      }
+    });
+  });
   // Add this to your DOMContentLoaded event listener
   document
     .getElementById("products-table-body")
@@ -171,6 +181,8 @@ async function initPage() {
 
   // Load products
   await loadProducts();
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Check connection status
@@ -358,6 +370,8 @@ async function loadProducts() {
     // Initialize empty products array to prevent further errors
     products = [];
   }
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Render products to the table
@@ -530,6 +544,7 @@ function renderProducts(productsToRender) {
 
   // Update bulk actions UI
   updateBulkActionsUI();
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Update the bulk actions UI based on selection
@@ -564,6 +579,8 @@ function updateBulkActionsUI() {
       bulkActionsContainer.classList.remove("active");
     }
   }
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Function to render the current page
@@ -578,6 +595,8 @@ function renderCurrentPage() {
   } else {
     filterProducts();
   }
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Filter products based on search input
@@ -646,6 +665,7 @@ function filterProducts() {
   }
 
   renderProducts(filteredProducts);
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Clear the search field and reset the product list
@@ -657,6 +677,7 @@ function clearSearch() {
   // Reset to first page
   currentPage = 1;
   renderProducts(products);
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Handle add/edit product form submission
@@ -785,6 +806,8 @@ async function handleAddProduct(event) {
     console.error("Error saving product:", error);
     showNotification("Failed to save product. Please try again.", "error");
   }
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Handle edit product button click
@@ -857,6 +880,8 @@ async function handleDeleteProduct(event) {
     console.error("Error deleting product:", error);
     showNotification("Failed to delete product. Please try again.", "error");
   }
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Handle bulk actions
@@ -881,6 +906,8 @@ async function handleBulkAction() {
       showStockUpdateModal();
       break;
   }
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Bulk delete products
@@ -939,6 +966,8 @@ async function bulkDeleteProducts() {
     console.error("Error in bulk delete:", error);
     showNotification("An error occurred while deleting products.", "error");
   }
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Show the category change modal
@@ -1055,6 +1084,8 @@ function showCategoryChangeModal() {
 
   // Show the modal
   modal.style.display = "block";
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Show the stock update modal
@@ -1171,6 +1202,7 @@ function showStockUpdateModal() {
 
   // Show modal
   modal.style.display = "block";
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Export products to CSV
@@ -1286,6 +1318,7 @@ function handleFileSelect(event) {
   };
 
   reader.readAsText(file);
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Preview CSV data in the modal
@@ -1507,6 +1540,8 @@ async function processCSVImport(csvData) {
       processButton.disabled = false;
     }
   }
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Add pagination
@@ -1591,6 +1626,7 @@ function setupPagination() {
 
   paginationControls.appendChild(nextButton);
   paginationContainer.appendChild(paginationControls);
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Calculate profit for a product
@@ -1599,7 +1635,7 @@ function calculateProfit(product) {
     return product.price || 0;
   }
   return (product.price || 0) - (product.cost || 0);
-}
+  }
 
 // Update product statistics
 function updateProductStats() {
@@ -1620,6 +1656,8 @@ function updateProductStats() {
   if (window.LayoutManager) {
     window.LayoutManager.updateInventoryBadge(lowStockCount);
   }
+
+  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Highlight search terms in the product table

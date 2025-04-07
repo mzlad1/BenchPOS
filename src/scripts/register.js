@@ -157,6 +157,7 @@ async function handleRegister(event) {
   const email = document.getElementById("register-email").value;
   const password = document.getElementById("register-password").value;
   const role = document.getElementById("register-role").value;
+  const status = document.getElementById("register-status").value;
   const registerButton = document.getElementById("register-button");
 
   if (!name || !email || !password) {
@@ -178,13 +179,18 @@ async function handleRegister(event) {
       });
     }
 
-    // Try to register
-    const result = await window.api.registerUser({
+    // Try to register with status from dropdown
+    // Make sure status is explicitly set and treated as a core field
+    const userData = {
       name,
       email,
       password,
       role,
-    });
+      status, // Use status selected from dropdown
+    };
+
+    console.log("Sending user data with status:", userData);
+    const result = await window.api.registerUser(userData);
 
     if (result.success) {
       // Registration successful

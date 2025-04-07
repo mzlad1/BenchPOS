@@ -36,6 +36,7 @@ const LayoutManager = {
         this.applyRoleBasedAccess(this.user);
       }
       this.applyLanguageDirection();
+      this.refreshInventoryBadge();
       console.log(`Layout initialized for page: ${this.currentPage}`);
     } catch (error) {
       console.error("Error initializing layout:", error);
@@ -169,6 +170,22 @@ const LayoutManager = {
       `;
     } catch (error) {
       console.error("Error loading header:", error);
+    }
+  },
+
+  async refreshInventoryBadge() {
+    try {
+      if (window.api && typeof window.api.getProducts === "function") {
+        const products = await window.api.getProducts();
+        if (Array.isArray(products)) {
+          const lowStockCount = products.filter(
+            (product) => product.stock <= 5
+          ).length;
+          this.updateInventoryBadge(lowStockCount);
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing inventory badge:", error);
     }
   },
 

@@ -1,3 +1,15 @@
+// Function to play a sound
+function playCompletionSound() {
+  try {
+    const completionSound = new Audio("../Audio/completed.mp3"); // Same path format as beep sound
+    completionSound.volume = 0.3;
+    completionSound
+      .play()
+      .catch((e) => console.log("Could not play completion sound:", e));
+  } catch (e) {
+    console.error("Error playing completion sound:", e);
+  }
+}
 // Complete sale
 // Fix for the completeSale function to update the invoices array
 async function completeSale() {
@@ -42,7 +54,8 @@ async function completeSale() {
 
     // Show a notification instead
     showToastNotification("Sale completed successfully");
-
+    // Play the completion sound
+    playCompletionSound();
     // Clear the cart
     clearCart();
   } catch (error) {

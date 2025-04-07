@@ -363,7 +363,7 @@ async function localLogin(email, password, isOnline) {
 // Register new user
 async function registerUser(userData) {
   try {
-    const { name, email, password, role } = userData;
+    const { name, email, password, role, status } = userData;
 
     // Check if Firebase is available
     if (!auth || !isFirebaseConfigured()) {
@@ -397,8 +397,16 @@ async function registerUser(userData) {
       email,
       name,
       role: role || "cashier",
+      status: (status || "active").toLowerCase(), // Explicitly include status
       createdAt: new Date().toISOString(),
     };
+
+    console.log("Registering user with details:", {
+      email,
+      name,
+      role: role || "cashier",
+      status: (status || "active").toLowerCase(),
+    });
 
     await setDoc(doc(db, "users", firebaseUser.uid), newUser);
 
@@ -488,6 +496,71 @@ function syncUserToLocal(userData, plainPassword = null) {
   } catch (error) {
     console.error("Error syncing user to local:", error);
     return false;
+  }
+}
+async function updateUser(userData) {
+  try {
+    // Update in Firestore
+    await setDoc(doc(db, "users", userData.id), userData, { merge: true });
+
+    // Get current local users
+    const users = localStore.get("users") || [];
+
+    // Find the index of the user to update
+    const userIndex = users.findIndex((u) => u.id === userData.id);
+
+    if (userIndex !== -1) {
+      // Update the user in local storage
+      users[userIndex] = {
+        ...users[userIndex],
+        ...userData,
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Remove password if not updating
+      if (!userData.password) {
+        delete users[userIndex].passwordHash;
+      }
+
+      // Save updated users back to local storage
+      localStore.set("users", users);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+// Delete user function with local storage sync
+async function deleteUser(userId) {
+  try {
+    // Update status to "deleted" in Firestore
+    await updateDoc(doc(db, "users", userId), {
+      status: "deleted",
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Update status to "deleted" in local storage
+    const users = localStore.get("users") || [];
+    const updatedUsers = users.map((user) => {
+      if (user.id === userId) {
+        return {
+          ...user,
+          status: "deleted",
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      return user;
+    });
+
+    localStore.set("users", updatedUsers);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting (disabling) user:", error);
+    return { success: false, message: error.message };
   }
 }
 

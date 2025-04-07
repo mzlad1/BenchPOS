@@ -443,7 +443,18 @@ function initializeProfessionalReceipt() {
     container.innerHTML = generateProfessionalReceipt(sampleInvoice);
   }
 }
-
+// Function to play a sound
+function playCompletionSound() {
+  try {
+    const completionSound = new Audio("../Audio/completed.mp3"); // Same path format as beep sound
+    completionSound.volume = 0.3;
+    completionSound
+      .play()
+      .catch((e) => console.log("Could not play completion sound:", e));
+  } catch (e) {
+    console.error("Error playing completion sound:", e);
+  }
+}
 // Generate actual receipt from invoice data
 function updateCompleteSaleForProfessionalReceipt() {
   const originalCompleteSale = completeSale;
@@ -516,6 +527,8 @@ function updateCompleteSaleForProfessionalReceipt() {
       showToastNotification(
         "Sale completed successfully. Press F8 to print receipt."
       );
+
+      playCompletionSound();
 
       // Clear the cart
       clearCart();
