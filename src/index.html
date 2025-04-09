@@ -1,363 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
-    />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <title>MZLAD Billing System</title>
-    <link rel="stylesheet" href="styles/index.css" />
-  </head>
-  <body class="light-mode">
-    <div class="app-container">
-      <!-- Sidebar -->
-      <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-          <div class="logo">
-            <div class="logo-icon">M</div>
-            <span class="logo-text">MZLAD</span>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+          http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+  />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <title>MZLAD Billing System</title>
+  <link rel="stylesheet" href="styles/global.css" />
+  <link rel="stylesheet" href="styles/index.css" />
+</head>
+<body class="light-mode">
+<div class="app-container">
+  <!-- Sidebar Container (will be populated by layout.js) -->
+  <div id="sidebar-container"></div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header Container (will be populated by layout.js) -->
+    <div id="header-container"></div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard">
+      <div class="dashboard-header">
+        <div class="welcome-section">
+          <div class="welcome-message" id="welcome-message">
+            Welcome back, <span id="user-greeting">User</span>!
           </div>
-          <div class="menu-toggle" id="menu-toggle">◀</div>
-        </div>
-
-        <div class="nav-menu">
-          <div class="menu-section">
-            <a href="index.html" class="menu-item active">
-              <div class="menu-icon">📊</div>
-              <span class="menu-text">Dashboard</span>
-            </a>
-
-            <a href="views/billing.html" class="menu-item">
-              <div class="menu-icon">💵</div>
-              <span class="menu-text">New Sale</span>
-            </a>
-
-            <a
-              href="views/inventory.html"
-              class="menu-item"
-              id="inventory-link"
-            >
-              <div class="menu-icon">📦</div>
-              <span class="menu-text">Inventory</span>
-              <span class="badge" id="inventory-badge">3</span>
-            </a>
-
-            <a href="views/reports.html" class="menu-item" id="reports-link">
-              <div class="menu-icon">📈</div>
-              <span class="menu-text">Reports</span>
-            </a>
-
-            <a href="views/register.html" class="menu-item" id="nav-register">
-              <div class="menu-icon">🔑</div>
-              <span class="menu-text">Register new User</span>
-            </a>
-            <a
-              href="views/user-manager.html"
-              class="menu-item"
-              id="nav-user-manager"
-            >
-              <div class="menu-icon">👥</div>
-              <span class="menu-text">User Manager</span>
-            </a>
-          </div>
-
-          <div class="menu-section">
-            <div class="menu-label">System</div>
-
-            <a href="views/settings.html" class="menu-item" id="nav-settings">
-              <div class="menu-icon">⚙️</div>
-              <span class="menu-text">Settings</span>
-            </a>
-
-            <a href="views/help.html" class="menu-item" id="nav-help">
-              <div class="menu-icon">❓</div>
-              <span class="menu-text">Help Center</span>
-            </a>
+          <div class="date-display" id="current-date">
+            Friday, March 21, 2025
           </div>
         </div>
 
-        <div class="user-profile">
-          <div class="avatar" id="user-avatar">U</div>
-          <div class="user-details">
-            <div class="user-name" id="current-user-name">Not logged in</div>
-            <div class="user-role" id="current-user-role">No role</div>
-          </div>
-          <button id="logout-btn" class="logout-btn">⇥</button>
+        <div class="action-buttons">
+          <button class="btn btn-outline" id="sync-button">
+            <div class="btn-icon">🔄</div>
+            <span>Sync Data</span>
+          </button>
+
+          <button class="btn btn-primary">
+            <div class="btn-icon">➕</div>
+            <span>New Sale</span>
+          </button>
         </div>
       </div>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header -->
-        <div class="header">
-          <div class="page-title">Dashboard</div>
+      <!-- Stats Section -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">TOTAL SALES</div>
+            <div class="stat-icon sales">💵</div>
+          </div>
+          <div class="stat-value" id="sales-count">0</div>
+          <div class="stat-trend trend-up">
+            <span>↑ 12%</span>
+            <span>vs last week</span>
+          </div>
+          <div class="stat-progress">
+            <div class="progress-bar" style="width: 75%"></div>
+          </div>
+        </div>
 
-          <div class="header-actions">
-            <div class="search-bar">
-              <div class="search-icon">🔍</div>
-              <input type="text" class="search-input" placeholder="Search..." />
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">REVENUE</div>
+            <div class="stat-icon revenue">💰</div>
+          </div>
+          <div class="stat-value" id="revenue-value">$0.00</div>
+          <div class="stat-trend trend-up">
+            <span>↑ 8%</span>
+            <span>vs last week</span>
+          </div>
+          <div class="stat-progress">
+            <div class="progress-bar" style="width: 65%"></div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">PRODUCTS</div>
+            <div class="stat-icon products">📦</div>
+          </div>
+          <div class="stat-value" id="products-count">0</div>
+          <div class="stat-trend">
+            <span>Recently added: 0</span>
+          </div>
+          <div class="stat-progress">
+            <div class="progress-bar" style="width: 50%"></div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">LOW STOCK ITEMS</div>
+            <div class="stat-icon low-stock">⚠️</div>
+          </div>
+          <div class="stat-value" id="low-stock-count">0</div>
+          <div class="stat-trend trend-down">
+            <span>Requires attention</span>
+          </div>
+          <div class="stat-progress">
+            <div class="progress-bar" style="width: 25%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Grid -->
+      <div class="dashboard-grid">
+        <!-- Chart Section -->
+        <div class="dashboard-section col-span-8">
+          <div class="chart-container">
+            <div class="chart-header">
+              <div class="chart-title">Sales Performance</div>
+              <div class="chart-actions">
+                <button class="btn btn-primary" id="chart-week">
+                  This Week
+                </button>
+                <button class="btn btn-ghost" id="chart-month">
+                  This Month
+                </button>
+                <button class="btn btn-ghost" id="chart-year">
+                  This Year
+                </button>
+              </div>
             </div>
 
-            <div class="connection-status">
-              <div
-                class="status-indicator offline"
-                id="connection-indicator"
-              ></div>
-              <span id="connection-text">Offline Mode</span>
+            <div class="chart-tabs">
+              <div class="chart-tab active" id="tab-revenue">Revenue</div>
+              <div class="chart-tab" id="tab-orders">Orders</div>
+              <div class="chart-tab" id="tab-products">Products</div>
             </div>
 
-            <div class="header-btn">
-              <span>🔔</span>
-              <div class="notification-indicator"></div>
-            </div>
-
-            <div class="theme-switcher" id="theme-switcher">
-              <div class="theme-option light">☀️</div>
-              <div class="theme-option dark">🌙</div>
-              <div class="theme-indicator"></div>
+            <!-- We're adding a wrapper div for lazy loading -->
+            <div id="chart-wrapper">
+              <div id="chart-loading">Loading chart data...</div>
             </div>
           </div>
         </div>
 
-        <!-- Dashboard Content -->
-        <div class="dashboard">
-          <div class="dashboard-header">
-            <div class="welcome-section">
-              <div class="welcome-message" id="welcome-message">
-                Welcome back, <span id="user-greeting">User</span>!
-              </div>
-              <div class="date-display" id="current-date">
-                Friday, March 21, 2025
-              </div>
-            </div>
-
-            <div class="action-buttons">
-              <button class="btn btn-outline" id="sync-button">
-                <div class="btn-icon">🔄</div>
-                <span>Sync Data</span>
-              </button>
-
-              <button class="btn btn-primary">
-                <div class="btn-icon">➕</div>
-                <span>New Sale</span>
+        <!-- Activity Section -->
+        <div class="dashboard-section col-span-4">
+          <div class="activity-container">
+            <div class="activity-header">
+              <div class="activity-title">Recent Activity</div>
+              <button class="btn btn-ghost" style="padding: 0.4rem">
+                <span>•••</span>
               </button>
             </div>
-          </div>
-
-          <!-- Stats Section -->
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-card-header">
-                <div class="stat-title">TOTAL SALES</div>
-                <div class="stat-icon sales">💵</div>
-              </div>
-              <div class="stat-value" id="sales-count">0</div>
-              <div class="stat-trend trend-up">
-                <span>↑ 12%</span>
-                <span>vs last week</span>
-              </div>
-              <div class="stat-progress">
-                <div class="progress-bar" style="width: 75%"></div>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-card-header">
-                <div class="stat-title">REVENUE</div>
-                <div class="stat-icon revenue">💰</div>
-              </div>
-              <div class="stat-value" id="revenue-value">$0.00</div>
-              <div class="stat-trend trend-up">
-                <span>↑ 8%</span>
-                <span>vs last week</span>
-              </div>
-              <div class="stat-progress">
-                <div class="progress-bar" style="width: 65%"></div>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-card-header">
-                <div class="stat-title">PRODUCTS</div>
-                <div class="stat-icon products">📦</div>
-              </div>
-              <div class="stat-value" id="products-count">0</div>
-              <div class="stat-trend">
-                <span>Recently added: 0</span>
-              </div>
-              <div class="stat-progress">
-                <div class="progress-bar" style="width: 50%"></div>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-card-header">
-                <div class="stat-title">LOW STOCK ITEMS</div>
-                <div class="stat-icon low-stock">⚠️</div>
-              </div>
-              <div class="stat-value" id="low-stock-count">0</div>
-              <div class="stat-trend trend-down">
-                <span>Requires attention</span>
-              </div>
-              <div class="stat-progress">
-                <div class="progress-bar" style="width: 25%"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dashboard Grid -->
-          <div class="dashboard-grid">
-            <!-- Chart Section -->
-            <div class="dashboard-section col-span-8">
-              <div class="chart-container">
-                <div class="chart-header">
-                  <div class="chart-title">Sales Performance</div>
-                  <div class="chart-actions">
-                    <button class="btn btn-primary" id="chart-week">
-                      This Week
-                    </button>
-                    <button class="btn btn-ghost" id="chart-month">
-                      This Month
-                    </button>
-                    <button class="btn btn-ghost" id="chart-year">
-                      This Year
-                    </button>
-                  </div>
-                </div>
-
-                <div class="chart-tabs">
-                  <div class="chart-tab active" id="tab-revenue">Revenue</div>
-                  <div class="chart-tab" id="tab-orders">Orders</div>
-                  <div class="chart-tab" id="tab-products">Products</div>
-                </div>
-
-                <!-- We're adding a wrapper div for lazy loading -->
-                <div id="chart-wrapper">
-                  <div id="chart-loading">Loading chart data...</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Activity Section -->
-            <div class="dashboard-section col-span-4">
-              <div class="activity-container">
-                <div class="activity-header">
-                  <div class="activity-title">Recent Activity</div>
-                  <button class="btn btn-ghost" style="padding: 0.4rem">
-                    <span>•••</span>
-                  </button>
-                </div>
-                <div class="activity-list" id="activity-list">
-                  <!-- Activity items will be dynamically inserted here -->
-                  <div class="activity-item" id="activity-loading">
-                    <div class="activity-content">
-                      <div class="activity-text">
-                        Loading recent activities...
-                      </div>
-                    </div>
+            <div class="activity-list" id="activity-list">
+              <!-- Activity items will be dynamically inserted here -->
+              <div class="activity-item" id="activity-loading">
+                <div class="activity-content">
+                  <div class="activity-text">
+                    Loading recent activities...
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Quick Access Section -->
-          <div class="quick-access-grid">
-            <div class="quick-card billing" id="billing-card">
-              <div class="quick-card-header">
-                <div class="quick-card-title">New Sale</div>
-                <div class="quick-card-subtitle">
-                  Create invoices and receipts
-                </div>
-                <div class="quick-card-icon">💵</div>
-              </div>
-              <div class="quick-card-body">
-                <div class="feature-list">
-                  <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <span>Process transactions quickly</span>
-                  </div>
-                  <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <span>Apply discounts and taxes</span>
-                  </div>
-                  <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <span>Print or email receipts</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="quick-card inventory" id="inventory-card">
-              <div class="quick-card-header">
-                <div class="quick-card-title">Inventory</div>
-                <div class="quick-card-subtitle">Manage products and stock</div>
-                <div class="quick-card-icon">📦</div>
-              </div>
-              <div class="quick-card-body">
-                <div class="feature-list">
-                  <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <span>Add and update products</span>
-                  </div>
-                  <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <span>Track stock levels</span>
-                  </div>
-                  <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <span>Set price and tax rules</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="quick-card reports" id="reports-card">
-              <div class="quick-card-header">
-                <div class="quick-card-title">Reports</div>
-                <div class="quick-card-subtitle">Analytics and insights</div>
-                <div class="quick-card-icon">📊</div>
-              </div>
-              <div class="quick-card-body">
-                <div class="feature-list">
-                  <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <span>Sales performance analysis</span>
-                  </div>
-                  <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <span>Inventory movement reports</span>
-                  </div>
-                  <div class="feature-item">
-                    <div class="feature-icon">✓</div>
-                    <span>Export data to CSV/PDF</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sync Section -->
-          <div class="sync-section">
-            <div class="sync-info">
-              <div class="sync-title">Data Synchronization</div>
-              <div class="sync-subtitle" id="last-sync">Last sync: Never</div>
-            </div>
-            <button class="btn btn-primary" id="sync-button-bottom">
-              <div class="btn-icon">🔄</div>
-              <span>Sync Now</span>
-            </button>
           </div>
         </div>
+      </div>
+
+      <!-- Quick Access Section -->
+      <div class="quick-access-grid">
+        <div class="quick-card billing" id="billing-card">
+          <div class="quick-card-header">
+            <div class="quick-card-title">New Sale</div>
+            <div class="quick-card-subtitle">
+              Create invoices and receipts
+            </div>
+            <div class="quick-card-icon">💵</div>
+          </div>
+          <div class="quick-card-body">
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <span>Process transactions quickly</span>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <span>Apply discounts and taxes</span>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <span>Print or email receipts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-card inventory" id="inventory-card">
+          <div class="quick-card-header">
+            <div class="quick-card-title">Inventory</div>
+            <div class="quick-card-subtitle">Manage products and stock</div>
+            <div class="quick-card-icon">📦</div>
+          </div>
+          <div class="quick-card-body">
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <span>Add and update products</span>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <span>Track stock levels</span>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <span>Set price and tax rules</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-card reports" id="reports-card">
+          <div class="quick-card-header">
+            <div class="quick-card-title">Reports</div>
+            <div class="quick-card-subtitle">Analytics and insights</div>
+            <div class="quick-card-icon">📊</div>
+          </div>
+          <div class="quick-card-body">
+            <div class="feature-list">
+              <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <span>Sales performance analysis</span>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <span>Inventory movement reports</span>
+              </div>
+              <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <span>Export data to CSV/PDF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sync Section -->
+      <div class="sync-section">
+        <div class="sync-info">
+          <div class="sync-title">Data Synchronization</div>
+          <div class="sync-subtitle" id="last-sync">Last sync: Never</div>
+        </div>
+        <button class="btn btn-primary" id="sync-button-bottom">
+          <div class="btn-icon">🔄</div>
+          <span>Sync Now</span>
+        </button>
       </div>
     </div>
-    <script src="./services/login-sync-dialog.js"></script>
-    <script src="scripts/activity-logger.js"></script>
-    <script src="scripts/index.js"></script>
-    <script src="scripts/activity-modal.js"></script>
-  </body>
+  </div>
+</div>
+<script src="./services/login-sync-dialog.js"></script>
+<script src="scripts/activity-logger.js"></script>
+<script src="scripts/layout.js"></script>
+<script src="scripts/index.js"></script>
+<script src="scripts/activity-modal.js"></script>
+
+<script>
+  // We'll modify the initialization approach to properly integrate with dashboard functionality
+  document.addEventListener("DOMContentLoaded", async function() {
+    try {
+      // Check if user is logged in
+      const user = await window.api.getCurrentUser();
+      if (!user) {
+        window.location.href = "views/login.html";
+        return;
+      }
+
+      // Initialize layout with current page identifier
+      await LayoutManager.init("dashboard");
+
+      console.log("Layout initialized for dashboard");
+
+      // Important: We need to ensure the dashboard data loading still happens
+      // This was missing in our previous update, causing stats to show 0
+      if (typeof fetchDashboardData === 'function') {
+        await fetchDashboardData();
+        console.log("Dashboard data loaded");
+      }
+
+      // Ensure other dashboard-specific initialization happens
+      if (typeof loadRecentActivity === 'function') {
+        await loadRecentActivity();
+      }
+
+      if (typeof initSalesChart === 'function') {
+        initSalesChart();
+      }
+
+    } catch (error) {
+      console.error("Initialization error:", error);
+      window.location.href = "views/login.html";
+    }
+  });
+</script>
+</body>
 </html>

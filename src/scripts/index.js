@@ -7,21 +7,17 @@ let cachedProducts = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    // Check if user is logged in
+    // Check if user is logged in - this is now handled in the HTML script tag
+    // to coordinate with LayoutManager initialization
     const user = await window.api.getCurrentUser();
     if (!user) {
-      window.location.href = "views/login.html";
+      // This check is redundant now, but kept for safety
       return;
     }
 
-    // Update UI with user info
-    document.getElementById("current-user-name").textContent = user.name;
-    document.getElementById("current-user-role").textContent = user.role;
-    document.getElementById("user-avatar").textContent = user.name
-      .charAt(0)
-      .toUpperCase();
+    // Update UI with user info - LayoutManager will handle some of this
     document.getElementById("user-greeting").textContent =
-      user.name.split(" ")[0];
+        user.name.split(" ")[0];
 
     // Set current date
     const options = {
@@ -31,9 +27,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       day: "numeric",
     };
     document.getElementById("current-date").textContent =
-      new Date().toLocaleDateString("en-US", options);
+        new Date().toLocaleDateString("en-US", options);
 
-    // Apply role-based UI restrictions
+    // Apply role-based UI restrictions for components not handled by LayoutManager
     applyRoleBasedAccess(user);
 
     // Fetch dashboard data
@@ -45,20 +41,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize sales chart
     initSalesChart();
 
-    // Set up event listeners
-    document
-      .getElementById("logout-btn")
-      .addEventListener("click", handleLogout);
+    // Set up event listeners - some are now handled by LayoutManager
     document.getElementById("sync-button").addEventListener("click", syncData);
     document
-      .getElementById("sync-button-bottom")
-      .addEventListener("click", syncData);
-    document
-      .getElementById("menu-toggle")
-      .addEventListener("click", toggleSidebar);
-    document
-      .getElementById("theme-switcher")
-      .addEventListener("click", toggleTheme);
+        .getElementById("sync-button-bottom")
+        .addEventListener("click", syncData);
 
     // Set up chart period buttons
     document.getElementById("chart-week").addEventListener("click", () => {
@@ -92,34 +79,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     document
-      .getElementById("inventory-card")
-      .addEventListener("click", (event) => {
-        if (
-          !document
-            .getElementById("inventory-card")
-            .classList.contains("disabled")
-        ) {
-          window.location.href = "views/inventory.html";
-        } else {
-          event.preventDefault();
-          alert("You do not have permission to access Inventory.");
-        }
-      });
+        .getElementById("inventory-card")
+        .addEventListener("click", (event) => {
+          if (
+              !document
+                  .getElementById("inventory-card")
+                  .classList.contains("disabled")
+          ) {
+            window.location.href = "views/inventory.html";
+          } else {
+            event.preventDefault();
+            alert("You do not have permission to access Inventory.");
+          }
+        });
 
     document
-      .getElementById("reports-card")
-      .addEventListener("click", (event) => {
-        if (
-          !document
-            .getElementById("reports-card")
-            .classList.contains("disabled")
-        ) {
-          window.location.href = "views/reports.html";
-        } else {
-          event.preventDefault();
-          alert("You do not have permission to access Reports.");
-        }
-      });
+        .getElementById("reports-card")
+        .addEventListener("click", (event) => {
+          if (
+              !document
+                  .getElementById("reports-card")
+                  .classList.contains("disabled")
+          ) {
+            window.location.href = "views/reports.html";
+          } else {
+            event.preventDefault();
+            alert("You do not have permission to access Reports.");
+          }
+        });
 
     // Check connection status
     checkConnectionStatus();
@@ -127,8 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     console.log("Dashboard setup complete");
   } catch (error) {
-    console.error("Auth check error:", error);
-    window.location.href = "views/login.html";
+    console.error("Dashboard initialization error:", error);
   }
 });
 
@@ -136,9 +122,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 function applyRoleBasedAccess(user) {
   const inventoryCard = document.getElementById("inventory-card");
   const reportsCard = document.getElementById("reports-card");
-  const inventoryLink = document.getElementById("inventory-link");
-  const reportsLink = document.getElementById("reports-link");
-  const registerLink = document.getElementById("nav-register");
 
   if (user.role === "cashier") {
     // Cashiers can only access billing
@@ -148,32 +131,15 @@ function applyRoleBasedAccess(user) {
     if (reportsCard) {
       reportsCard.style.display = "none";
     }
-    if (inventoryLink) {
-      inventoryLink.style.display = "none";
-    }
-    if (reportsLink) {
-      reportsLink.style.display = "none";
-    }
-
-    if (registerLink) {
-      registerLink.style.display = "none";
-    }
   } else if (user.role === "manager") {
     // Managers can access billing and inventory but not reports
     if (reportsCard) {
       reportsCard.style.display = "none";
     }
-    if (reportsLink) {
-      reportsLink.style.display = "none";
-    }
-
-    if (registerLink) {
-      registerLink.style.display = "none";
-    }
   }
   // Admins can access everything (no restrictions)
 
-  console.log(`Applied access restrictions for role: ${user.role}`);
+  console.log(`Applied dashboard-specific access restrictions for role: ${user.role}`);
 }
 
 // Set chart period and update chart
@@ -215,25 +181,7 @@ function setChartView(view) {
   createAndUpdateChart();
 }
 
-// Toggle sidebar
-function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  sidebar.classList.toggle("collapsed");
-  sidebar.classList.toggle("expanded");
-}
 
-// Toggle theme
-function toggleTheme() {
-  document.body.classList.toggle("dark-mode");
-  document.body.classList.toggle("light-mode");
-
-  // Save preference
-  const isDarkMode = document.body.classList.contains("dark-mode");
-  localStorage.setItem("darkMode", isDarkMode);
-
-  // Update chart with new theme
-  updateChartTheme();
-}
 
 // Check for saved theme preference
 function loadThemePreference() {
@@ -256,15 +204,15 @@ async function fetchDashboardData() {
     // Get products
     cachedProducts = await window.api.getProducts();
     document.getElementById("products-count").textContent =
-      cachedProducts.length;
+        cachedProducts.length;
 
-    // Count low stock items (stock < 10)
+    // Count low stock items (stock < 5)
     const lowStockItems = cachedProducts.filter(
-      (product) => product.stock < 10
+        (product) => product.stock <= 5
     ).length;
     document.getElementById("low-stock-count").textContent = lowStockItems;
     document.getElementById("inventory-badge").textContent =
-      lowStockItems > 0 ? lowStockItems : "";
+        lowStockItems > 0 ? lowStockItems : "";
 
     // Get invoices
     cachedInvoices = await window.api.getInvoices();
@@ -272,35 +220,118 @@ async function fetchDashboardData() {
 
     // Calculate total revenue
     const totalRevenue = cachedInvoices.reduce(
-      (sum, invoice) => sum + (invoice.total || 0),
-      0
+        (sum, invoice) => sum + (invoice.total || 0),
+        0
     );
     document.getElementById(
-      "revenue-value"
+        "revenue-value"
     ).textContent = `$${totalRevenue.toFixed(2)}`;
+
+    // Calculate trends
+    calculateAndDisplayTrends(cachedInvoices);
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
   }
 }
 
-// Handle logout
-async function handleLogout() {
+function calculateAndDisplayTrends(invoices) {
   try {
-    console.log("Logging out...");
-    const result = await window.api.logoutUser();
+    const now = new Date();
 
-    if (result && result.success) {
-      window.location.href = "views/login.html";
-    } else {
-      console.error("Logout failed:", result);
-      alert("Logout failed. Please try again.");
+    // Define time periods
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(now.getDate() - 7);
+
+    const twoWeeksAgo = new Date(now);
+    twoWeeksAgo.setDate(now.getDate() - 14);
+
+    // Filter invoices by time periods
+    const currentWeekInvoices = invoices.filter(invoice => {
+      const invoiceDate = new Date(invoice.createdAt || Date.now());
+      return invoiceDate >= oneWeekAgo && invoiceDate <= now;
+    });
+
+    const previousWeekInvoices = invoices.filter(invoice => {
+      const invoiceDate = new Date(invoice.createdAt || Date.now());
+      return invoiceDate >= twoWeeksAgo && invoiceDate < oneWeekAgo;
+    });
+
+    // Calculate sales count trends
+    const currentWeekSalesCount = currentWeekInvoices.length;
+    const previousWeekSalesCount = previousWeekInvoices.length;
+
+    let salesTrendPercentage = 0;
+    if (previousWeekSalesCount > 0) {
+      salesTrendPercentage = ((currentWeekSalesCount - previousWeekSalesCount) / previousWeekSalesCount) * 100;
     }
+
+    // Calculate revenue trends
+    const currentWeekRevenue = currentWeekInvoices.reduce(
+        (sum, invoice) => sum + (invoice.total || 0), 0
+    );
+
+    const previousWeekRevenue = previousWeekInvoices.reduce(
+        (sum, invoice) => sum + (invoice.total || 0), 0
+    );
+
+    let revenueTrendPercentage = 0;
+    if (previousWeekRevenue > 0) {
+      revenueTrendPercentage = ((currentWeekRevenue - previousWeekRevenue) / previousWeekRevenue) * 100;
+    }
+
+    // Calculate product trend (newly added products in last week)
+    const recentlyAddedProducts = cachedProducts.filter(product => {
+      const createdDate = new Date(product.createdAt || Date.now());
+      return createdDate >= oneWeekAgo && createdDate <= now;
+    }).length;
+
+    // Update sales trend UI
+    updateTrendUI('sales-count', salesTrendPercentage, 'vs last week');
+
+    // Update revenue trend UI
+    updateTrendUI('revenue-value', revenueTrendPercentage, 'vs last week');
+
+    // Update products trend UI with recently added count
+    const productTrendElement = document.querySelector('#products-count').nextElementSibling;
+    if (productTrendElement) {
+      productTrendElement.innerHTML = `<span>Recently added: ${recentlyAddedProducts}</span>`;
+    }
+
+    // Update low stock trend UI
+    const lowStockTrendElement = document.querySelector('#low-stock-count').nextElementSibling;
+    if (lowStockTrendElement) {
+      lowStockTrendElement.innerHTML = `<span>Requires attention</span>`;
+      lowStockTrendElement.className = 'stat-trend trend-down';
+    }
+
+    console.log(`Calculated trends - Sales: ${salesTrendPercentage.toFixed(1)}%, Revenue: ${revenueTrendPercentage.toFixed(1)}%`);
   } catch (error) {
-    console.error("Logout error:", error);
-    alert("An error occurred during logout.");
+    console.error("Error calculating trends:", error);
   }
 }
 
+// Helper function to update trend UI
+function updateTrendUI(elementId, percentage, comparisonText) {
+  const element = document.querySelector(`#${elementId}`).nextElementSibling;
+  if (!element) return;
+
+  // Round percentage to 1 decimal place
+  const roundedPercentage = Math.abs(percentage).toFixed(1);
+
+  // Determine trend direction and class
+  const isUp = percentage >= 0;
+  const trendClass = isUp ? 'trend-up' : 'trend-down';
+  const trendSymbol = isUp ? '↑' : '↓';
+
+  // Update HTML
+  element.innerHTML = `
+    <span>${trendSymbol} ${roundedPercentage}%</span>
+    <span>${comparisonText}</span>
+  `;
+
+  // Update class
+  element.className = `stat-trend ${trendClass}`;
+}
 // Check connection status
 async function checkConnectionStatus() {
   try {
@@ -318,25 +349,9 @@ async function checkConnectionStatus() {
 
 // Update UI based on connection status
 function updateConnectionUI(isOnline) {
-  const indicators = document.querySelectorAll(".status-indicator");
-  const texts = document.querySelectorAll("#connection-text");
   const syncButtons = document.querySelectorAll(
-    "#sync-button, #sync-button-bottom"
+      "#sync-button, #sync-button-bottom"
   );
-
-  indicators.forEach((indicator) => {
-    if (isOnline) {
-      indicator.classList.remove("offline");
-      indicator.classList.add("online");
-    } else {
-      indicator.classList.remove("online");
-      indicator.classList.add("offline");
-    }
-  });
-
-  texts.forEach((text) => {
-    text.textContent = isOnline ? "Online Mode" : "Offline Mode";
-  });
 
   syncButtons.forEach((button) => {
     button.disabled = !isOnline;
@@ -1370,13 +1385,6 @@ async function updateSalesChart() {
   }
 }
 
-// Update chart when theme changes
-function updateChartTheme() {
-  // Just destroy and recreate the chart with the new theme
-  if (salesChart) {
-    createAndUpdateChart();
-  }
-}
 
 if (!window.api) {
   window.api = {};

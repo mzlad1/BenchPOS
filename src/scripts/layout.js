@@ -43,12 +43,31 @@ const LayoutManager = {
     }
   },
 
+  // Determine if we're on the dashboard (root) or in a subpage
+  isDashboard() {
+    return this.currentPage === "dashboard";
+  },
+
+  // Get appropriate path prefix based on current location
+  getPathPrefix() {
+    return this.isDashboard() ? "views/" : "../views/";
+  },
+
+  // Get path to root
+  getRootPath() {
+    return this.isDashboard() ? "" : "../";
+  },
+
   // Load sidebar component
   async loadSidebar() {
     const sidebarContainer = document.getElementById("sidebar-container");
     if (!sidebarContainer) return;
 
     try {
+      // Get the appropriate path prefixes
+      const viewsPath = this.getPathPrefix();
+      const rootPath = this.getRootPath();
+
       // Create sidebar structure
       sidebarContainer.innerHTML = `
         <div class="sidebar" id="sidebar">
@@ -62,31 +81,31 @@ const LayoutManager = {
   
           <div class="nav-menu">
             <div class="menu-section">
-              <a href="../index.html" class="menu-item" id="nav-dashboard">
+              <a href="${rootPath}index.html" class="menu-item" id="nav-dashboard">
                 <div class="menu-icon">📊</div>
                 <span class="menu-text">Dashboard</span>
               </a>
   
-              <a href="../views/billing.html" class="menu-item" id="nav-billing">
+              <a href="${viewsPath}billing.html" class="menu-item" id="nav-billing">
                 <div class="menu-icon">💵</div>
                 <span class="menu-text">New Sale</span>
               </a>
   
-              <a href="../views/inventory.html" class="menu-item" id="nav-inventory">
+              <a href="${viewsPath}inventory.html" class="menu-item" id="nav-inventory">
                 <div class="menu-icon">📦</div>
                 <span class="menu-text">Inventory</span>
                 <span class="badge" id="inventory-badge">0</span>
               </a>
   
-              <a href="../views/reports.html" class="menu-item" id="nav-reports">
+              <a href="${viewsPath}reports.html" class="menu-item" id="nav-reports">
                 <div class="menu-icon">📈</div>
                 <span class="menu-text">Reports</span>
               </a>
-              <a href="../views/register.html" class="menu-item" id="nav-register">
+              <a href="${viewsPath}register.html" class="menu-item" id="nav-register">
                 <div class="menu-icon">🔑</div>
                 <span class="menu-text">Register new User</span>
                 </a> 
-                <a href="../views/user-manager.html" class="menu-item" id="nav-user-manager">
+                <a href="${viewsPath}user-manager.html" class="menu-item" id="nav-user-manager">
                 <div class="menu-icon">👥</div>     
                 <span class="menu-text">User Manager</span>
                 </a>
@@ -97,12 +116,12 @@ const LayoutManager = {
             <div class="menu-section">
               <div class="menu-label">System</div>
   
-              <a href="../views/settings.html" class="menu-item" id="nav-settings">
+              <a href="${viewsPath}settings.html" class="menu-item" id="nav-settings">
                 <div class="menu-icon">⚙️</div>
                 <span class="menu-text">Settings</span>
               </a>
   
-              <a href="../views/help.html" class="menu-item" id="nav-help">
+              <a href="${viewsPath}help.html" class="menu-item" id="nav-help">
                 <div class="menu-icon">❓</div>
                 <span class="menu-text">Help Center</span>
               </a>
@@ -179,7 +198,7 @@ const LayoutManager = {
         const products = await window.api.getProducts();
         if (Array.isArray(products)) {
           const lowStockCount = products.filter(
-            (product) => product.stock <= 5
+              (product) => product.stock <= 5
           ).length;
           this.updateInventoryBadge(lowStockCount);
         }
@@ -235,8 +254,8 @@ const LayoutManager = {
     if (userRoleEl) userRoleEl.textContent = this.user.role || "Guest";
     if (userAvatarEl)
       userAvatarEl.textContent = (this.user.name || "U")
-        .charAt(0)
-        .toUpperCase();
+          .charAt(0)
+          .toUpperCase();
   },
 
   // Set up event listeners for interactive elements
@@ -298,7 +317,7 @@ const LayoutManager = {
 
     // Load sidebar state preference
     const sidebarCollapsed =
-      localStorage.getItem("sidebarCollapsed") === "true";
+        localStorage.getItem("sidebarCollapsed") === "true";
     const sidebar = document.getElementById("sidebar");
     if (sidebar && sidebarCollapsed) {
       sidebar.classList.add("collapsed");
@@ -313,15 +332,19 @@ const LayoutManager = {
       if (window.api && typeof window.api.logoutUser === "function") {
         const result = await window.api.logoutUser();
 
+        // Use the correct path based on current location
+        const loginPath = this.isDashboard() ? "views/login.html" : "../views/login.html";
+
         if (result && result.success) {
-          window.location.href = "../views/login.html";
+          window.location.href = loginPath;
         } else {
           console.error("Logout failed:", result);
           alert("Logout failed. Please try again.");
         }
       } else {
         // Fallback for when API is not available
-        window.location.href = "/views/login.html";
+        const loginPath = this.isDashboard() ? "views/login.html" : "../views/login.html";
+        window.location.href = loginPath;
       }
     } catch (error) {
       console.error("Logout error:", error);
@@ -421,6 +444,7 @@ const LayoutManager = {
     }
     // Admins can access everything (no restrictions)
   },
+
   applyLanguageDirection() {
     try {
       // Get the language setting from localStorage
@@ -447,6 +471,7 @@ const LayoutManager = {
       console.error("Error applying language direction:", error);
     }
   },
+
   // Update inventory badge count
   updateInventoryBadge(count) {
     const badge = document.getElementById("inventory-badge");
