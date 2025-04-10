@@ -35,8 +35,18 @@ const LayoutManager = {
       if (this.user) {
         this.applyRoleBasedAccess(this.user);
       }
+
+      // Apply language direction based on selected language
       this.applyLanguageDirection();
+
+      // Update inventory badge
       this.refreshInventoryBadge();
+
+      // Update page with translations if i18n is available
+      if (window.i18n) {
+        window.i18n.updatePageContent();
+      }
+
       console.log(`Layout initialized for page: ${this.currentPage}`);
     } catch (error) {
       console.error("Error initializing layout:", error);
@@ -74,7 +84,7 @@ const LayoutManager = {
           <div class="sidebar-header">
             <div class="logo">
               <div class="logo-icon">M</div>
-              <span class="logo-text">MZLAD</span>
+              <span class="logo-text" data-i18n="app.name">MZLAD</span>
             </div>
             <div class="menu-toggle" id="menu-toggle">◀</div>
           </div>
@@ -83,47 +93,47 @@ const LayoutManager = {
             <div class="menu-section">
               <a href="${rootPath}index.html" class="menu-item" id="nav-dashboard">
                 <div class="menu-icon">📊</div>
-                <span class="menu-text">Dashboard</span>
+                <span class="menu-text" data-i18n="sidebar.dashboard">Dashboard</span>
               </a>
   
               <a href="${viewsPath}billing.html" class="menu-item" id="nav-billing">
                 <div class="menu-icon">💵</div>
-                <span class="menu-text">New Sale</span>
+                <span class="menu-text" data-i18n="sidebar.newSale">New Sale</span>
               </a>
   
               <a href="${viewsPath}inventory.html" class="menu-item" id="nav-inventory">
                 <div class="menu-icon">📦</div>
-                <span class="menu-text">Inventory</span>
+                <span class="menu-text" data-i18n="sidebar.inventory">Inventory</span>
                 <span class="badge" id="inventory-badge">0</span>
               </a>
   
               <a href="${viewsPath}reports.html" class="menu-item" id="nav-reports">
                 <div class="menu-icon">📈</div>
-                <span class="menu-text">Reports</span>
+                <span class="menu-text" data-i18n="sidebar.reports">Reports</span>
               </a>
               <a href="${viewsPath}register.html" class="menu-item" id="nav-register">
                 <div class="menu-icon">🔑</div>
-                <span class="menu-text">Register new User</span>
+                <span class="menu-text" data-i18n="sidebar.registerUser">Register new User</span>
                 </a> 
                 <a href="${viewsPath}user-manager.html" class="menu-item" id="nav-user-manager">
                 <div class="menu-icon">👥</div>     
-                <span class="menu-text">User Manager</span>
+                <span class="menu-text" data-i18n="sidebar.userManager">User Manager</span>
                 </a>
                 
             </div>
             
   
             <div class="menu-section">
-              <div class="menu-label">System</div>
+              <div class="menu-label" data-i18n="sidebar.system">System</div>
   
               <a href="${viewsPath}settings.html" class="menu-item" id="nav-settings">
                 <div class="menu-icon">⚙️</div>
-                <span class="menu-text">Settings</span>
+                <span class="menu-text" data-i18n="sidebar.settings">Settings</span>
               </a>
   
               <a href="${viewsPath}help.html" class="menu-item" id="nav-help">
                 <div class="menu-icon">❓</div>
-                <span class="menu-text">Help Center</span>
+                <span class="menu-text" data-i18n="sidebar.helpCenter">Help Center</span>
               </a>
             </div>
           </div>
@@ -134,7 +144,7 @@ const LayoutManager = {
               <div class="user-name" id="current-user-name">Not logged in</div>
               <div class="user-role" id="current-user-role">No role</div>
             </div>
-            <button id="logout-btn" class="logout-btn">⇥</button>
+            <button id="logout-btn" class="logout-btn" data-i18n-title="user.logout">⇥</button>
           </div>
         </div>
       `;
@@ -161,17 +171,17 @@ const LayoutManager = {
       // Create header structure
       headerContainer.innerHTML = `
         <div class="header">
-          <div class="page-title">${pageTitle}</div>
+          <div class="page-title" id="page-title">${pageTitle}</div>
   
           <div class="header-actions">
             <div class="search-bare">
               <div class="search-icon">🔍</div>
-              <input type="text" class="search-input" placeholder="Search...">
+              <input type="text" class="search-input" data-i18n-placeholder="header.searchPlaceholder" placeholder="Search...">
             </div>
   
             <div class="connection-status">
               <div class="status-indicator offline" id="connection-indicator"></div>
-              <span id="connection-text">Offline Mode</span>
+              <span id="connection-text" data-i18n="header.offlineMode">Offline Mode</span>
             </div>
   
             <div class="header-btn">
@@ -210,21 +220,40 @@ const LayoutManager = {
 
   // Get page title based on current page
   getPageTitle() {
-    switch (this.currentPage) {
-      case "dashboard":
-        return "Dashboard";
-      case "inventory":
-        return "Inventory Management";
-      case "billing":
-        return "New Sale";
-      case "reports":
-        return "Reports & Analytics";
-      case "register":
-        return "Register new User";
-      case "user-manager":
-        return "User Manager";
-      default:
-        return "MZLAD Billing System";
+    if (window.t) {
+      switch (this.currentPage) {
+        case "dashboard": return window.t("sidebar.dashboard");
+        case "inventory": return window.t("sidebar.inventory");
+        case "billing": return window.t("sidebar.newSale");
+        case "reports": return window.t("sidebar.reports");
+        case "register": return window.t("sidebar.registerUser");
+        case "user-manager": return window.t("sidebar.userManager");
+        case "settings": return window.t("sidebar.settings");
+        case "help": return window.t("sidebar.helpCenter");
+        default: return window.t("app.name");
+      }
+    } else {
+      // Fallback to English if translations are not available
+      switch (this.currentPage) {
+        case "dashboard":
+          return "Dashboard";
+        case "inventory":
+          return "Inventory Management";
+        case "billing":
+          return "New Sale";
+        case "reports":
+          return "Reports & Analytics";
+        case "register":
+          return "Register new User";
+        case "user-manager":
+          return "User Manager";
+        case "settings":
+          return "Settings";
+        case "help":
+          return "Help Center";
+        default:
+          return "MZLAD Billing System";
+      }
     }
   },
 
@@ -251,7 +280,16 @@ const LayoutManager = {
     const userAvatarEl = document.getElementById("user-avatar");
 
     if (userNameEl) userNameEl.textContent = this.user.name || "User";
-    if (userRoleEl) userRoleEl.textContent = this.user.role || "Guest";
+
+    if (userRoleEl) {
+      // Translate role if i18n is available
+      if (window.t && this.user.role) {
+        userRoleEl.textContent = window.t(`user.roles.${this.user.role.toLowerCase()}`) || this.user.role;
+      } else {
+        userRoleEl.textContent = this.user.role || "Guest";
+      }
+    }
+
     if (userAvatarEl)
       userAvatarEl.textContent = (this.user.name || "U")
           .charAt(0)
@@ -280,6 +318,18 @@ const LayoutManager = {
 
     // Setup connection status listeners
     this.setupOnlineListeners();
+
+    // Setup language change listener
+    window.addEventListener('languageChanged', () => {
+      // Update page title with new language
+      const pageTitleEl = document.getElementById('page-title');
+      if (pageTitleEl) {
+        pageTitleEl.textContent = this.getPageTitle();
+      }
+
+      // Update user role with new language
+      this.updateUserProfile();
+    });
   },
 
   // Toggle sidebar expanded/collapsed state
@@ -306,13 +356,23 @@ const LayoutManager = {
 
   // Load theme preference from localStorage
   loadThemePreference() {
+    const themePreference = localStorage.getItem("themePreference");
     const darkMode = localStorage.getItem("darkMode") === "true";
-    if (darkMode) {
-      document.body.classList.remove("light-mode");
-      document.body.classList.add("dark-mode");
+
+    if (themePreference === "system") {
+      // Use system preference
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.body.classList.toggle("dark-mode", prefersDark);
+      document.body.classList.toggle("light-mode", !prefersDark);
     } else {
-      document.body.classList.remove("dark-mode");
-      document.body.classList.add("light-mode");
+      // Use saved preference
+      if (darkMode) {
+        document.body.classList.remove("light-mode");
+        document.body.classList.add("dark-mode");
+      } else {
+        document.body.classList.remove("dark-mode");
+        document.body.classList.add("light-mode");
+      }
     }
 
     // Load sidebar state preference
@@ -329,26 +389,33 @@ const LayoutManager = {
     try {
       console.log("Logging out...");
 
-      if (window.api && typeof window.api.logoutUser === "function") {
-        const result = await window.api.logoutUser();
+      // Create confirm message with translation if available
+      const confirmMessage = window.t ? window.t("user.confirmLogout") : "Are you sure you want to log out?";
 
-        // Use the correct path based on current location
-        const loginPath = this.isDashboard() ? "views/login.html" : "../views/login.html";
+      if (confirm(confirmMessage)) {
+        if (window.api && typeof window.api.logoutUser === "function") {
+          const result = await window.api.logoutUser();
 
-        if (result && result.success) {
-          window.location.href = loginPath;
+          // Use the correct path based on current location
+          const loginPath = this.isDashboard() ? "views/login.html" : "../views/login.html";
+
+          if (result && result.success) {
+            window.location.href = loginPath;
+          } else {
+            console.error("Logout failed:", result);
+            const errorMessage = window.t ? window.t("user.logoutFailed") : "Logout failed. Please try again.";
+            alert(errorMessage);
+          }
         } else {
-          console.error("Logout failed:", result);
-          alert("Logout failed. Please try again.");
+          // Fallback for when API is not available
+          const loginPath = this.isDashboard() ? "views/login.html" : "../views/login.html";
+          window.location.href = loginPath;
         }
-      } else {
-        // Fallback for when API is not available
-        const loginPath = this.isDashboard() ? "views/login.html" : "../views/login.html";
-        window.location.href = loginPath;
       }
     } catch (error) {
       console.error("Logout error:", error);
-      alert("An error occurred during logout.");
+      const errorMessage = window.t ? window.t("user.logoutError") : "An error occurred during logout.";
+      alert(errorMessage);
     }
   },
 
@@ -384,7 +451,15 @@ const LayoutManager = {
     }
 
     if (statusText) {
-      statusText.textContent = isOnline ? "Online Mode" : "Offline Mode";
+      // Use translations if available
+      if (window.t) {
+        statusText.textContent = isOnline ? window.t("header.onlineMode") : window.t("header.offlineMode");
+      } else {
+        statusText.textContent = isOnline ? "Online Mode" : "Offline Mode";
+      }
+
+      // Update data-i18n attribute for future translations
+      statusText.setAttribute("data-i18n", isOnline ? "header.onlineMode" : "header.offlineMode");
     }
   },
 

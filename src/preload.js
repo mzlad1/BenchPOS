@@ -325,3 +325,4 @@ document.getElementById("logout-btn").addEventListener("click", handleLogout);
 
 // Export the logout handler if needed elsewhere
 window.handleLogout = handleLogout;
+window.i18n.init();

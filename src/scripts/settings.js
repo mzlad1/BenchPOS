@@ -12,6 +12,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    // Initialize i18n if available
+    if (window.i18n) {
+      const languageSelect = document.getElementById("language-select");
+      const currentLanguage = languageSelect ? languageSelect.value : (localStorage.getItem("language") || "en");
+      await window.i18n.init(currentLanguage);
+    }
+
     // Explicitly mark this page's nav item as active
     const settingsLink = document.getElementById("nav-settings");
     if (settingsLink) {
@@ -28,10 +35,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupEventListeners();
     setTimeout(updateReceiptPreview, 500);
 
+    // Apply translations to the page
+    if (window.i18n) {
+      window.i18n.updatePageContent();
+    }
+
     console.log("Settings page initialized");
   } catch (error) {
     console.error("Error initializing settings page:", error);
-    alert("An error occurred while loading settings. Please try again.");
+    alert(window.t ? window.t("settings.initError") : "An error occurred while loading settings. Please try again.");
   }
 });
 
@@ -48,6 +60,7 @@ function loadSettings() {
         themeSelect.value = darkMode ? "dark" : "light";
       }
     }
+
     // Load logo if exists
     const logoPreview = document.getElementById("logo-preview");
     if (logoPreview) {
@@ -55,12 +68,14 @@ function loadSettings() {
       if (savedLogo) {
         logoPreview.innerHTML = `<img src="${savedLogo}" alt="Company Logo">`;
       } else {
-        logoPreview.innerHTML = `<div class="default-logo-text">No logo uploaded</div>`;
+        const noLogoText = window.t ? window.t("settings.receipt.noLogo") : "No logo uploaded";
+        logoPreview.innerHTML = `<div class="default-logo-text">${noLogoText}</div>`;
       }
     }
+
     // Sidebar settings
     const sidebarCollapsed =
-      localStorage.getItem("sidebarCollapsed") === "true";
+        localStorage.getItem("sidebarCollapsed") === "true";
     const sidebarCheckbox = document.getElementById("sidebar-collapsed");
     if (sidebarCheckbox) {
       sidebarCheckbox.checked = sidebarCollapsed;
@@ -69,7 +84,23 @@ function loadSettings() {
     // Regional settings
     const languageSelect = document.getElementById("language-select");
     if (languageSelect) {
-      languageSelect.value = localStorage.getItem("language") || "en";
+      const savedLanguage = localStorage.getItem("language") || "en";
+      languageSelect.value = savedLanguage;
+
+      // Add change event listener for language switching
+      languageSelect.addEventListener("change", async function() {
+        const newLanguage = this.value;
+
+        // Change language immediately
+        if (window.i18n) {
+          await window.i18n.changeLanguage(newLanguage, true);
+        }
+
+        // Update direction if needed
+        if (window.LayoutManager) {
+          window.LayoutManager.applyLanguageDirection();
+        }
+      });
     }
 
     const currencySelect = document.getElementById("currency-select");
@@ -80,7 +111,7 @@ function loadSettings() {
     const dateFormatSelect = document.getElementById("date-format-select");
     if (dateFormatSelect) {
       dateFormatSelect.value =
-        localStorage.getItem("dateFormat") || "MM/DD/YYYY";
+          localStorage.getItem("dateFormat") || "MM/DD/YYYY";
     }
 
     // Data management settings
@@ -98,10 +129,9 @@ function loadSettings() {
     const dataStoragePath = document.getElementById("data-storage-path");
     if (dataStoragePath) {
       dataStoragePath.value =
-        localStorage.getItem("dataStoragePath") || "Default Location";
+          localStorage.getItem("dataStoragePath") || "Default Location";
     }
 
-    // Receipt settings
     // Receipt settings
     const companyName = document.getElementById("company-name");
     if (companyName) {
@@ -111,7 +141,7 @@ function loadSettings() {
     const companyTagline = document.getElementById("company-tagline");
     if (companyTagline) {
       companyTagline.value =
-        localStorage.getItem("companyTagline") || "Retail Solutions";
+          localStorage.getItem("companyTagline") || "Retail Solutions";
     }
 
     const companyAddress = document.getElementById("company-address");
@@ -137,14 +167,14 @@ function loadSettings() {
     const receiptFooter = document.getElementById("receipt-footer");
     if (receiptFooter) {
       receiptFooter.value =
-        localStorage.getItem("receiptFooter") || "Thank you for your business!";
+          localStorage.getItem("receiptFooter") || "Thank you for your business!";
     }
 
     const returnPolicy = document.getElementById("return-policy");
     if (returnPolicy) {
       returnPolicy.value =
-        localStorage.getItem("returnPolicy") ||
-        "Items can be returned within 30 days with receipt.";
+          localStorage.getItem("returnPolicy") ||
+          "Items can be returned within 30 days with receipt.";
     }
 
     const receiptTheme = document.getElementById("receipt-theme");
@@ -163,25 +193,20 @@ function loadSettings() {
     console.error("Error loading settings:", error);
   }
 }
+
 /* Additional event listener in settings.js */
 document
-  .getElementById("update-preview")
-  .addEventListener("click", updateReceiptPreview);
+    .getElementById("update-preview")
+    .addEventListener("click", updateReceiptPreview);
 
 function handleLogoUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  // // Check file size (max 500KB)
-  // if (file.size > 500 * 1024) {
-  //   showToast("Logo file is too large. Max size is 500KB.", "error");
-  //   return;
-  // }
-
   // Check file type
   const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/svg+xml"];
   if (!validTypes.includes(file.type)) {
-    showToast("Invalid file type. Please use PNG, JPG or SVG.", "error");
+    showToast("notifications.invalidType", "error");
     return;
   }
 
@@ -197,11 +222,11 @@ function handleLogoUpload(event) {
     // Store in localStorage
     localStorage.setItem("companyLogo", logoData);
 
-    showToast("Logo uploaded successfully", "success");
+    showToast("notifications.logoUploaded", "success");
   };
 
   reader.onerror = function () {
-    showToast("Error reading logo file", "error");
+    showToast("notifications.logoError", "error");
   };
 
   reader.readAsDataURL(file);
@@ -210,7 +235,8 @@ function handleLogoUpload(event) {
 function removeLogo() {
   // Remove from preview
   const logoPreview = document.getElementById("logo-preview");
-  logoPreview.innerHTML = `<div class="default-logo-text">No logo uploaded</div>`;
+  const noLogoText = window.t ? window.t("settings.receipt.noLogo") : "No logo uploaded";
+  logoPreview.innerHTML = `<div class="default-logo-text">${noLogoText}</div>`;
 
   // Remove from storage
   localStorage.removeItem("companyLogo");
@@ -221,7 +247,7 @@ function removeLogo() {
     fileInput.value = "";
   }
 
-  showToast("Logo removed", "success");
+  showToast("notifications.logoRemoved", "success");
 }
 
 // Save all settings
@@ -235,7 +261,7 @@ function saveSettings() {
       if (themeSelect.value === "system") {
         // Use system preference (check media query)
         const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)"
+            "(prefers-color-scheme: dark)"
         ).matches;
         localStorage.setItem("darkMode", prefersDark);
 
@@ -272,7 +298,18 @@ function saveSettings() {
     // Regional settings
     const languageSelect = document.getElementById("language-select");
     if (languageSelect) {
-      localStorage.setItem("language", languageSelect.value);
+      const newLanguage = languageSelect.value;
+      const oldLanguage = localStorage.getItem("language") || "en";
+
+      // Only update if language changed
+      if (newLanguage !== oldLanguage) {
+        localStorage.setItem("language", newLanguage);
+
+        // Use i18n change language function if available
+        if (window.i18n) {
+          window.i18n.changeLanguage(newLanguage, false); // Don't refresh yet
+        }
+      }
     }
 
     const currencySelect = document.getElementById("currency-select");
@@ -358,19 +395,19 @@ function saveSettings() {
     // Log the save activity
     if (window.api && window.api.logActivity) {
       window.api.logActivity("update", "settings", "System Settings", {
-        text: "System settings updated",
+        text: window.t ? window.t("settings.saveSuccess") : "System settings updated",
         icon: "⚙️",
-        badge: "Settings",
+        badge: window.t ? window.t("settings.title") : "Settings",
         badgeClass: "badge-info",
       });
     }
 
     // Show success message
-    showToast("Settings saved successfully", "success");
+    showToast("settings.saveSuccess", "success");
     console.log("Settings saved successfully");
   } catch (error) {
     console.error("Error saving settings:", error);
-    showToast("Error saving settings", "error");
+    showToast("settings.saveError", "error");
   }
 }
 
@@ -378,9 +415,9 @@ function saveSettings() {
 function resetSettings() {
   try {
     // Ask for confirmation
-    if (
-      !confirm("Are you sure you want to reset all settings to default values?")
-    ) {
+    const confirmMessage = window.t ? window.t("settings.confirmReset")
+        : "Are you sure you want to reset all settings to default values?";
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -415,6 +452,11 @@ function resetSettings() {
       localStorage.setItem(key, defaults[key]);
     }
 
+    // If language changed, update i18n
+    if (window.i18n && window.i18n.getCurrentLanguage() !== "en") {
+      window.i18n.changeLanguage("en", true);
+    }
+
     // Reload settings in the UI
     loadSettings();
 
@@ -424,46 +466,51 @@ function resetSettings() {
     // Log the reset activity
     if (window.api && window.api.logActivity) {
       window.api.logActivity("update", "settings", "System Settings", {
-        text: "System settings reset to defaults",
+        text: window.t ? window.t("settings.resetSuccess") : "System settings reset to defaults",
         icon: "⚙️",
-        badge: "Reset",
+        badge: window.t ? window.t("common.reset") : "Reset",
         badgeClass: "badge-warning",
       });
     }
+
     // Reset logo
     localStorage.removeItem("companyLogo");
     const logoPreview = document.getElementById("logo-preview");
     if (logoPreview) {
-      logoPreview.innerHTML = `<div class="default-logo-text">No logo uploaded</div>`;
+      const noLogoText = window.t ? window.t("settings.receipt.noLogo") : "No logo uploaded";
+      logoPreview.innerHTML = `<div class="default-logo-text">${noLogoText}</div>`;
     }
+
     // Show success message
-    showToast("Settings reset to defaults", "success");
+    showToast("settings.resetSuccess", "success");
     console.log("Settings reset to defaults");
   } catch (error) {
     console.error("Error resetting settings:", error);
-    showToast("Error resetting settings", "error");
+    showToast("settings.resetError", "error");
   }
 }
+
+// Add this to settings.js
 // Add this to settings.js
 function previewReceiptTemplate(invoice) {
   // Get custom settings from localStorage
   const companyName = localStorage.getItem("companyName") || "ShopSmart";
   const companyTagline =
-    localStorage.getItem("companyTagline") || "Retail Solutions";
+      localStorage.getItem("companyTagline") || "Retail Solutions";
   const companyAddress =
-    localStorage.getItem("companyAddress") ||
-    "123 Main Street, Anytown, USA 12345";
+      localStorage.getItem("companyAddress") ||
+      "123 Main Street, Anytown, USA 12345";
   const companyPhone = localStorage.getItem("companyPhone") || "(555) 123-4567";
   const companyEmail =
-    localStorage.getItem("companyEmail") || "info@shopsmart.com";
+      localStorage.getItem("companyEmail") || "info@shopsmart.com";
   const companyWebsite =
-    localStorage.getItem("companyWebsite") || "www.shopsmart.com";
+      localStorage.getItem("companyWebsite") || "www.shopsmart.com";
   const receiptFooter =
-    localStorage.getItem("receiptFooter") ||
-    "Thank you for shopping at ShopSmart!";
+      localStorage.getItem("receiptFooter") ||
+      "Thank you for shopping at ShopSmart!";
   const returnPolicy =
-    localStorage.getItem("returnPolicy") ||
-    "Items can be returned within 30 days with receipt.";
+      localStorage.getItem("returnPolicy") ||
+      "Items can be returned within 30 days with receipt.";
   const themeColor = localStorage.getItem("receiptTheme") || "#3d5a80";
   const customLogo = localStorage.getItem("companyLogo");
 
@@ -530,51 +577,51 @@ function previewReceiptTemplate(invoice) {
         </tr>
         
         ${invoice.items
-          .map(
-            (item) => `
+      .map(
+          (item) => `
           <tr>
             <td>${item.name}</td>
             <td style="text-align: center;">${item.quantity}</td>
             <td style="text-align: right;">$${item.price.toFixed(2)}</td>
             <td style="text-align: right;">$${(
               item.price * item.quantity
-            ).toFixed(2)}</td>
+          ).toFixed(2)}</td>
           </tr>
         `
-          )
-          .join("")}
+      )
+      .join("")}
         
         <tr>
           <td colspan="3" style="text-align: right; padding-top: 5px;">Subtotal:</td>
           <td style="text-align: right; padding-top: 5px;">$${invoice.subtotal.toFixed(
-            2
-          )}</td>
+      2
+  )}</td>
         </tr>
         
         ${
-          invoice.discount
-            ? `
+      invoice.discount
+          ? `
         <tr>
           <td colspan="3" style="text-align: right; padding-top: 5px;">Discount:</td>
           <td style="text-align: right; padding-top: 5px; color: #d32f2f;">-$${invoice.discount.toFixed(
-            2
+              2
           )}</td>
         </tr>
         `
-            : ""
-        }
+          : ""
+  }
         
         <tr>
           <td colspan="3" style="text-align: right; padding-top: 5px;">Tax:</td>
           <td style="text-align: right; padding-top: 5px;">$${invoice.tax.toFixed(
-            2
-          )}</td>
+      2
+  )}</td>
         </tr>
         
         <tr>
           <td colspan="3" style="text-align: right; padding-top: 8px; font-weight: bold;">TOTAL:</td>
           <td style="text-align: right; padding-top: 8px; font-weight: bold; color: ${themeColor};">$${invoice.total.toFixed(
-    2
+      2
   )}</td>
         </tr>
       </table>
@@ -593,8 +640,8 @@ function previewReceiptTemplate(invoice) {
         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
           <div style="font-weight: bold;">Change:</div>
           <div>$${(Math.ceil(invoice.total / 5) * 5 - invoice.total).toFixed(
-            2
-          )}</div>
+      2
+  )}</div>
         </div>
       </div>
       
@@ -645,13 +692,14 @@ function updateReceiptPreview() {
   } catch (error) {
     console.error("Error generating receipt preview:", error);
     previewContainer.innerHTML =
-      "<div style='padding: 20px; color: red;'>Could not generate receipt preview</div>";
+        "<div style='padding: 20px; color: red;'>" +
+        (window.t ? window.t("receipt.previewError") : "Could not generate receipt preview") +
+        "</div>";
   }
 }
+
 // Setup all event listeners
 function setupEventListeners() {
-  // Save settings button
-
   // Logo upload handlers
   const browseLogoButton = document.getElementById("browse-logo");
   if (browseLogoButton) {
@@ -669,29 +717,30 @@ function setupEventListeners() {
   if (removeLogoButton) {
     removeLogoButton.addEventListener("click", removeLogo);
   }
-}
 
-const saveButton = document.getElementById("save-settings");
-if (saveButton) {
-  saveButton.addEventListener("click", saveSettings);
-}
+  // Save settings button
+  const saveButton = document.getElementById("save-settings");
+  if (saveButton) {
+    saveButton.addEventListener("click", saveSettings);
+  }
 
-// Reset settings button
-const resetButton = document.getElementById("reset-settings");
-if (resetButton) {
-  resetButton.addEventListener("click", resetSettings);
-}
+  // Reset settings button
+  const resetButton = document.getElementById("reset-settings");
+  if (resetButton) {
+    resetButton.addEventListener("click", resetSettings);
+  }
 
-// Browse for data storage path
-const browseButton = document.getElementById("browse-data-path");
-if (browseButton) {
-  browseButton.addEventListener("click", browseFolderPath);
-}
+  // Browse for data storage path
+  const browseButton = document.getElementById("browse-data-path");
+  if (browseButton) {
+    browseButton.addEventListener("click", browseFolderPath);
+  }
 
-// Theme select preview
-const themeSelect = document.getElementById("theme-select");
-if (themeSelect) {
-  themeSelect.addEventListener("change", previewTheme);
+  // Theme select preview
+  const themeSelect = document.getElementById("theme-select");
+  if (themeSelect) {
+    themeSelect.addEventListener("change", previewTheme);
+  }
 }
 
 // Preview theme before saving
@@ -701,7 +750,7 @@ function previewTheme() {
   if (themeSelect.value === "system") {
     // Use system preference (check media query)
     const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
+        "(prefers-color-scheme: dark)"
     ).matches;
 
     // Apply theme
@@ -732,22 +781,28 @@ async function browseFolderPath() {
       }
     } else {
       // Fallback for when the API is not available
-      alert("Folder selection is not available in this version.");
+      alert(window.t ? window.t("settings.folderSelectNotAvailable") : "Folder selection is not available in this version.");
     }
   } catch (error) {
     console.error("Error selecting folder:", error);
-    alert("An error occurred while selecting a folder.");
+    alert(window.t ? window.t("settings.folderSelectError") : "An error occurred while selecting a folder.");
   }
 }
 
 // Show toast notification
-function showToast(message, type = "info") {
+function showToast(messageKey, type = "info", params = {}) {
   // Create toast container if it doesn't exist
   let toastContainer = document.querySelector(".toast-container");
   if (!toastContainer) {
     toastContainer = document.createElement("div");
     toastContainer.className = "toast-container";
     document.body.appendChild(toastContainer);
+  }
+
+  // Get translated message if i18n is available
+  let message = messageKey;
+  if (window.t) {
+    message = window.t(messageKey, params);
   }
 
   // Create toast element
