@@ -25,7 +25,31 @@
     "info": "معلومات",
     "loading": "جاري التحميل...",
     "receipt": "إيصال",
-    "noResults": "لم يتم العثور على نتائج"
+    "noResults": "لم يتم العثور على نتائج",
+    "offline": {
+      "error": "يتطلب إنشاء الحساب اتصالاً بالإنترنت. يرجى الاتصال والمحاولة مرة أخرى."
+    }
+  },
+  "register": {
+    "pageTitle": "تسجيل مستخدم - نظام مزلاد للفواتير",
+    "title": "إنشاء حساب جديد",
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "أدخل اسمك",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "أدخل بريدك الإلكتروني",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "إنشاء كلمة مرور",
+    "role": "الدور",
+    "status": "الحالة",
+    "statusActive": "نشط",
+    "statusInactive": "غير نشط",
+    "button": "إنشاء حساب",
+    "creatingAccount": "جاري إنشاء الحساب...",
+    "success": "تم إنشاء الحساب بنجاح!",
+    "failed": "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+    "error": "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.",
+    "fillRequired": "يرجى ملء جميع الحقول المطلوبة",
+    "permissionDenied": "ليس لديك صلاحية الوصول إلى صفحة تسجيل المستخدم."
   },
   "reports": {
     "title": "التقارير",
@@ -229,6 +253,129 @@
     "invalidType": "نوع ملف غير صالح. يرجى استخدام PNG أو JPG أو SVG.",
     "fileTooLarge": "ملف الشعار كبير جدًا. الحجم الأقصى هو 500 كيلوبايت."
   },
+  "inventory": {
+    "title": "المخزون",
+    "stats": {
+      "totalProducts": "إجمالي المنتجات",
+      "inventoryValue": "قيمة المخزون",
+      "lowStockItems": "عناصر المخزون المنخفض"
+    },
+    "controls": {
+      "addNew": "إضافة منتج جديد",
+      "exportCSV": "تصدير CSV",
+      "importCSV": "استيراد CSV",
+      "search": "بحث المنتجات...",
+      "clearSearch": "مسح البحث",
+      "searchFilters": {
+        "all": "جميع الحقول",
+        "sku": "رمز المنتج",
+        "name": "الاسم",
+        "category": "الفئة"
+      }
+    },
+    "bulkActions": {
+      "selected": "{count} عنصر محدد",
+      "selectAction": "-- اختر إجراء --",
+      "deleteSelected": "حذف المحدد",
+      "changeCategory": "تغيير الفئة",
+      "updateStock": "تحديث المخزون",
+      "apply": "تطبيق"
+    },
+    "table": {
+      "sku": "رمز المنتج",
+      "name": "الاسم",
+      "category": "الفئة",
+      "sellingPrice": "سعر البيع",
+      "cost": "التكلفة",
+      "profit": "الربح",
+      "stock": "المخزون",
+      "actions": "الإجراءات",
+      "loading": "جاري تحميل المنتجات...",
+      "noProducts": "لم يتم العثور على منتجات",
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "pagination": {
+      "previous": "« السابق",
+      "next": "التالي »",
+      "page": "الصفحة {current} من {total}"
+    },
+    "productForm": {
+      "addTitle": "إضافة منتج جديد",
+      "editTitle": "تعديل المنتج",
+      "name": "اسم المنتج",
+      "sku": "رمز المنتج",
+      "category": "الفئة",
+      "price": "سعر البيع ($)",
+      "cost": "تكلفة الشراء ($)",
+      "stock": "كمية المخزون",
+      "cancel": "إلغاء",
+      "save": "حفظ المنتج"
+    },
+    "categoryModal": {
+      "title": "تغيير الفئة",
+      "instruction": "اختر فئة جديدة للمنتجات المحددة:",
+      "addNew": "+ إضافة فئة جديدة",
+      "newCategoryPlaceholder": "أدخل اسم الفئة الجديدة",
+      "cancel": "إلغاء",
+      "apply": "تطبيق"
+    },
+    "stockModal": {
+      "title": "تحديث المخزون",
+      "instruction": "تحديث المخزون للمنتجات المحددة:",
+      "methodLabel": "طريقة التحديث:",
+      "methods": {
+        "set": "تعيين القيمة",
+        "add": "إضافة إلى المخزون الحالي",
+        "subtract": "طرح من المخزون الحالي"
+      },
+      "valueLabel": "القيمة:",
+      "cancel": "إلغاء",
+      "apply": "تطبيق"
+    },
+    "importModal": {
+      "title": "استيراد المنتجات من ملف CSV",
+      "instructions": "قم بتحميل ملف CSV بالأعمدة التالية:",
+      "columnFormat": "id,sku,name,category,price,cost,stock",
+      "idNote": "اترك عمود المعرف (id) فارغًا للمنتجات الجديدة.",
+      "fileLabel": "اختر ملف CSV:",
+      "updateExisting": "تحديث المنتجات الموجودة (المطابقة بواسطة المعرف أو رمز المنتج)",
+      "addNew": "إضافة منتجات جديدة",
+      "preview": "معاينة:",
+      "totalRows": "إجمالي الصفوف: {count}",
+      "cancel": "إلغاء",
+      "import": "استيراد المنتجات"
+    },
+    "notifications": {
+      "productAdded": "تمت إضافة المنتج بنجاح!",
+      "productUpdated": "تم تحديث المنتج بنجاح!",
+      "productDeleted": "تم حذف المنتج بنجاح!",
+      "failedToAdd": "فشلت إضافة المنتج. يرجى المحاولة مرة أخرى.",
+      "failedToUpdate": "فشل تحديث المنتج. يرجى المحاولة مرة أخرى.",
+      "failedToDelete": "فشل حذف المنتج. يرجى المحاولة مرة أخرى.",
+      "bulkDeleteSuccess": "تم حذف {count} منتج بنجاح.",
+      "bulkCategorySuccess": "تم تحديث الفئة لـ {count} منتج بنجاح.",
+      "bulkStockSuccess": "تم تحديث المخزون لـ {count} منتج بنجاح.",
+      "exportSuccess": "تم تصدير {count} منتج إلى CSV بنجاح!",
+      "importComplete": "اكتمل الاستيراد: تمت إضافة: {added}، تحديث: {updated}، أخطاء: {errors}",
+      "nameRequired": "اسم المنتج مطلوب",
+      "validPrice": "الرجاء إدخال سعر صالح",
+      "validCost": "الرجاء إدخال تكلفة صالحة",
+      "validStock": "الرجاء إدخال كمية مخزون صالحة",
+      "categoryRequired": "الرجاء إدخال اسم الفئة",
+      "nonnegativeValue": "الرجاء إدخال قيمة غير سالبة",
+      "noProductsExport": "لا توجد منتجات للتصدير",
+      "missingColumns": "الأعمدة المطلوبة مفقودة: {columns}",
+      "dataSync": "تمت مزامنة البيانات بنجاح",
+      "syncFailed": "فشلت المزامنة. يرجى المحاولة مرة أخرى لاحقًا.",
+      "syncError": "خطأ في مزامنة البيانات: {message}"
+    },
+    "confirmations": {
+      "deleteProduct": "هل أنت متأكد من حذف هذا المنتج؟",
+      "bulkDelete": "هل أنت متأكد من حذف {count} منتج؟"
+    }
+  },
+
   "user": {
     "profile": "الملف الشخصي",
     "settings": "إعدادات الحساب",

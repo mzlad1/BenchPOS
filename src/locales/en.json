@@ -25,7 +25,31 @@
     "info": "Information",
     "loading": "Loading...",
     "receipt": "RECEIPT",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "offline": {
+      "error": "Account creation requires internet connection. Please connect and try again."
+    }
+  },
+  "register": {
+    "pageTitle": "Register User - MZLAD Billing System",
+    "title": "Create New Account",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your name",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Create a password",
+    "role": "Role",
+    "status": "Status",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "button": "Create Account",
+    "creatingAccount": "Creating account...",
+    "success": "Account created successfully!",
+    "failed": "Account creation failed. Please try again.",
+    "error": "An error occurred during account creation. Please try again.",
+    "fillRequired": "Please fill all required fields",
+    "permissionDenied": "You do not have permission to access the Register User page."
   },
   "reports": {
     "title": "Reports",
@@ -228,6 +252,128 @@
     "logoError": "Error reading logo file",
     "invalidType": "Invalid file type. Please use PNG, JPG or SVG.",
     "fileTooLarge": "Logo file is too large. Max size is 500KB."
+  },
+  "inventory": {
+    "title": "Inventory",
+    "stats": {
+      "totalProducts": "Total Products",
+      "inventoryValue": "Inventory Value",
+      "lowStockItems": "Low Stock Items"
+    },
+    "controls": {
+      "addNew": "Add New Product",
+      "exportCSV": "Export CSV",
+      "importCSV": "Import CSV",
+      "search": "Search products...",
+      "clearSearch": "Clear search",
+      "searchFilters": {
+        "all": "All Fields",
+        "sku": "SKU",
+        "name": "Name",
+        "category": "Category"
+      }
+    },
+    "bulkActions": {
+      "selected": "{count} items selected",
+      "selectAction": "-- Select Action --",
+      "deleteSelected": "Delete Selected",
+      "changeCategory": "Change Category",
+      "updateStock": "Update Stock",
+      "apply": "Apply"
+    },
+    "table": {
+      "sku": "SKU",
+      "name": "Name",
+      "category": "Category",
+      "sellingPrice": "Selling Price",
+      "cost": "Cost",
+      "profit": "Profit",
+      "stock": "Stock",
+      "actions": "Actions",
+      "loading": "Loading products...",
+      "noProducts": "No products found",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "pagination": {
+      "previous": "« Previous",
+      "next": "Next »",
+      "page": "Page {current} of {total}"
+    },
+    "productForm": {
+      "addTitle": "Add New Product",
+      "editTitle": "Edit Product",
+      "name": "Product Name",
+      "sku": "SKU",
+      "category": "Category",
+      "price": "Selling Price ($)",
+      "cost": "Purchase Cost ($)",
+      "stock": "Stock Quantity",
+      "cancel": "Cancel",
+      "save": "Save Product"
+    },
+    "categoryModal": {
+      "title": "Change Category",
+      "instruction": "Select a new category for selected products:",
+      "addNew": "+ Add New Category",
+      "newCategoryPlaceholder": "Enter new category name",
+      "cancel": "Cancel",
+      "apply": "Apply"
+    },
+    "stockModal": {
+      "title": "Update Stock",
+      "instruction": "Update stock for selected products:",
+      "methodLabel": "Update Method:",
+      "methods": {
+        "set": "Set to value",
+        "add": "Add to current stock",
+        "subtract": "Subtract from current stock"
+      },
+      "valueLabel": "Value:",
+      "cancel": "Cancel",
+      "apply": "Apply"
+    },
+    "importModal": {
+      "title": "Import Products from CSV",
+      "instructions": "Upload a CSV file with the following columns:",
+      "columnFormat": "id,sku,name,category,price,cost,stock",
+      "idNote": "Leave the id column blank for new products.",
+      "fileLabel": "Select CSV File:",
+      "updateExisting": "Update existing products (matched by ID or SKU)",
+      "addNew": "Add new products",
+      "preview": "Preview:",
+      "totalRows": "Total rows: {count}",
+      "cancel": "Cancel",
+      "import": "Import Products"
+    },
+    "notifications": {
+      "productAdded": "Product added successfully!",
+      "productUpdated": "Product updated successfully!",
+      "productDeleted": "Product deleted successfully!",
+      "failedToAdd": "Failed to add product. Please try again.",
+      "failedToUpdate": "Failed to update product. Please try again.",
+      "failedToDelete": "Failed to delete product. Please try again.",
+      "bulkDeleteSuccess": "Successfully deleted {count} products.",
+      "bulkCategorySuccess": "Successfully updated category for {count} products.",
+      "bulkStockSuccess": "Successfully updated stock for {count} products.",
+      "exportSuccess": "Exported {count} products to CSV successfully!",
+      "importComplete": "Import complete: Added: {added}, Updated: {updated}, Errors: {errors}",
+      "nameRequired": "Product name is required",
+      "validPrice": "Please enter a valid price",
+      "validCost": "Please enter a valid cost",
+      "validStock": "Please enter a valid stock quantity",
+      "categoryRequired": "Please enter a category name",
+      "nonnegativeValue": "Please enter a non-negative value",
+      "noProductsExport": "No products to export",
+      "missingColumns": "Missing required columns: {columns}",
+      "dataSync": "Data synced successfully",
+      "syncFailed": "Sync failed. Please try again later.",
+      "syncError": "Error syncing data: {message}"
+    },
+    "confirmations": {
+      "deleteProduct": "Are you sure you want to delete this product?",
+      "bulkDelete": "Are you sure you want to delete {count} products?"
+    }
   },
   "user": {
     "profile": "Profile",

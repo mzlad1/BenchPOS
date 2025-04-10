@@ -1,133 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
-    />
-    <title>Register User - MZLAD Billing System</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+          http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+  />
+  <title data-i18n="register.pageTitle">Register User - MZLAD Billing System</title>
 
-    <!-- Global Styles (shared across pages) -->
-    <link rel="stylesheet" href="../styles/global.css" />
-    <link rel="stylesheet" href="../styles/register.css" />
-  </head>
-  <body class="light-mode">
-    <div class="app-container">
-      <!-- Sidebar Container (will be populated by layout.js) -->
-      <div id="sidebar-container"></div>
+  <!-- Global Styles (shared across pages) -->
+  <link rel="stylesheet" href="../styles/global.css" />
+  <link rel="stylesheet" href="../styles/register.css" />
+</head>
+<body class="light-mode">
+<div class="app-container">
+  <!-- Sidebar Container (will be populated by layout.js) -->
+  <div id="sidebar-container"></div>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header Container (will be populated by layout.js) -->
-        <div id="header-container"></div>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header Container (will be populated by layout.js) -->
+    <div id="header-container"></div>
 
-        <!-- Register Content -->
-        <div class="register-container">
-          <div class="register-form-container">
-            <h2>Create New Account</h2>
+    <!-- Register Content -->
+    <div class="register-container">
+      <div class="register-form-container">
+        <h2 data-i18n="register.title">Create New Account</h2>
 
-            <div id="error-message" class="error-message"></div>
+        <div id="error-message" class="error-message"></div>
 
-            <form id="register-form">
-              <div class="form-group">
-                <label for="register-name">Full Name</label>
-                <input
-                  type="text"
-                  id="register-name"
-                  placeholder="Enter your name"
-                  required
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="register-email">Email</label>
-                <input
-                  type="email"
-                  id="register-email"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="register-password">Password</label>
-                <input
-                  type="password"
-                  id="register-password"
-                  placeholder="Create a password"
-                  required
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="register-role">Role</label>
-                <select id="register-role">
-                  <option value="cashier">Cashier</option>
-                  <option value="manager">Manager</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="register-status">Status</label>
-                <select id="register-status">
-                  <option value="active" selected>Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                id="register-button"
-                class="btn primary-btn"
-              >
-                Create Account
-              </button>
-            </form>
+        <form id="register-form">
+          <div class="form-group">
+            <label for="register-name" data-i18n="register.fullName">Full Name</label>
+            <input
+                    type="text"
+                    id="register-name"
+                    data-i18n-placeholder="register.fullNamePlaceholder"
+                    placeholder="Enter your name"
+                    required
+            />
           </div>
-        </div>
+
+          <div class="form-group">
+            <label for="register-email" data-i18n="register.email">Email</label>
+            <input
+                    type="email"
+                    id="register-email"
+                    data-i18n-placeholder="register.emailPlaceholder"
+                    placeholder="Enter your email"
+                    required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="register-password" data-i18n="register.password">Password</label>
+            <input
+                    type="password"
+                    id="register-password"
+                    data-i18n-placeholder="register.passwordPlaceholder"
+                    placeholder="Create a password"
+                    required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="register-role" data-i18n="register.role">Role</label>
+            <select id="register-role">
+              <option value="cashier" data-i18n="user.roles.cashier">Cashier</option>
+              <option value="manager" data-i18n="user.roles.manager">Manager</option>
+              <option value="admin" data-i18n="user.roles.admin">Admin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="register-status" data-i18n="register.status">Status</label>
+            <select id="register-status">
+              <option value="active" selected data-i18n="register.statusActive">Active</option>
+              <option value="inactive" data-i18n="register.statusInactive">Inactive</option>
+            </select>
+          </div>
+          <button
+                  type="submit"
+                  id="register-button"
+                  class="btn primary-btn"
+                  data-i18n="register.button"
+          >
+            Create Account
+          </button>
+        </form>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Load Scripts -->
+<!-- Load i18n Script First -->
+<script src="../locales/i18n.js"></script>
 
-    <script src="../scripts/register.js"></script>
-    <script src="../scripts/activity-logger.js"></script>
-    <script src="../scripts/layout.js"></script>
-    <script>
-      // Initialize page
-      document.addEventListener("DOMContentLoaded", async function () {
-        // First validate user access
-        try {
-          const user = await window.api.getCurrentUser();
-          if (!user) {
-            window.location.href = "../views/login.html";
-            return;
-          }
+<!-- Load Other Scripts -->
+<script src="../scripts/register.js"></script>
+<script src="../scripts/activity-logger.js"></script>
+<script src="../scripts/layout.js"></script>
 
-          // Check role-based access - only admin can access register page
-          if (user.role !== "admin") {
-            alert(
-              "You do not have permission to access the Register User page."
-            );
-            window.location.href = "../index.html";
-            return;
-          }
+<script>
+  // Initialize page
+  document.addEventListener("DOMContentLoaded", async function () {
+    // Initialize i18n system first
+    if (window.i18n) {
+      await window.i18n.init();
+      console.log("i18n initialized");
 
-          // Initialize layout with current page identifier
-          await LayoutManager.init("register");
+      // Add a small delay to make sure everything has loaded
+      setTimeout(() => {
+        // Force update all translations on the page again
+        window.i18n.updatePageContent();
+        console.log("Translations applied after delay");
+      }, 500);
+    } else {
+      console.error("i18n system not found");
+    }
 
-          console.log("User authorized to access Register User page");
+    // First validate user access
+    try {
+      const user = await window.api.getCurrentUser();
+      if (!user) {
+        window.location.href = "../views/login.html";
+        return;
+      }
 
-          // Initialize sync UI (if exists)
-          if (typeof window.initSyncUI === "function") {
-            window.initSyncUI();
-          }
-        } catch (error) {
-          console.error("Access control error:", error);
-          window.location.href = "../views/login.html";
-        }
-      });
-    </script>
-  </body>
+      // Check role-based access - only admin can access register page
+      if (user.role !== "admin") {
+        alert(
+                window.t("register.permissionDenied", "You do not have permission to access the Register User page.")
+        );
+        window.location.href = "../index.html";
+        return;
+      }
+
+      // Initialize layout with current page identifier
+      await LayoutManager.init("register");
+
+      console.log("User authorized to access Register User page");
+
+      // Initialize sync UI (if exists)
+      if (typeof window.initSyncUI === "function") {
+        window.initSyncUI();
+      }
+    } catch (error) {
+      console.error("Access control error:", error);
+      window.location.href = "../views/login.html";
+    }
+  });
+</script>
+</body>
 </html>

@@ -282,9 +282,11 @@ const LayoutManager = {
     if (userNameEl) userNameEl.textContent = this.user.name || "User";
 
     if (userRoleEl) {
-      // Translate role if i18n is available
+      // Fix: Properly access role translation using lowercase role key
       if (window.t && this.user.role) {
-        userRoleEl.textContent = window.t(`user.roles.${this.user.role.toLowerCase()}`) || this.user.role;
+        const roleKey = this.user.role.toLowerCase();
+        // Use user.roles prefix explicitly as defined in the translation files
+        userRoleEl.textContent = window.t(`user.roles.${roleKey}`) || this.user.role;
       } else {
         userRoleEl.textContent = this.user.role || "Guest";
       }
