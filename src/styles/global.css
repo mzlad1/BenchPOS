@@ -1800,10 +1800,7 @@ body[class*="dark"] .sync-actions .btn:focus {
   flex-direction: row-reverse;
 }
 
-/* Fix for report headers */
-.rtl-layout .report-header {
-  flex-direction: row-reverse;
-}
+
 
 .rtl-layout .report-actions {
   flex-direction: row-reverse;
@@ -1881,4 +1878,19 @@ body[class*="dark"] .sync-actions .btn:focus {
 /* Fix display issues with empty tables */
 .rtl-layout .centered {
   text-align: center !important;
+}
+.rtl-layout th{
+    text-align: right !important;
+
+}
+html[dir="rtl"] .form-group label {
+  text-align: right;
+}
+
+html[dir="rtl"] .register-form-container {
+  text-align: right;
+}
+.register-form-container,
+.register-form-container * {
+  transition: all 0.3s ease-in-out;
 }

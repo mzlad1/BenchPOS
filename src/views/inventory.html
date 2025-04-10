@@ -1,132 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
-    />
-    <title>Inventory - MZLAD Billing System</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+          http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+  />
+  <title data-i18n="inventory.title">Inventory - MZLAD Billing System</title>
 
-    <!-- Global Styles (shared across pages) -->
-    <link rel="stylesheet" href="../styles/global.css" />
-    <link rel="stylesheet" href="../styles/inverntory.css" />
-  </head>
-  <body class="light-mode">
-    <div class="app-container">
-      <!-- Sidebar Container (will be populated by layout.js) -->
-      <div id="sidebar-container"></div>
+  <!-- Global Styles (shared across pages) -->
+  <link rel="stylesheet" href="../styles/global.css" />
+  <link rel="stylesheet" href="../styles/inverntory.css" />
+</head>
+<body class="light-mode">
+<div class="app-container">
+  <!-- Sidebar Container (will be populated by layout.js) -->
+  <div id="sidebar-container"></div>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header Container (will be populated by layout.js) -->
-        <div id="header-container"></div>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header Container (will be populated by layout.js) -->
+    <div id="header-container"></div>
 
-        <!-- Inventory Content -->
-        <div class="inventory-container">
-          <!-- Inventory Stats -->
-          <div class="inventory-stats">
-            <div class="stat-card">
-              <h3>Total Products</h3>
-              <p id="total-products">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Inventory Value</h3>
-              <p id="inventory-value">$0.00</p>
-            </div>
-            <div class="stat-card">
-              <h3>Low Stock Items</h3>
-              <p id="low-stock-count">0</p>
-            </div>
+    <!-- Inventory Content -->
+    <div class="inventory-container">
+      <!-- Inventory Stats -->
+      <div class="inventory-stats">
+        <div class="stat-card">
+          <h3 data-i18n="inventory.stats.totalProducts">Total Products</h3>
+          <p id="total-products">0</p>
+        </div>
+        <div class="stat-card">
+          <h3 data-i18n="inventory.stats.inventoryValue">Inventory Value</h3>
+          <p id="inventory-value">$0.00</p>
+        </div>
+        <div class="stat-card">
+          <h3 data-i18n="inventory.stats.lowStockItems">Low Stock Items</h3>
+          <p id="low-stock-count">0</p>
+        </div>
+      </div>
+
+      <!-- Inventory Controls -->
+      <div class="inventory-controls">
+        <!-- Primary Actions Row -->
+        <div class="primary-actions">
+          <button id="add-new-btn" class="btn primary-btn">
+            <span class="icon">✚</span> <span data-i18n="inventory.controls.addNew">Add New Product</span>
+          </button>
+          <div class="action-group">
+            <button id="export-csv-btn" class="btn secondary-btn">
+              <span class="icon">📤</span> <span data-i18n="inventory.controls.exportCSV">Export CSV</span>
+            </button>
+            <button id="import-csv-btn" class="btn secondary-btn">
+              <span class="icon">📥</span> <span data-i18n="inventory.controls.importCSV">Import CSV</span>
+            </button>
           </div>
+        </div>
 
-          <!-- Inventory Controls -->
-          <div class="inventory-controls">
-            <!-- Primary Actions Row -->
-            <div class="primary-actions">
-              <button id="add-new-btn" class="btn primary-btn">
-                <span class="icon">✚</span> Add New Product
-              </button>
-              <div class="action-group">
-                <button id="export-csv-btn" class="btn secondary-btn">
-                  <span class="icon">📤</span> Export CSV
-                </button>
-                <button id="import-csv-btn" class="btn secondary-btn">
-                  <span class="icon">📥</span> Import CSV
-                </button>
-              </div>
-            </div>
-
-            <!-- Search & Filters Row -->
-            <div class="search-filter-row">
-              <div class="search-bar">
-                <div class="enhanced-search">
-                  <div class="search-field">
-                    <select id="search-filter" class="search-filter">
-                      <option value="all">All Fields</option>
-                      <option value="sku">SKU</option>
-                      <option value="name">Name</option>
-                      <option value="category">Category</option>
-                    </select>
-                    <input
-                      type="text"
-                      id="product-search"
-                      placeholder="Search products..."
-                    />
-                    <button
-                      id="clear-search"
-                      class="clear-search"
-                      title="Clear search"
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <div id="search-status" class="search-status"></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bulk Actions Container -->
-            <div class="bulk-actions-container" id="bulk-actions-container">
-              <div class="bulk-actions" id="bulk-actions">
-                <span id="selected-count">0 items selected</span>
-                <select id="bulk-action-select" disabled>
-                  <option value="">-- Select Action --</option>
-                  <option value="delete">Delete Selected</option>
-                  <option value="category">Change Category</option>
-                  <option value="stock">Update Stock</option>
+        <!-- Search & Filters Row -->
+        <div class="search-filter-row">
+          <div class="search-bar">
+            <div class="enhanced-search">
+              <div class="search-field">
+                <select id="search-filter" class="search-filter">
+                  <option value="all" data-i18n="inventory.controls.searchFilters.all">All Fields</option>
+                  <option value="sku" data-i18n="inventory.controls.searchFilters.sku">SKU</option>
+                  <option value="name" data-i18n="inventory.controls.searchFilters.name">Name</option>
+                  <option value="category" data-i18n="inventory.controls.searchFilters.category">Category</option>
                 </select>
-                <button id="apply-bulk-action" class="btn primary-btn" disabled>
-                  Apply
+                <input
+                        type="text"
+                        id="product-search"
+                        data-i18n-placeholder="inventory.controls.search"
+                        placeholder="Search products..."
+                />
+                <button
+                        id="clear-search"
+                        class="clear-search"
+                        data-i18n-title="inventory.controls.clearSearch"
+                        title="Clear search"
+                >
+                  ×
                 </button>
               </div>
+              <div id="search-status" class="search-status"></div>
             </div>
           </div>
+        </div>
 
-          <!-- Products Table -->
-          <div class="table-container">
-            <table id="products-table">
-              <thead>
-                <tr>
-                  <th class="checkbox-cell">
-                    <input type="checkbox" id="select-all-checkbox" />
-                  </th>
-                  <th>SKU</th>
-                  <th>Name</th>
-                  <th>Category</th>
-                  <th>Selling Price</th>
-                  <th>Cost</th>
-                  <th>Profit</th>
-                  <th>Stock</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="products-table-body">
-                <!-- Loading state example -->
-                <tr>
-                  <td colspan="9" style="text-align: center; padding: 24px">
-                    <div
+        <!-- Bulk Actions Container -->
+        <div class="bulk-actions-container" id="bulk-actions-container">
+          <div class="bulk-actions" id="bulk-actions">
+            <span id="selected-count" data-i18n="inventory.bulkActions.selected" data-i18n-args='{"count": 0}'>0 items selected</span>
+            <select id="bulk-action-select" disabled>
+              <option value="" data-i18n="inventory.bulkActions.selectAction">-- Select Action --</option>
+              <option value="delete" data-i18n="inventory.bulkActions.deleteSelected">Delete Selected</option>
+              <option value="category" data-i18n="inventory.bulkActions.changeCategory">Change Category</option>
+              <option value="stock" data-i18n="inventory.bulkActions.updateStock">Update Stock</option>
+            </select>
+            <button id="apply-bulk-action" class="btn primary-btn" disabled data-i18n="inventory.bulkActions.apply">
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Table -->
+      <div class="table-container">
+        <table id="products-table">
+          <thead>
+          <tr>
+            <th class="checkbox-cell">
+              <input type="checkbox" id="select-all-checkbox" />
+            </th>
+            <th data-i18n="inventory.table.sku">SKU</th>
+            <th data-i18n="inventory.table.name">Name</th>
+            <th data-i18n="inventory.table.category">Category</th>
+            <th data-i18n="inventory.table.sellingPrice">Selling Price</th>
+            <th data-i18n="inventory.table.cost">Cost</th>
+            <th data-i18n="inventory.table.profit">Profit</th>
+            <th data-i18n="inventory.table.stock">Stock</th>
+            <th data-i18n="inventory.table.actions">Actions</th>
+          </tr>
+          </thead>
+          <tbody id="products-table-body">
+          <!-- Loading state example -->
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 24px">
+              <div
                       style="
                         display: inline-block;
                         width: 24px;
@@ -136,191 +138,194 @@
                         border-top-color: var(--primary-color);
                         animation: rotate 1s infinite linear;
                       "
-                    ></div>
-                    <div style="margin-top: 8px">Loading products...</div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              ></div>
+              <div style="margin-top: 8px" data-i18n="inventory.table.loading">Loading products...</div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
 
-          <!-- Pagination Container -->
-          <div id="pagination-container" class="pagination">
-            <div class="pagination-controls">
-              <button class="btn pagination-btn" disabled>« Previous</button>
-              <span class="page-info">Page 1 of 1</span>
-              <button class="btn pagination-btn" disabled>Next »</button>
-            </div>
-          </div>
+      <!-- Pagination Container -->
+      <div id="pagination-container" class="pagination">
+        <div class="pagination-controls">
+          <button class="btn pagination-btn" disabled data-i18n="inventory.pagination.previous">« Previous</button>
+          <span class="page-info" data-i18n="inventory.pagination.page" data-i18n-args='{"current": 1, "total": 1}'>Page 1 of 1</span>
+          <button class="btn pagination-btn" disabled data-i18n="inventory.pagination.next">Next »</button>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Add/Edit Product Modal -->
-    <div id="product-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 id="product-form-title">Add New Product</h2>
-          <span class="close">&times;</span>
+<!-- Add/Edit Product Modal -->
+<div id="product-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="product-form-title" data-i18n="inventory.productForm.addTitle">Add New Product</h2>
+      <span class="close">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form id="add-product-form">
+        <div class="form-group">
+          <label for="product-name" data-i18n="inventory.productForm.name">Product Name</label>
+          <input
+                  type="text"
+                  id="product-name"
+                  name="product-name"
+                  required
+          />
         </div>
-        <div class="modal-body">
-          <form id="add-product-form">
-            <div class="form-group">
-              <label for="product-name">Product Name</label>
-              <input
+        <div class="form-group">
+          <label for="product-sku" data-i18n="inventory.productForm.sku">SKU</label>
+          <input type="text" id="product-sku" name="product-sku" />
+        </div>
+        <div class="form-group">
+          <label for="product-category" data-i18n="inventory.productForm.category">Category</label>
+          <input
+                  type="text"
+                  id="product-category"
+                  name="product-category"
+          />
+        </div>
+        <div class="form-group">
+          <label for="product-price" data-i18n="inventory.productForm.price">Selling Price ($)</label>
+          <input
+                  type="number"
+                  id="product-price"
+                  name="product-price"
+                  step="0.01"
+                  min="0"
+                  required
+          />
+        </div>
+        <div class="form-group">
+          <label for="product-cost" data-i18n="inventory.productForm.cost">Purchase Cost ($)</label>
+          <input
+                  type="number"
+                  id="product-cost"
+                  name="product-cost"
+                  step="0.01"
+                  min="0"
+                  required
+          />
+        </div>
+        <div class="form-group">
+          <label for="product-stock" data-i18n="inventory.productForm.stock">Stock Quantity</label>
+          <input
+                  type="number"
+                  id="product-stock"
+                  name="product-stock"
+                  min="0"
+                  required
+          />
+        </div>
+        <div class="form-actions">
+          <button
+                  type="button"
+                  class="btn secondary-btn"
+                  onclick="document.getElementById('product-modal').style.display='none'"
+                  data-i18n="inventory.productForm.cancel"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn primary-btn" data-i18n="inventory.productForm.save">
+            Save Product
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Category Change Modal -->
+<div id="category-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 data-i18n="inventory.categoryModal.title">Change Category</h2>
+      <span class="close">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p data-i18n="inventory.categoryModal.instruction">Select a new category for selected products:</p>
+      <div class="form-group">
+        <select id="new-category">
+          <option value="Electronics">Electronics</option>
+          <option value="Office Supplies">Office Supplies</option>
+          <option value="Furniture">Furniture</option>
+          <option value="Accessories">Accessories</option>
+          <option value="new" data-i18n="inventory.categoryModal.addNew">+ Add New Category</option>
+        </select>
+      </div>
+      <div id="new-category-input" class="form-group" style="display: none">
+        <input
                 type="text"
-                id="product-name"
-                name="product-name"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="product-sku">SKU</label>
-              <input type="text" id="product-sku" name="product-sku" />
-            </div>
-            <div class="form-group">
-              <label for="product-category">Category</label>
-              <input
-                type="text"
-                id="product-category"
-                name="product-category"
-              />
-            </div>
-            <div class="form-group">
-              <label for="product-price">Selling Price ($)</label>
-              <input
-                type="number"
-                id="product-price"
-                name="product-price"
-                step="0.01"
-                min="0"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="product-cost">Purchase Cost ($)</label>
-              <input
-                type="number"
-                id="product-cost"
-                name="product-cost"
-                step="0.01"
-                min="0"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="product-stock">Stock Quantity</label>
-              <input
-                type="number"
-                id="product-stock"
-                name="product-stock"
-                min="0"
-                required
-              />
-            </div>
-            <div class="form-actions">
-              <button
+                id="new-category-name"
+                data-i18n-placeholder="inventory.categoryModal.newCategoryPlaceholder"
+                placeholder="Enter new category name"
+        />
+      </div>
+      <div class="form-actions">
+        <button
                 type="button"
                 class="btn secondary-btn"
-                onclick="document.getElementById('product-modal').style.display='none'"
-              >
-                Cancel
-              </button>
-              <button type="submit" class="btn primary-btn">
-                Save Product
-              </button>
-            </div>
-          </form>
-        </div>
+                id="cancel-category"
+                data-i18n="inventory.categoryModal.cancel"
+        >
+          Cancel
+        </button>
+        <button type="button" class="btn primary-btn" id="save-category" data-i18n="inventory.categoryModal.apply">
+          Apply
+        </button>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Category Change Modal -->
-    <div id="category-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Change Category</h2>
-          <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-          <p>Select a new category for selected products:</p>
-          <div class="form-group">
-            <select id="new-category">
-              <option value="Electronics">Electronics</option>
-              <option value="Office Supplies">Office Supplies</option>
-              <option value="Furniture">Furniture</option>
-              <option value="Accessories">Accessories</option>
-              <option value="new">+ Add New Category</option>
-            </select>
-          </div>
-          <div id="new-category-input" class="form-group" style="display: none">
-            <input
-              type="text"
-              id="new-category-name"
-              placeholder="Enter new category name"
-            />
-          </div>
-          <div class="form-actions">
-            <button
-              type="button"
-              class="btn secondary-btn"
-              id="cancel-category"
-            >
-              Cancel
-            </button>
-            <button type="button" class="btn primary-btn" id="save-category">
-              Apply
-            </button>
-          </div>
-        </div>
+<!-- Stock Update Modal -->
+<div id="stock-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 data-i18n="inventory.stockModal.title">Update Stock</h2>
+      <span class="close">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p data-i18n="inventory.stockModal.instruction">Update stock for selected products:</p>
+      <div class="form-group">
+        <label data-i18n="inventory.stockModal.methodLabel">Update Method:</label>
+        <select id="stock-update-method">
+          <option value="set" data-i18n="inventory.stockModal.methods.set">Set to value</option>
+          <option value="add" data-i18n="inventory.stockModal.methods.add">Add to current stock</option>
+          <option value="subtract" data-i18n="inventory.stockModal.methods.subtract">Subtract from current stock</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label data-i18n="inventory.stockModal.valueLabel">Value:</label>
+        <input type="number" id="stock-value" min="0" value="0" />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn secondary-btn" id="cancel-stock" data-i18n="inventory.stockModal.cancel">
+          Cancel
+        </button>
+        <button type="button" class="btn primary-btn" id="save-stock" data-i18n="inventory.stockModal.apply">
+          Apply
+        </button>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Stock Update Modal -->
-    <div id="stock-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Update Stock</h2>
-          <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-          <p>Update stock for selected products:</p>
-          <div class="form-group">
-            <label>Update Method:</label>
-            <select id="stock-update-method">
-              <option value="set">Set to value</option>
-              <option value="add">Add to current stock</option>
-              <option value="subtract">Subtract from current stock</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Value:</label>
-            <input type="number" id="stock-value" min="0" value="0" />
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn secondary-btn" id="cancel-stock">
-              Cancel
-            </button>
-            <button type="button" class="btn primary-btn" id="save-stock">
-              Apply
-            </button>
-          </div>
-        </div>
-      </div>
+<!-- Import Modal -->
+<div id="import-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 data-i18n="inventory.importModal.title">Import Products from CSV</h2>
+      <span class="close">&times;</span>
     </div>
-
-    <!-- Import Modal -->
-    <div id="import-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Import Products from CSV</h2>
-          <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-          <div class="import-instructions">
-            <p>Upload a CSV file with the following columns:</p>
-            <div
-              style="
+    <div class="modal-body">
+      <div class="import-instructions">
+        <p data-i18n="inventory.importModal.instructions">Upload a CSV file with the following columns:</p>
+        <div
+                style="
                 background: var(--light-gray);
                 padding: 8px 12px;
                 border-radius: 4px;
@@ -328,88 +333,106 @@
                 font-family: monospace;
                 font-size: 13px;
               "
-            >
-              id,sku,name,category,price,cost,stock
-            </div>
-            <p>Leave the id column blank for new products.</p>
-          </div>
-          <div class="form-group">
-            <label for="csv-file">Select CSV File:</label>
-            <input type="file" id="csv-file" accept=".csv" />
-          </div>
-          <div class="import-options">
-            <div class="form-group">
-              <label>
-                <input type="checkbox" id="override-existing" checked />
-                Update existing products (matched by ID or SKU)
-              </label>
-            </div>
-            <div class="form-group">
-              <label>
-                <input type="checkbox" id="add-new-products" checked />
-                Add new products
-              </label>
-            </div>
-          </div>
-          <div id="csv-preview" class="csv-preview">
-            <h3>Preview:</h3>
-            <div id="preview-content"></div>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn secondary-btn" id="cancel-import">
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="btn primary-btn"
-              id="process-import"
-              disabled
-            >
-              Import Products
-            </button>
-          </div>
+                data-i18n="inventory.importModal.columnFormat"
+        >
+          id,sku,name,category,price,cost,stock
+        </div>
+        <p data-i18n="inventory.importModal.idNote">Leave the id column blank for new products.</p>
+      </div>
+      <div class="form-group">
+        <label for="csv-file" data-i18n="inventory.importModal.fileLabel">Select CSV File:</label>
+        <input type="file" id="csv-file" accept=".csv" />
+      </div>
+      <div class="import-options">
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="override-existing" checked />
+            <span data-i18n="inventory.importModal.updateExisting">Update existing products (matched by ID or SKU)</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="add-new-products" checked />
+            <span data-i18n="inventory.importModal.addNew">Add new products</span>
+          </label>
         </div>
       </div>
+      <div id="csv-preview" class="csv-preview">
+        <h3 data-i18n="inventory.importModal.preview">Preview:</h3>
+        <div id="preview-content"></div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn secondary-btn" id="cancel-import" data-i18n="inventory.importModal.cancel">
+          Cancel
+        </button>
+        <button
+                type="button"
+                class="btn primary-btn"
+                id="process-import"
+                disabled
+                data-i18n="inventory.importModal.import"
+        >
+          Import Products
+        </button>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- Load Scripts -->
-    <script src="../scripts/layout.js"></script>
-    <script src="../scripts/activity-logger.js"></script>
-    <script src="../scripts/inventory.js"></script>
-    <script src="../services/sync-ui.js"></script>
+<!-- Load Scripts -->
+<script src="../locales/i18n.js"></script>
+<script src="../scripts/layout.js"></script>
+<script src="../scripts/activity-logger.js"></script>
+<script src="../scripts/inventory.js"></script>
+<script src="../services/sync-ui.js"></script>
 
-    <script>
-      // Initialize page
-      document.addEventListener("DOMContentLoaded", async function () {
-        // First validate user access
-        try {
-          const user = await window.api.getCurrentUser();
-          if (!user) {
-            window.location.href = "../views/login.html";
-            return;
-          }
+<script>
+  // Initialize page
+  document.addEventListener("DOMContentLoaded", async function () {
+    console.log("DOM Content Loaded");
 
-          // Check role-based access
-          if (user.role === "cashier") {
-            alert("You do not have permission to access the Inventory page.");
-            window.location.href = "../index.html";
-            return;
-          }
+    // Make sure i18n is fully initialized before proceeding
+    if (window.i18n) {
+      try {
+        console.log("Starting i18n initialization");
+        await window.i18n.init();
+        console.log("i18n initialized successfully");
+      } catch (error) {
+        console.error("Failed to initialize i18n:", error);
+      }
+    } else {
+      console.error("i18n object not found on window");
+    }
 
-          // Initialize layout with current page identifier
-          await LayoutManager.init("inventory");
+    // Then validate user access
+    try {
+      const user = await window.api.getCurrentUser();
+      if (!user) {
+        window.location.href = "../views/login.html";
+        return;
+      }
 
-          console.log("User authorized to access Inventory page");
+      // Check role-based access
+      if (user.role === "cashier") {
+        alert(window.t("inventory.notifications.permissionDenied") || "You do not have permission to access the Inventory page.");
+        window.location.href = "../index.html";
+        return;
+      }
 
-          // Initialize sync UI (if exists)
-          if (typeof window.initSyncUI === "function") {
-            window.initSyncUI();
-          }
-        } catch (error) {
-          console.error("Access control error:", error);
-          window.location.href = "../views/login.html";
-        }
-      });
-    </script>
-  </body>
+      // Initialize layout with current page identifier
+      await LayoutManager.init("inventory");
+
+      console.log("User authorized to access Inventory page");
+
+      // Initialize sync UI (if exists)
+      if (typeof window.initSyncUI === "function") {
+        window.initSyncUI();
+      }
+    } catch (error) {
+      console.error("Access control error:", error);
+      window.location.href = "../views/login.html";
+    }
+  });
+</script>
+</body>
 </html>
