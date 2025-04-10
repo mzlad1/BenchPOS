@@ -10,11 +10,20 @@ let dateRange = {
 };
 let salesChart = null;
 let currentChartView = "daily"; // Tracks the current chart view (daily, weekly, monthly)
+
+// Use the global translation function instead of redefining it
+const getTranslation = function(key, params = {}) {
+  return window.t ? window.t(key, params) : key;
+};
+
 // Initialize the page
 document.addEventListener("DOMContentLoaded", async function () {
   try {
+    console.log("Initializing reports page...");
+
     // First validate user access
     const user = await window.api.getCurrentUser();
+    console.log("Current user:", user);
     if (!user) {
       window.location.href = "login.html";
       return;
@@ -22,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Check role-based access
     if (user.role !== "admin") {
-      alert("You do not have permission to access the Reports page.");
+      alert(getTranslation("reports.messages.permissionDenied"));
       window.location.href = "../index.html";
       return;
     }
@@ -30,6 +39,36 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initialize layout with current page identifier
     if (window.LayoutManager) {
       await window.LayoutManager.init("reports");
+      console.log("Layout manager initialized");
+    } else {
+      console.warn("Layout manager not available");
+    }
+
+    // Check if RTL is enabled
+    const isRTL = (localStorage.getItem('language') || 'en') === 'ar';
+    console.log("Is RTL layout:", isRTL);
+    if (isRTL) {
+      // Force RTL for entire page if not already set
+      document.documentElement.dir = 'rtl';
+      document.body.classList.add('rtl-layout');
+      console.log("RTL classes applied to document");
+    }
+
+    // Initialize i18n if available
+    if (window.i18n) {
+      const language = localStorage.getItem("language") || "en";
+      console.log("Initializing i18n with language:", language);
+
+      // Initialize with current language and wait for it to complete
+      await window.i18n.init(language).then(() => {
+        // Apply translations to the page
+        window.i18n.updatePageContent();
+        console.log("Translations applied for language:", language);
+      }).catch(error => {
+        console.error("Error initializing i18n:", error);
+      });
+    } else {
+      console.warn("i18n module not available");
     }
 
     // Initialize sync UI (if exists)
@@ -46,18 +85,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initialize our reports data
     await loadInitialData();
 
-    console.log("Reports page initialized");
+    console.log("Reports page initialized successfully");
   } catch (error) {
     console.error("Error initializing reports page:", error);
-    showError(
-      "An error occurred initializing the page. Please refresh and try again."
-    );
+    showError(getTranslation("reports.messages.initError"));
   }
 });
 
 // Load all data required for reports
 async function loadInitialData() {
   try {
+    console.log("Loading initial data...");
     showLoading();
 
     // Load invoices and products in parallel
@@ -69,26 +107,30 @@ async function loadInitialData() {
     // Store data in global variables
     invoices = allInvoices || [];
     products = allProducts || [];
+
+    console.log(`Loaded ${invoices.length} invoices and ${products.length} products`);
+
     // Update inventory badge in sidebar if LayoutManager is available
     if (window.LayoutManager) {
       const lowStockCount = products.filter(
-        (product) => product.stock <= 5
+          (product) => product.stock <= 5
       ).length;
       window.LayoutManager.updateInventoryBadge(lowStockCount);
     }
+
     // Calculate costs and profits for all invoices
-    calculateInvoiceCosts(); // Add this line
+    calculateInvoiceCosts();
 
     // Set default date range (current month)
     const today = new Date();
     dateRange.from = new Date(today.getFullYear(), today.getMonth(), 1);
     dateRange.to = new Date(
-      today.getFullYear(),
-      today.getMonth() + 1,
-      0,
-      23,
-      59,
-      59
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+        23,
+        59,
+        59
     );
 
     // Update date inputs
@@ -102,23 +144,23 @@ async function loadInitialData() {
 
     // Filter invoices for current date range
     applyDateFilter();
-
-    console.log(
-      `Loaded ${invoices.length} invoices and ${products.length} products`
-    );
   } catch (error) {
     console.error("Error loading initial data:", error);
-    showError("Failed to load data. Please try again.");
+    showError(getTranslation("reports.messages.dataLoadError"));
   }
 }
 
 // Apply date filter to invoices
 function applyDateFilter() {
+  console.log("Applying date filter:", dateRange.from, "to", dateRange.to);
+
   // Filter invoices by date range
   filteredInvoices = invoices.filter((invoice) => {
     const invoiceDate = new Date(invoice.date || invoice.createdAt);
     return invoiceDate >= dateRange.from && invoiceDate <= dateRange.to;
   });
+
+  console.log(`Filtered invoices: ${filteredInvoices.length} of ${invoices.length}`);
 
   // Generate all reports with filtered data
   generateAllReports();
@@ -132,6 +174,8 @@ function applyDateFilter() {
 // Generate all report sections
 function generateAllReports() {
   try {
+    console.log("Generating all reports");
+
     // Generate summary stats
     generateSalesSummary();
 
@@ -145,7 +189,7 @@ function generateAllReports() {
     createSalesChart();
   } catch (error) {
     console.error("Error generating reports:", error);
-    showError("Error generating reports. Please try again.");
+    showError(getTranslation("reports.messages.reportGenerationError"));
   }
 }
 
@@ -171,6 +215,8 @@ function setupTabNavigation() {
       }
     });
   });
+
+  console.log("Tab navigation setup complete");
 }
 
 // Setup date filter controls
@@ -203,45 +249,47 @@ function setupDateFilters() {
 
   // Apply filters button
   document
-    .getElementById("apply-filters")
-    .addEventListener("click", function () {
-      // Update date range from inputs
-      const from = dateFrom.valueAsDate;
-      const to = dateTo.valueAsDate;
+      .getElementById("apply-filters")
+      .addEventListener("click", function () {
+        // Update date range from inputs
+        const from = dateFrom.valueAsDate;
+        const to = dateTo.valueAsDate;
 
-      if (!from || !to) {
-        alert("Please select valid dates");
-        return;
-      }
+        if (!from || !to) {
+          alert(getTranslation("reports.messages.invalidDates"));
+          return;
+        }
 
-      if (from > to) {
-        alert("Start date must be before end date");
-        return;
-      }
+        if (from > to) {
+          alert(getTranslation("reports.messages.startDateBeforeEnd"));
+          return;
+        }
 
-      // Set global date range
-      dateRange.from = new Date(from);
-      dateRange.to = new Date(to);
-      // Set time to end of day for the end date
-      dateRange.to.setHours(23, 59, 59);
+        // Set global date range
+        dateRange.from = new Date(from);
+        dateRange.to = new Date(to);
+        // Set time to end of day for the end date
+        dateRange.to.setHours(23, 59, 59);
 
-      // Apply filter
-      applyDateFilter();
-    });
+        // Apply filter
+        applyDateFilter();
+      });
 
   // Export button
   document
-    .getElementById("export-report")
-    .addEventListener("click", function () {
-      exportReportData();
-    });
+      .getElementById("export-report")
+      .addEventListener("click", function () {
+        exportReportData();
+      });
 
   // Print button
   document
-    .getElementById("print-report")
-    .addEventListener("click", function () {
-      window.print();
-    });
+      .getElementById("print-report")
+      .addEventListener("click", function () {
+        window.print();
+      });
+
+  console.log("Date filters setup complete");
 }
 
 // Helper function to get date range from period selection
@@ -253,28 +301,28 @@ function getDateRangeFromPeriod(period) {
     case "today":
       from = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       to = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        23,
-        59,
-        59
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          23,
+          59,
+          59
       );
       break;
 
     case "yesterday":
       from = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - 1
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 1
       );
       to = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - 1,
-        23,
-        59,
-        59
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 1,
+          23,
+          59,
+          59
       );
       break;
 
@@ -282,34 +330,34 @@ function getDateRangeFromPeriod(period) {
       // Start of week (Sunday)
       const dayOfWeek = today.getDay();
       from = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - dayOfWeek
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - dayOfWeek
       );
       to = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() + (6 - dayOfWeek),
-        23,
-        59,
-        59
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() + (6 - dayOfWeek),
+          23,
+          59,
+          59
       );
       break;
 
     case "last-week":
       const lastWeekDay = today.getDay();
       from = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - lastWeekDay - 7
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - lastWeekDay - 7
       );
       to = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - lastWeekDay - 1,
-        23,
-        59,
-        59
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - lastWeekDay - 1,
+          23,
+          59,
+          59
       );
       break;
 
@@ -338,8 +386,7 @@ function getDateRangeFromPeriod(period) {
 
 // Show loading state in all report sections
 function showLoading() {
-  const loadingHTML =
-    '<tr><td colspan="7" class="loading">Loading data...</td></tr>';
+  const loadingHTML = `<tr><td colspan="7" class="loading">${getTranslation("reports.messages.loading")}</td></tr>`;
   const elements = [
     "daily-sales-table",
     "product-sales-table",
@@ -377,14 +424,16 @@ function showError(message) {
 
 // Generate sales summary statistics
 function generateSalesSummary() {
+  console.log("Generating sales summary");
+
   // Current period totals
   const totalSales = filteredInvoices.reduce(
-    (sum, invoice) => sum + (invoice.total || 0),
-    0
+      (sum, invoice) => sum + (invoice.total || 0),
+      0
   );
   const totalTransactions = filteredInvoices.length;
   const averageSale =
-    totalTransactions > 0 ? totalSales / totalTransactions : 0;
+      totalTransactions > 0 ? totalSales / totalTransactions : 0;
   const totalProfit = filteredInvoices.reduce((sum, invoice) => {
     const profit = invoice.profit || invoice.total - (invoice.totalCost || 0);
     return sum + profit;
@@ -403,12 +452,12 @@ function generateSalesSummary() {
 
   // Previous period totals
   const prevTotalSales = prevPeriodInvoices.reduce(
-    (sum, invoice) => sum + (invoice.total || 0),
-    0
+      (sum, invoice) => sum + (invoice.total || 0),
+      0
   );
   const prevTotalTransactions = prevPeriodInvoices.length;
   const prevAverageSale =
-    prevTotalTransactions > 0 ? prevTotalSales / prevTotalTransactions : 0;
+      prevTotalTransactions > 0 ? prevTotalSales / prevTotalTransactions : 0;
   const prevTotalProfit = prevPeriodInvoices.reduce((sum, invoice) => {
     const profit = invoice.profit || invoice.total - (invoice.totalCost || 0);
     return sum + profit;
@@ -416,33 +465,33 @@ function generateSalesSummary() {
 
   // Calculate trends
   const salesTrend =
-    prevTotalSales > 0
-      ? ((totalSales - prevTotalSales) / prevTotalSales) * 100
-      : 0;
+      prevTotalSales > 0
+          ? ((totalSales - prevTotalSales) / prevTotalSales) * 100
+          : 0;
   const transactionsTrend =
-    prevTotalTransactions > 0
-      ? ((totalTransactions - prevTotalTransactions) / prevTotalTransactions) *
-        100
-      : 0;
+      prevTotalTransactions > 0
+          ? ((totalTransactions - prevTotalTransactions) / prevTotalTransactions) *
+          100
+          : 0;
   const averageTrend =
-    prevAverageSale > 0
-      ? ((averageSale - prevAverageSale) / prevAverageSale) * 100
-      : 0;
+      prevAverageSale > 0
+          ? ((averageSale - prevAverageSale) / prevAverageSale) * 100
+          : 0;
   const profitTrend =
-    prevTotalProfit > 0
-      ? ((totalProfit - prevTotalProfit) / prevTotalProfit) * 100
-      : 0;
+      prevTotalProfit > 0
+          ? ((totalProfit - prevTotalProfit) / prevTotalProfit) * 100
+          : 0;
 
   // Update UI
   document.getElementById("total-sales").textContent = `$${totalSales.toFixed(
-    2
+      2
   )}`;
   document.getElementById("total-transactions").textContent = totalTransactions;
   document.getElementById("average-sale").textContent = `$${averageSale.toFixed(
-    2
+      2
   )}`;
   document.getElementById("total-profit").textContent = `$${totalProfit.toFixed(
-    2
+      2
   )}`;
 
   // Update trends with formatting
@@ -450,15 +499,17 @@ function generateSalesSummary() {
     const el = document.getElementById(element);
     if (!el) return;
 
+    const vsPeriodText = getTranslation("reports.summary.vsPreviousPeriod");
+
     if (trend > 0) {
       el.className = "trend-up";
-      el.textContent = `+${trend.toFixed(1)}% vs. previous period`;
+      el.innerHTML = `+${trend.toFixed(1)}% <span data-i18n="reports.summary.vsPreviousPeriod">${vsPeriodText}</span>`;
     } else if (trend < 0) {
       el.className = "trend-down";
-      el.textContent = `${trend.toFixed(1)}% vs. previous period`;
+      el.innerHTML = `${trend.toFixed(1)}% <span data-i18n="reports.summary.vsPreviousPeriod">${vsPeriodText}</span>`;
     } else {
       el.className = "";
-      el.textContent = `0% vs. previous period`;
+      el.innerHTML = `0% <span data-i18n="reports.summary.vsPreviousPeriod">${vsPeriodText}</span>`;
     }
   };
 
@@ -473,9 +524,14 @@ function generateDailySalesReport() {
   const tableElement = document.getElementById("daily-sales-table");
   if (!tableElement) return;
 
+  console.log("Generating daily sales report");
+
+  // Check if we're using RTL
+  const isRTL = (localStorage.getItem('language') || 'en') === 'ar';
+
   if (filteredInvoices.length === 0) {
     tableElement.innerHTML =
-      '<tr><td colspan="7" class="centered">No sales data for this period</td></tr>';
+        `<tr><td colspan="7" class="centered">${getTranslation("reports.messages.noSalesData")}</td></tr>`;
     return;
   }
 
@@ -486,7 +542,7 @@ function generateDailySalesReport() {
     const date = new Date(invoice.date || invoice.createdAt);
     // Use YYYY-MM-DD format as the key for proper sorting
     const dateKey = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
+        date.getMonth() + 1
     ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     const formattedDate = formatDate(date); // Use our custom formatter
 
@@ -505,8 +561,8 @@ function generateDailySalesReport() {
     // Sum values
     salesByDate[dateKey].transactions += 1;
     salesByDate[dateKey].itemsSold += invoice.items.reduce(
-      (sum, item) => sum + item.quantity,
-      0
+        (sum, item) => sum + item.quantity,
+        0
     );
     salesByDate[dateKey].sales += invoice.total || 0;
     salesByDate[dateKey].cost += invoice.totalCost || 0;
@@ -540,8 +596,8 @@ function generateDailySalesReport() {
 
   // Add totals row
   const totalTransactions = salesData.reduce(
-    (sum, day) => sum + day.transactions,
-    0
+      (sum, day) => sum + day.transactions,
+      0
   );
   const totalItems = salesData.reduce((sum, day) => sum + day.itemsSold, 0);
   const totalSales = salesData.reduce((sum, day) => sum + day.sales, 0);
@@ -551,7 +607,7 @@ function generateDailySalesReport() {
 
   tableHTML += `
     <tr style="font-weight: bold; background-color: var(--base-200);">
-      <td>Total</td>
+      <td>${getTranslation("reports.messages.totalLabel")}</td>
       <td>${totalTransactions}</td>
       <td>${totalItems}</td>
       <td>$${totalSales.toFixed(2)}</td>
@@ -561,8 +617,13 @@ function generateDailySalesReport() {
     </tr>
   `;
 
-  // Update table
+  // Update table with RTL attribute if needed
   tableElement.innerHTML = tableHTML;
+
+  // Set RTL attributes if in Arabic
+  if (isRTL) {
+    tableElement.setAttribute('dir', 'rtl');
+  }
 }
 
 // Generate product sales report
@@ -570,9 +631,14 @@ function generateProductSalesReport() {
   const tableElement = document.getElementById("product-sales-table");
   if (!tableElement) return;
 
+  console.log("Generating product sales report");
+
+  // Check if we're using RTL
+  const isRTL = (localStorage.getItem('language') || 'en') === 'ar';
+
   if (filteredInvoices.length === 0) {
     tableElement.innerHTML =
-      '<tr><td colspan="7" class="centered">No sales data for this period</td></tr>';
+        `<tr><td colspan="7" class="centered">${getTranslation("reports.messages.noSalesData")}</td></tr>`;
     return;
   }
 
@@ -614,9 +680,9 @@ function generateProductSalesReport() {
 
       // Calculate profit if cost is available
       const itemCost =
-        (item.cost ||
-          (productMap[productId] ? productMap[productId].cost : 0)) *
-        item.quantity;
+          (item.cost ||
+              (productMap[productId] ? productMap[productId].cost : 0)) *
+          item.quantity;
       const itemProfit = itemTotal - itemCost;
       productSales[productId].profit += itemProfit;
     });
@@ -624,7 +690,7 @@ function generateProductSalesReport() {
 
   // Convert to array and sort by revenue (highest first)
   const productData = Object.values(productSales).sort(
-    (a, b) => b.revenue - a.revenue
+      (a, b) => b.revenue - a.revenue
   );
 
   // Generate table rows
@@ -632,7 +698,7 @@ function generateProductSalesReport() {
 
   productData.forEach((product) => {
     const margin =
-      product.revenue > 0 ? (product.profit / product.revenue) * 100 : 0;
+        product.revenue > 0 ? (product.profit / product.revenue) * 100 : 0;
 
     tableHTML += `
       <tr>
@@ -649,22 +715,22 @@ function generateProductSalesReport() {
 
   // Add totals row
   const totalQuantity = productData.reduce(
-    (sum, product) => sum + product.quantity,
-    0
+      (sum, product) => sum + product.quantity,
+      0
   );
   const totalRevenue = productData.reduce(
-    (sum, product) => sum + product.revenue,
-    0
+      (sum, product) => sum + product.revenue,
+      0
   );
   const totalProfit = productData.reduce(
-    (sum, product) => sum + product.profit,
-    0
+      (sum, product) => sum + product.profit,
+      0
   );
   const totalMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
   tableHTML += `
     <tr style="font-weight: bold; background-color: var(--base-200);">
-      <td colspan="3">Total</td>
+      <td colspan="3">${getTranslation("reports.messages.totalLabel")}</td>
       <td>${totalQuantity}</td>
       <td>$${totalRevenue.toFixed(2)}</td>
       <td>$${totalProfit.toFixed(2)}</td>
@@ -674,6 +740,11 @@ function generateProductSalesReport() {
 
   // Update table
   tableElement.innerHTML = tableHTML;
+
+  // Set RTL attributes if in Arabic
+  if (isRTL) {
+    tableElement.setAttribute('dir', 'rtl');
+  }
 }
 
 // Generate category sales report
@@ -681,9 +752,14 @@ function generateCategorySalesReport() {
   const tableElement = document.getElementById("category-sales-table");
   if (!tableElement) return;
 
+  console.log("Generating category sales report");
+
+  // Check if we're using RTL
+  const isRTL = (localStorage.getItem('language') || 'en') === 'ar';
+
   if (filteredInvoices.length === 0) {
     tableElement.innerHTML =
-      '<tr><td colspan="5" class="centered">No sales data for this period</td></tr>';
+        `<tr><td colspan="5" class="centered">${getTranslation("reports.messages.noSalesData")}</td></tr>`;
     return;
   }
 
@@ -717,7 +793,7 @@ function generateCategorySalesReport() {
 
   // Convert to array and sort by revenue (highest first)
   const categoryData = Object.values(categorySales).sort(
-    (a, b) => b.revenue - a.revenue
+      (a, b) => b.revenue - a.revenue
   );
 
   // Generate table rows
@@ -725,7 +801,7 @@ function generateCategorySalesReport() {
 
   categoryData.forEach((category) => {
     const margin =
-      category.revenue > 0 ? (category.profit / category.revenue) * 100 : 0;
+        category.revenue > 0 ? (category.profit / category.revenue) * 100 : 0;
 
     tableHTML += `
       <tr>
@@ -740,22 +816,22 @@ function generateCategorySalesReport() {
 
   // Add totals row
   const totalQuantity = categoryData.reduce(
-    (sum, category) => sum + category.quantity,
-    0
+      (sum, category) => sum + category.quantity,
+      0
   );
   const totalRevenue = categoryData.reduce(
-    (sum, category) => sum + category.revenue,
-    0
+      (sum, category) => sum + category.revenue,
+      0
   );
   const totalProfit = categoryData.reduce(
-    (sum, category) => sum + category.profit,
-    0
+      (sum, category) => sum + category.profit,
+      0
   );
   const totalMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
   tableHTML += `
     <tr style="font-weight: bold; background-color: var(--base-200);">
-      <td>Total</td>
+      <td>${getTranslation("reports.messages.totalLabel")}</td>
       <td>${totalQuantity}</td>
       <td>$${totalRevenue.toFixed(2)}</td>
       <td>$${totalProfit.toFixed(2)}</td>
@@ -765,29 +841,39 @@ function generateCategorySalesReport() {
 
   // Update table
   tableElement.innerHTML = tableHTML;
+
+  // Set RTL attributes if in Arabic
+  if (isRTL) {
+    tableElement.setAttribute('dir', 'rtl');
+  }
 }
 
 // Generate inventory report
 function generateInventoryReport() {
+  console.log("Generating inventory report");
+
+  // Check if we're using RTL
+  const isRTL = (localStorage.getItem('language') || 'en') === 'ar';
+
   // Calculate inventory stats
   const totalProducts = products.length;
   const totalValue = products.reduce(
-    (sum, product) => sum + product.price * product.stock,
-    0
+      (sum, product) => sum + product.price * product.stock,
+      0
   );
   const totalCost = products.reduce(
-    (sum, product) => sum + (product.cost || 0) * product.stock,
-    0
+      (sum, product) => sum + (product.cost || 0) * product.stock,
+      0
   );
   const lowStockItems = products.filter((product) => product.stock <= 5).length;
 
   // Update inventory summary
   document.getElementById("total-products").textContent = totalProducts;
   document.getElementById(
-    "inventory-value"
+      "inventory-value"
   ).textContent = `$${totalValue.toFixed(2)}`;
   document.getElementById("inventory-cost").textContent = `$${totalCost.toFixed(
-    2
+      2
   )}`;
   document.getElementById("low-stock-count").textContent = lowStockItems;
 
@@ -819,12 +905,12 @@ function generateInventoryReport() {
 
     // Convert to array and sort by quantity sold (highest first)
     const topProducts = Object.values(productSales)
-      .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 5); // Top 5
+        .sort((a, b) => b.quantity - a.quantity)
+        .slice(0, 5); // Top 5
 
     if (topProducts.length === 0) {
       topSellingHTML =
-        '<tr><td colspan="5" class="centered">No sales data available</td></tr>';
+          `<tr><td colspan="5" class="centered">${getTranslation("reports.messages.noSalesDataAvailable")}</td></tr>`;
     } else {
       topProducts.forEach((item) => {
         // Find product details
@@ -844,6 +930,11 @@ function generateInventoryReport() {
 
     // Update table
     topSellingTable.innerHTML = topSellingHTML;
+
+    // Set RTL attributes if in Arabic
+    if (isRTL) {
+      topSellingTable.setAttribute('dir', 'rtl');
+    }
   }
 
   // Generate low stock products table
@@ -853,13 +944,13 @@ function generateInventoryReport() {
 
     // Get products with low stock and sort by stock level (lowest first)
     const lowStockProducts = products
-      .filter((product) => product.stock <= 5)
-      .sort((a, b) => a.stock - b.stock)
-      .slice(0, 10); // Top 10 lowest stock
+        .filter((product) => product.stock <= 5)
+        .sort((a, b) => a.stock - b.stock)
+        .slice(0, 10); // Top 10 lowest stock
 
     if (lowStockProducts.length === 0) {
       lowStockHTML =
-        '<tr><td colspan="4" class="centered">No low stock products</td></tr>';
+          `<tr><td colspan="4" class="centered">${getTranslation("reports.messages.noLowStockProducts")}</td></tr>`;
     } else {
       lowStockProducts.forEach((product) => {
         lowStockHTML += `
@@ -875,6 +966,11 @@ function generateInventoryReport() {
 
     // Update table
     lowStockTable.innerHTML = lowStockHTML;
+
+    // Set RTL attributes if in Arabic
+    if (isRTL) {
+      lowStockTable.setAttribute('dir', 'rtl');
+    }
   }
 }
 
@@ -882,6 +978,14 @@ function generateInventoryReport() {
 function createSalesChart() {
   const chartContainer = document.getElementById("sales-chart");
   if (!chartContainer) return;
+
+  console.log("Creating sales chart");
+
+  // Check if we're using RTL
+  const isRTL = (localStorage.getItem('language') || 'en') === 'ar';
+
+  // Always make chart containers LTR (charts don't render well in RTL)
+  chartContainer.style.direction = 'ltr';
 
   // Clear previous chart if it exists
   chartContainer.innerHTML = "";
@@ -907,14 +1011,14 @@ function createSalesChart() {
       labels: chartData.labels,
       datasets: [
         {
-          label: "Revenue ($)",
+          label: getTranslation("reports.chart.revenue"),
           data: chartData.revenue,
           backgroundColor: "rgba(99, 102, 241, 0.7)",
           borderColor: "rgb(99, 102, 241)",
           borderWidth: 1,
         },
         {
-          label: "Profit ($)",
+          label: getTranslation("reports.chart.profit"),
           data: chartData.profit,
           backgroundColor: "rgba(16, 185, 129, 0.7)",
           borderColor: "rgb(16, 185, 129)",
@@ -928,29 +1032,40 @@ function createSalesChart() {
       animation: {
         duration: 500, // Shorter animations for better performance
       },
+      // Add RTL support
+      rtl: isRTL,
+      // Extra padding for RTL layouts
+      layout: {
+        padding: {
+          right: isRTL ? 10 : 0,
+          left: isRTL ? 0 : 10
+        }
+      },
       plugins: {
         legend: {
-          position: "top",
+          position: 'top',
+          align: isRTL ? 'end' : 'start',
           labels: {
             color: getComputedStyle(document.body).getPropertyValue(
-              "--text-primary"
+                "--text-primary"
             ),
+            textAlign: isRTL ? 'right' : 'left'
           },
         },
         tooltip: {
           mode: "index",
           intersect: false,
           backgroundColor: getComputedStyle(document.body).getPropertyValue(
-            "--base-100"
+              "--base-100"
           ),
           titleColor: getComputedStyle(document.body).getPropertyValue(
-            "--text-primary"
+              "--text-primary"
           ),
           bodyColor: getComputedStyle(document.body).getPropertyValue(
-            "--text-secondary"
+              "--text-secondary"
           ),
           borderColor: getComputedStyle(document.body).getPropertyValue(
-            "--primary"
+              "--primary"
           ),
           borderWidth: 1,
           callbacks: {
@@ -974,8 +1089,9 @@ function createSalesChart() {
           },
           ticks: {
             color: getComputedStyle(document.body).getPropertyValue(
-              "--text-secondary"
+                "--text-secondary"
             ),
+            align: isRTL ? 'end' : 'center'
           },
         },
         y: {
@@ -984,9 +1100,10 @@ function createSalesChart() {
             color: "rgba(0, 0, 0, 0.05)",
             lineWidth: 0.5, // Thinner lines for better performance
           },
+          position: isRTL ? 'right' : 'left',
           ticks: {
             color: getComputedStyle(document.body).getPropertyValue(
-              "--text-secondary"
+                "--text-secondary"
             ),
             callback: function (value) {
               return "$" + value.toFixed(0);
@@ -1035,6 +1152,8 @@ function createSalesChart() {
 
 // Export report data to CSV
 function exportReportData() {
+  console.log("Exporting report data");
+
   const activeTabs = document.querySelectorAll(".report-tab");
   let activeTab = "";
 
@@ -1052,19 +1171,19 @@ function exportReportData() {
     case "daily-sales":
       data = exportTableToCSV("daily-sales-table");
       filename = `daily_sales_report_${formatDateForFilename(
-        dateRange.from
+          dateRange.from
       )}_to_${formatDateForFilename(dateRange.to)}.csv`;
       break;
     case "product-sales":
       data = exportTableToCSV("product-sales-table");
       filename = `product_sales_report_${formatDateForFilename(
-        dateRange.from
+          dateRange.from
       )}_to_${formatDateForFilename(dateRange.to)}.csv`;
       break;
     case "category-sales":
       data = exportTableToCSV("category-sales-table");
       filename = `category_sales_report_${formatDateForFilename(
-        dateRange.from
+          dateRange.from
       )}_to_${formatDateForFilename(dateRange.to)}.csv`;
       break;
     default:
@@ -1119,13 +1238,15 @@ function exportTableToCSV(tableId) {
 // Helper function to format date for filenames
 function formatDateForFilename(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0"
+      2,
+      "0"
   )}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-// Add this function after the loadInitialData function
+// Calculate costs for each invoice
 function calculateInvoiceCosts() {
+  console.log("Calculating invoice costs");
+
   // Create a map of products for quick lookup
   const productMap = {};
   products.forEach((product) => {
@@ -1141,7 +1262,7 @@ function calculateInvoiceCosts() {
       invoice.items.forEach((item) => {
         // Get cost either from the item itself or from the product catalog
         const itemCost =
-          item.cost || (productMap[item.id] ? productMap[item.id].cost : 0);
+            item.cost || (productMap[item.id] ? productMap[item.id].cost : 0);
         totalCost += itemCost * item.quantity;
       });
 
@@ -1154,24 +1275,45 @@ function calculateInvoiceCosts() {
   console.log("Invoice costs calculated");
 }
 
-// Add this function to your reports.js file
+// Format date with language awareness
 function formatDate(date) {
   if (!(date instanceof Date) || isNaN(date)) {
     return "Invalid date";
   }
 
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const year = date.getFullYear();
+  // Get the current language
+  const language = localStorage.getItem("language") || "en";
 
-  return `${month}/${day}/${year}`;
+  // Use locale-specific date formatting
+  try {
+    if (language === "ar") {
+      // Format for Arabic
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+      return date.toLocaleDateString('ar-SA', options);
+    } else {
+      // Default format for English and other languages
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
+    }
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    // Fallback to basic format
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  }
 }
 
 // Process data for the chart based on current view
 function processChartData() {
+  console.log("Processing chart data for view:", currentChartView);
+
   // Default empty data
   const emptyData = {
-    labels: ["No data"],
+    labels: [getTranslation("reports.messages.noSalesData")],
     revenue: [0],
     profit: [0],
   };
@@ -1196,22 +1338,22 @@ function processChartData() {
     if (currentChartView === "daily") {
       // Group by day - use YYYY-MM-DD format
       key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-        2,
-        "0"
+          2,
+          "0"
       )}-${String(date.getDate()).padStart(2, "0")}`;
     } else if (currentChartView === "weekly") {
       // Group by week - calculate week number
       const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
       const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
       const weekNum = Math.ceil(
-        (pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7
+          (pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7
       );
       key = `Week ${weekNum}, ${date.getFullYear()}`;
     } else {
       // Group by month - use YYYY-MM format
       key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-        2,
-        "0"
+          2,
+          "0"
       )}`;
     }
 
@@ -1237,21 +1379,39 @@ function processChartData() {
   // Sort by date
   dataArray.sort((a, b) => a.date - b.date);
 
-  // Format labels based on view type
+  // Get current language
+  const language = localStorage.getItem("language") || "en";
+
+  // Format labels based on view type and language
   const labels = dataArray.map((item) => {
     if (currentChartView === "daily") {
       // Format as MM/DD
       const date = item.date;
-      return `${date.getMonth() + 1}/${date.getDate()}`;
+      if (language === "ar") {
+        // Format for Arabic
+        return date.toLocaleDateString('ar-SA', { month: 'numeric', day: 'numeric' });
+      } else {
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+      }
     } else if (currentChartView === "weekly") {
-      return item.key; // Already formatted as "Week X, YYYY"
+      if (language === "ar") {
+        const weekNumber = item.key.split(",")[0].replace("Week", "").trim();
+        const year = item.key.split(",")[1].trim();
+        return `الأسبوع ${weekNumber}، ${year}`;
+      } else {
+        return item.key; // Already formatted as "Week X, YYYY"
+      }
     } else {
       // Format as Month YYYY
       const date = item.date;
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        year: "numeric",
-      });
+      if (language === "ar") {
+        return date.toLocaleDateString('ar-SA', { month: 'short', year: 'numeric' });
+      } else {
+        return date.toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        });
+      }
     }
   });
 
@@ -1299,11 +1459,17 @@ function processChartData() {
 function updateChart() {
   if (!salesChart) return;
 
+  console.log("Updating chart for view:", currentChartView);
+
   const chartData = processChartData();
 
   salesChart.data.labels = chartData.labels;
   salesChart.data.datasets[0].data = chartData.revenue;
   salesChart.data.datasets[1].data = chartData.profit;
+
+  // Update dataset labels with translations
+  salesChart.data.datasets[0].label = getTranslation("reports.chart.revenue");
+  salesChart.data.datasets[1].label = getTranslation("reports.chart.profit");
 
   salesChart.update();
 }
@@ -1329,4 +1495,24 @@ function updateChartViewButtons() {
       monthlyBtn.className = "btn btn-primary";
     }
   }
+}
+
+// Handle language changes
+if (window.addEventListener) {
+  window.addEventListener('languageChanged', function(event) {
+    console.log("Language changed event detected:", event.detail);
+
+    // Force reset any RTL/LTR classes
+    const isRTL = event.detail.language === 'ar';
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    document.body.classList.toggle('rtl-layout', isRTL);
+
+    // Update chart labels and other dynamic content
+    if (salesChart) {
+      updateChart();
+    }
+
+    // Re-generate reports with new language
+    generateAllReports();
+  });
 }

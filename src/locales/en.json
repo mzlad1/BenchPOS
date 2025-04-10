@@ -1,0 +1,243 @@
+{
+  "app": {
+    "name": "MZLAD Billing System",
+    "tagline": "Simple. Efficient. Reliable."
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "reset": "Reset",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "filter": "Filter",
+    "all": "All",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "loading": "Loading...",
+    "receipt": "RECEIPT",
+    "noResults": "No results found"
+  },
+  "reports": {
+    "title": "Reports",
+    "controls": {
+      "dateRange": "Date Range",
+      "from": "From",
+      "to": "To",
+      "applyFilters": "Apply Filters",
+      "exportCSV": "Export CSV",
+      "print": "Print",
+      "periods": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "thisWeek": "This Week",
+        "lastWeek": "Last Week",
+        "thisMonth": "This Month",
+        "lastMonth": "Last Month",
+        "thisYear": "This Year",
+        "customRange": "Custom Range"
+      }
+    },
+    "summary": {
+      "totalSales": "TOTAL SALES",
+      "transactions": "TRANSACTIONS",
+      "averageSale": "AVERAGE SALE",
+      "totalProfit": "TOTAL PROFIT",
+      "vsPreviousPeriod": "vs. previous period"
+    },
+    "chart": {
+      "salesPerformance": "Sales Performance",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "revenue": "Revenue ($)",
+      "profit": "Profit ($)",
+      "placeholder": "Sales data will be visualized here"
+    },
+    "salesReport": {
+      "title": "Sales Report",
+      "tabs": {
+        "dailySales": "Daily Sales",
+        "productSales": "Product Sales",
+        "categorySales": "Category Sales"
+      },
+      "columns": {
+        "date": "Date",
+        "transactions": "Transactions",
+        "itemsSold": "Items Sold",
+        "sales": "Sales",
+        "cost": "Cost",
+        "profit": "Profit",
+        "margin": "Margin",
+        "product": "Product",
+        "sku": "SKU",
+        "category": "Category",
+        "quantitySold": "Quantity Sold",
+        "revenue": "Revenue",
+        "price": "Price",
+        "unitseSold": "Units Sold",
+        "inStock": "In Stock",
+        "stock": "Stock"
+      }
+    },
+    "inventory": {
+      "title": "Inventory Overview",
+      "totalProducts": "TOTAL PRODUCTS",
+      "inventoryValue": "INVENTORY VALUE",
+      "inventoryCost": "INVENTORY COST",
+      "lowStockItems": "LOW STOCK ITEMS",
+      "topSellingProducts": "Top Selling Products",
+      "lowStockProducts": "Low Stock Products"
+    },
+    "messages": {
+      "loading": "Loading...",
+      "loadingSales": "Loading sales data...",
+      "loadingProducts": "Loading product sales data...",
+      "loadingCategories": "Loading category sales data...",
+      "loadingTopProducts": "Loading top products...",
+      "loadingLowStock": "Loading low stock products...",
+      "noSalesData": "No sales data for this period",
+      "noSalesDataAvailable": "No sales data available",
+      "noLowStockProducts": "No low stock products",
+      "totalLabel": "Total",
+      "permissionDenied": "You do not have permission to access the Reports page.",
+      "initError": "An error occurred initializing the page. Please refresh and try again.",
+      "dataLoadError": "Failed to load data. Please try again.",
+      "reportGenerationError": "Error generating reports. Please try again.",
+      "invalidDates": "Please select valid dates",
+      "startDateBeforeEnd": "Start date must be before end date"
+    }
+  },
+  "header": {
+    "searchPlaceholder": "Search...",
+    "onlineMode": "Online Mode",
+    "offlineMode": "Offline Mode"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "newSale": "New Sale",
+    "inventory": "Inventory",
+    "reports": "Reports",
+    "registerUser": "Register new User",
+    "userManager": "User Manager",
+    "system": "System",
+    "settings": "Settings",
+    "helpCenter": "Help Center"
+  },
+  "login": {
+    "title": "Login",
+    "username": "Username",
+    "password": "Password",
+    "loginButton": "Login",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember Me",
+    "createAccount": "Create Account",
+    "invalidCredentials": "Invalid username or password"
+  },
+  "settings": {
+    "title": "System Settings",
+    "subtitle": "Configure your application preferences",
+    "save": "Save Settings",
+    "reset": "Reset to Defaults",
+    "saveSuccess": "Settings saved successfully",
+    "resetSuccess": "Settings reset to defaults",
+    "saveError": "Error saving settings",
+    "resetError": "Error resetting settings",
+    "confirmReset": "Are you sure you want to reset all settings to default values?",
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "lightMode": "Light Mode",
+      "darkMode": "Dark Mode",
+      "systemDefault": "System Default",
+      "sidebarBehavior": "Sidebar Behavior",
+      "collapsedByDefault": "Collapsed by default"
+    },
+    "regional": {
+      "title": "Regional Settings",
+      "language": "Language",
+      "currency": "Currency",
+      "dateFormat": "Date Format"
+    },
+    "dataManagement": {
+      "title": "Data Management",
+      "autoSync": "Auto Sync",
+      "autoSyncDescription": "Sync data automatically when online",
+      "syncInterval": "Sync Interval",
+      "syncIntervals": {
+        "15min": "Every 15 minutes",
+        "30min": "Every 30 minutes",
+        "60min": "Every hour",
+        "manual": "Manual only"
+      },
+      "storageLocation": "Data Storage Location",
+      "browse": "Browse"
+    },
+    "receipt": {
+      "title": "Receipt Settings",
+      "companyName": "Company Name",
+      "companyTagline": "Company Tagline",
+      "address": "Address",
+      "phone": "Phone Number",
+      "website": "Website",
+      "footer": "Receipt Footer",
+      "returnPolicy": "Return Policy",
+      "logo": "Company Logo",
+      "logoHelp": "Recommended: 180×60px\nMax: 500KB (PNG, JPG, SVG)",
+      "noLogo": "No logo uploaded",
+      "themeColor": "Receipt Theme Color",
+      "autoPrint": "Auto-print Receipt",
+      "autoPrintDescription": "Print receipt after each sale",
+      "preview": "Receipt Preview",
+      "updatePreview": "Update Preview",
+      "number": "Receipt #",
+      "date": "Date",
+      "time": "Time",
+      "customer": "Customer",
+      "item": "Item",
+      "qty": "Qty",
+      "price": "Price",
+      "total": "Total",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "tax": "Tax",
+      "totalCaps": "TOTAL",
+      "paymentMethod": "Payment Method",
+      "cash": "Cash",
+      "amountTendered": "Amount Tendered",
+      "change": "Change",
+      "customerSupport": "Customer support",
+      "poweredBy": "Powered by",
+      "tel": "Tel",
+      "email": "Email",
+      "previewError": "Could not generate receipt preview"
+    }
+  },
+  "notifications": {
+    "logoUploaded": "Logo uploaded successfully",
+    "logoRemoved": "Logo removed",
+    "logoError": "Error reading logo file",
+    "invalidType": "Invalid file type. Please use PNG, JPG or SVG.",
+    "fileTooLarge": "Logo file is too large. Max size is 500KB."
+  },
+  "user": {
+    "profile": "Profile",
+    "settings": "Account Settings",
+    "logout": "Logout",
+    "roles": {
+      "admin": "Administrator",
+      "manager": "Manager",
+      "cashier": "Cashier",
+      "guest": "Guest"
+    }
+  }
+}

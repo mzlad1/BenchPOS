@@ -1,0 +1,243 @@
+{
+  "app": {
+    "name": "نظام مزلاد للفواتير",
+    "tagline": "بسيط. فعّال. موثوق."
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "reset": "إعادة ضبط",
+    "add": "إضافة",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "search": "بحث",
+    "back": "رجوع",
+    "next": "التالي",
+    "filter": "تصفية",
+    "all": "الكل",
+    "none": "لا شيء",
+    "yes": "نعم",
+    "no": "لا",
+    "ok": "موافق",
+    "error": "خطأ",
+    "success": "نجاح",
+    "warning": "تحذير",
+    "info": "معلومات",
+    "loading": "جاري التحميل...",
+    "receipt": "إيصال",
+    "noResults": "لم يتم العثور على نتائج"
+  },
+  "reports": {
+    "title": "التقارير",
+    "controls": {
+      "dateRange": "النطاق الزمني",
+      "from": "من",
+      "to": "إلى",
+      "applyFilters": "تطبيق التصفية",
+      "exportCSV": "تصدير CSV",
+      "print": "طباعة",
+      "periods": {
+        "today": "اليوم",
+        "yesterday": "الأمس",
+        "thisWeek": "هذا الأسبوع",
+        "lastWeek": "الأسبوع الماضي",
+        "thisMonth": "هذا الشهر",
+        "lastMonth": "الشهر الماضي",
+        "thisYear": "هذه السنة",
+        "customRange": "نطاق مخصص"
+      }
+    },
+    "summary": {
+      "totalSales": "إجمالي المبيعات",
+      "transactions": "المعاملات",
+      "averageSale": "متوسط البيع",
+      "totalProfit": "إجمالي الربح",
+      "vsPreviousPeriod": "مقارنة بالفترة السابقة"
+    },
+    "chart": {
+      "salesPerformance": "أداء المبيعات",
+      "daily": "يومي",
+      "weekly": "أسبوعي",
+      "monthly": "شهري",
+      "revenue": "الإيرادات ($)",
+      "profit": "الربح ($)",
+      "placeholder": "سيتم عرض بيانات المبيعات هنا"
+    },
+    "salesReport": {
+      "title": "تقرير المبيعات",
+      "tabs": {
+        "dailySales": "المبيعات اليومية",
+        "productSales": "مبيعات المنتجات",
+        "categorySales": "مبيعات الفئات"
+      },
+      "columns": {
+        "date": "التاريخ",
+        "transactions": "المعاملات",
+        "itemsSold": "العناصر المباعة",
+        "sales": "المبيعات",
+        "cost": "التكلفة",
+        "profit": "الربح",
+        "margin": "الهامش",
+        "product": "المنتج",
+        "sku": "رمز المنتج",
+        "category": "الفئة",
+        "quantitySold": "الكمية المباعة",
+        "revenue": "الإيرادات",
+        "price": "السعر",
+        "unitseSold": "الوحدات المباعة",
+        "inStock": "في المخزون",
+        "stock": "المخزون"
+      }
+    },
+    "inventory": {
+      "title": "نظرة عامة على المخزون",
+      "totalProducts": "إجمالي المنتجات",
+      "inventoryValue": "قيمة المخزون",
+      "inventoryCost": "تكلفة المخزون",
+      "lowStockItems": "عناصر المخزون المنخفض",
+      "topSellingProducts": "المنتجات الأكثر مبيعًا",
+      "lowStockProducts": "المنتجات ذات المخزون المنخفض"
+    },
+    "messages": {
+      "loading": "جاري التحميل...",
+      "loadingSales": "جاري تحميل بيانات المبيعات...",
+      "loadingProducts": "جاري تحميل بيانات مبيعات المنتجات...",
+      "loadingCategories": "جاري تحميل بيانات مبيعات الفئات...",
+      "loadingTopProducts": "جاري تحميل المنتجات الأكثر مبيعًا...",
+      "loadingLowStock": "جاري تحميل المنتجات ذات المخزون المنخفض...",
+      "noSalesData": "لا توجد بيانات مبيعات لهذه الفترة",
+      "noSalesDataAvailable": "لا توجد بيانات مبيعات متاحة",
+      "noLowStockProducts": "لا توجد منتجات ذات مخزون منخفض",
+      "totalLabel": "الإجمالي",
+      "permissionDenied": "ليس لديك صلاحية الوصول إلى صفحة التقارير.",
+      "initError": "حدث خطأ أثناء تهيئة الصفحة. يرجى التحديث والمحاولة مرة أخرى.",
+      "dataLoadError": "فشل تحميل البيانات. يرجى المحاولة مرة أخرى.",
+      "reportGenerationError": "خطأ في إنشاء التقارير. يرجى المحاولة مرة أخرى.",
+      "invalidDates": "يرجى اختيار تواريخ صالحة",
+      "startDateBeforeEnd": "يجب أن يكون تاريخ البدء قبل تاريخ الانتهاء"
+    }
+  },
+  "header": {
+    "searchPlaceholder": "بحث...",
+    "onlineMode": "وضع متصل",
+    "offlineMode": "وضع غير متصل"
+  },
+  "sidebar": {
+    "dashboard": "لوحة التحكم",
+    "newSale": "بيع جديد",
+    "inventory": "المخزون",
+    "reports": "التقارير",
+    "registerUser": "تسجيل مستخدم جديد",
+    "userManager": "إدارة المستخدمين",
+    "system": "النظام",
+    "settings": "الإعدادات",
+    "helpCenter": "مركز المساعدة"
+  },
+  "login": {
+    "title": "تسجيل الدخول",
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "loginButton": "تسجيل الدخول",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "rememberMe": "تذكرني",
+    "createAccount": "إنشاء حساب",
+    "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة"
+  },
+  "settings": {
+    "title": "إعدادات النظام",
+    "subtitle": "تكوين تفضيلات التطبيق",
+    "save": "حفظ الإعدادات",
+    "reset": "إعادة التعيين إلى الإعدادات الافتراضية",
+    "saveSuccess": "تم حفظ الإعدادات بنجاح",
+    "resetSuccess": "تمت إعادة تعيين الإعدادات إلى القيم الافتراضية",
+    "saveError": "خطأ في حفظ الإعدادات",
+    "resetError": "خطأ في إعادة تعيين الإعدادات",
+    "confirmReset": "هل أنت متأكد من إعادة تعيين جميع الإعدادات إلى القيم الافتراضية؟",
+    "appearance": {
+      "title": "المظهر",
+      "theme": "السمة",
+      "lightMode": "الوضع الفاتح",
+      "darkMode": "الوضع الداكن",
+      "systemDefault": "إعدادات النظام",
+      "sidebarBehavior": "سلوك الشريط الجانبي",
+      "collapsedByDefault": "مطوي افتراضيًا"
+    },
+    "regional": {
+      "title": "الإعدادات الإقليمية",
+      "language": "اللغة",
+      "currency": "العملة",
+      "dateFormat": "تنسيق التاريخ"
+    },
+    "dataManagement": {
+      "title": "إدارة البيانات",
+      "autoSync": "مزامنة تلقائية",
+      "autoSyncDescription": "مزامنة البيانات تلقائيًا عند الاتصال",
+      "syncInterval": "فترة المزامنة",
+      "syncIntervals": {
+        "15min": "كل 15 دقيقة",
+        "30min": "كل 30 دقيقة",
+        "60min": "كل ساعة",
+        "manual": "يدوي فقط"
+      },
+      "storageLocation": "موقع تخزين البيانات",
+      "browse": "تصفح"
+    },
+    "receipt": {
+      "title": "إعدادات الإيصال",
+      "companyName": "اسم الشركة",
+      "companyTagline": "شعار الشركة",
+      "address": "العنوان",
+      "phone": "رقم الهاتف",
+      "website": "الموقع الإلكتروني",
+      "footer": "تذييل الإيصال",
+      "returnPolicy": "سياسة الإرجاع",
+      "logo": "شعار الشركة",
+      "logoHelp": "الحجم الموصى به: 180×60 بكسل\nالحد الأقصى: 500 كيلوبايت (PNG، JPG، SVG)",
+      "noLogo": "لم يتم تحميل شعار",
+      "themeColor": "لون سمة الإيصال",
+      "autoPrint": "طباعة الإيصال تلقائيًا",
+      "autoPrintDescription": "طباعة الإيصال بعد كل عملية بيع",
+      "preview": "معاينة الإيصال",
+      "updatePreview": "تحديث المعاينة",
+      "number": "رقم الإيصال",
+      "date": "التاريخ",
+      "time": "الوقت",
+      "customer": "العميل",
+      "item": "العنصر",
+      "qty": "الكمية",
+      "price": "السعر",
+      "total": "المجموع",
+      "subtotal": "المجموع الفرعي",
+      "discount": "الخصم",
+      "tax": "الضريبة",
+      "totalCaps": "الإجمالي",
+      "paymentMethod": "طريقة الدفع",
+      "cash": "نقداً",
+      "amountTendered": "المبلغ المدفوع",
+      "change": "المتبقي",
+      "customerSupport": "دعم العملاء",
+      "poweredBy": "مشغل بواسطة",
+      "tel": "هاتف",
+      "email": "بريد إلكتروني",
+      "previewError": "تعذر إنشاء معاينة الإيصال"
+    }
+  },
+  "notifications": {
+    "logoUploaded": "تم تحميل الشعار بنجاح",
+    "logoRemoved": "تمت إزالة الشعار",
+    "logoError": "خطأ في قراءة ملف الشعار",
+    "invalidType": "نوع ملف غير صالح. يرجى استخدام PNG أو JPG أو SVG.",
+    "fileTooLarge": "ملف الشعار كبير جدًا. الحجم الأقصى هو 500 كيلوبايت."
+  },
+  "user": {
+    "profile": "الملف الشخصي",
+    "settings": "إعدادات الحساب",
+    "logout": "تسجيل الخروج",
+    "roles": {
+      "admin": "مسؤول",
+      "manager": "مدير",
+      "cashier": "أمين الصندوق",
+      "guest": "ضيف"
+    }
+  }
+}

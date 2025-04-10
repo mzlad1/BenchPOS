@@ -1590,3 +1590,295 @@ body[class*="dark"] .sync-actions .btn:focus {
     scrollbar-width: auto;
   }
 }
+/* Add these CSS rules to your global.css or create a new file called rtl.css */
+
+/* RTL support for the entire application */
+.rtl-layout {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-layout .header-actions {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .settings-header,
+.rtl-layout .settings-section-header,
+.rtl-layout .settings-option label {
+  text-align: right;
+}
+
+.rtl-layout .select-wrapper::after {
+  right: auto;
+  left: 0.75rem;
+}
+
+.rtl-layout .settings-actions {
+  justify-content: flex-start;
+}
+
+.rtl-layout .sidebar-header {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .menu-toggle {
+  transform: rotate(180deg);
+}
+
+.rtl-layout .logo {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .menu-item {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .menu-icon {
+  margin-left: 10px;
+}
+
+.rtl-layout .badge {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.rtl-layout .user-profile {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .search-bare {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .toast-container {
+  right: auto;
+  left: 20px;
+}
+
+.rtl-layout .toast-success {
+  border-right: 4px solid var(--success);
+  border-left: none;
+}
+
+.rtl-layout .toast-error {
+  border-right: 4px solid var(--danger);
+  border-left: none;
+}
+
+.rtl-layout .toast-warning {
+  border-right: 4px solid var(--warning);
+  border-left: none;
+}
+
+.rtl-layout .toast-info {
+  border-right: 4px solid var(--info);
+  border-left: none;
+}
+
+/* RTL support specifically for the receipt preview */
+.rtl-layout .receipt-preview-wrapper {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-layout .professional-receipt {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-layout .logo-controls {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .logo-upload-buttons {
+  flex-direction: row-reverse;
+}
+
+/* Fix for flex-based layouts in RTL mode */
+.rtl-layout .toggle-wrapper {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .input-action {
+  flex-direction: row-reverse;
+}
+
+/* Fix spacing in RTL mode */
+.rtl-layout .menu-text {
+  margin-left: 0;
+  margin-right: 10px;
+}
+
+.rtl-layout .toggle-slider:before {
+  left: auto;
+  right: 2px;
+}
+
+.rtl-layout input:checked + .toggle-slider:before {
+  transform: translateX(-20px);
+}
+/* Add these to your CSS file for better RTL support */
+.rtl-layout .chart-container {
+  direction: ltr; /* Charts should remain LTR for proper rendering */
+}
+
+.rtl-layout .report-content {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-layout .report-tabs {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .report-summary {
+  direction: rtl;
+}
+
+/* Fix for flexbox elements */
+.rtl-layout .filter-actions {
+  flex-direction: row-reverse;
+}
+
+/* Ensure text doesn't overflow in RTL */
+.rtl-layout .summary-item h3,
+.rtl-layout .report-title span,
+.rtl-layout .report-tabs div {
+  white-space: normal;
+}
+/* Add these styles to your CSS to improve RTL support */
+
+.rtl-layout {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Fix for report container and sections */
+.rtl-layout .reports-container {
+  direction: rtl;
+}
+
+.rtl-layout .report-section {
+  direction: rtl;
+}
+
+/* Fix chart display in RTL */
+.rtl-layout .chart-container,
+.rtl-layout canvas {
+  direction: ltr !important;
+}
+
+/* Fix for the report controls */
+.rtl-layout .report-controls {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .date-filters {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .filter-actions {
+  flex-direction: row-reverse;
+}
+
+/* Fix for summary cards */
+.rtl-layout .report-summary {
+  direction: rtl;
+}
+
+.rtl-layout .summary-item h3,
+.rtl-layout .summary-item p {
+  text-align: right;
+}
+
+.rtl-layout .summary-meta {
+  text-align: right;
+}
+
+/* Fix for report tabs */
+.rtl-layout .report-tabs {
+  flex-direction: row-reverse;
+}
+
+/* Fix for report headers */
+.rtl-layout .report-header {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .report-actions {
+  flex-direction: row-reverse;
+}
+
+/* Table adjustments for RTL */
+.rtl-layout table.report-table th,
+.rtl-layout table.report-table td {
+  text-align: right;
+}
+
+/* Ensure numeric columns remain properly aligned */
+.rtl-layout table.report-table th:nth-child(n+4),
+.rtl-layout table.report-table td:nth-child(n+4) {
+  text-align: left;
+}
+
+/* Fix arrows and icons in RTL */
+.rtl-layout .select-wrapper::after {
+  right: auto;
+  left: 10px;
+}
+
+/* Fix select element padding */
+.rtl-layout select {
+  padding-right: 10px;
+  padding-left: 30px;
+}
+
+/* Fix chart placeholders */
+.rtl-layout .chart-placeholder {
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Special fix for chart buttons */
+.rtl-layout #view-daily,
+.rtl-layout #view-weekly,
+.rtl-layout #view-monthly {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+/* Fix for trend indicators */
+.rtl-layout .trend-up,
+.rtl-layout .trend-down {
+  text-align: right;
+}
+
+/* Fix padding and margins */
+.rtl-layout .report-content {
+  padding-left: 0;
+  padding-right: 20px;
+}
+
+.rtl-layout .filter-group {
+  margin-left: 15px;
+  margin-right: 0;
+}
+
+/* Make sure tooltips in chart work correctly */
+.rtl-layout .chartjs-tooltip {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Fix for input group button placements */
+.rtl-layout .date-range-picker .filter-group {
+  margin-left: 0;
+  margin-right: 10px;
+}
+
+/* Fix display issues with empty tables */
+.rtl-layout .centered {
+  text-align: center !important;
+}
