@@ -1,3 +1,228 @@
+// Add this function to payment-and-receipts.js
+// This is a professional receipt generator that uses settings from localStorage
+
+// function generateProfessionalReceipt(invoice) {
+//   // Get custom settings from localStorage
+//   const companyName =
+//     localStorage.getItem("companyName") || "MZLAD Billing System";
+//   const companyTagline =
+//     localStorage.getItem("companyTagline") || "Retail Solutions";
+//   const companyAddress =
+//     localStorage.getItem("companyAddress") ||
+//     "123 Main Street, Anytown, USA 12345";
+//   const companyPhone = localStorage.getItem("companyPhone") || "(555) 123-4567";
+//   const companyEmail =
+//     localStorage.getItem("companyEmail") || "info@example.com";
+//   const companyWebsite =
+//     localStorage.getItem("companyWebsite") || "www.example.com";
+//   const receiptFooter =
+//     localStorage.getItem("receiptFooter") || "Thank you for your purchase!";
+//   const returnPolicy =
+//     localStorage.getItem("returnPolicy") ||
+//     "Items can be returned within 30 days with receipt.";
+//   const themeColor = localStorage.getItem("receiptTheme") || "#3d5a80";
+//   const customLogo = localStorage.getItem("companyLogo");
+
+//   // Format the date
+//   const receiptDate = new Date(invoice.date);
+//   const formattedDate = receiptDate.toLocaleDateString();
+//   const formattedTime = receiptDate.toLocaleTimeString();
+
+//   // Prepare logo - either custom or text
+//   let logoHtml;
+//   if (customLogo) {
+//     // Use the custom uploaded logo
+//     logoHtml = `<img src="${customLogo}" alt="${companyName}" style="max-width: 180px; max-height: 60px;" />`;
+//   } else {
+//     // Use text as fallback
+//     logoHtml = `<div style="font-size: 24px; font-weight: bold; color: ${themeColor};">${companyName}</div>
+//                 <div style="font-size: 12px; color: #666;">${companyTagline}</div>`;
+//   }
+
+//   // Generate item rows HTML
+//   const itemsHtml = invoice.items
+//     .map(
+//       (item) => `
+//       <tr>
+//         <td>${item.name}</td>
+//         <td style="text-align: center;">${item.quantity}</td>
+//         <td style="text-align: right;">${formatCurrency(item.price)}</td>
+//         <td style="text-align: right;">${formatCurrency(
+//           item.price * item.quantity
+//         )}</td>
+//       </tr>
+//     `
+//     )
+//     .join("");
+
+//   // Generate receipt HTML
+//   return `
+//     <div class="professional-receipt" style="font-family: Arial, sans-serif; max-width: 300px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+//       <div style="text-align: center; margin-bottom: 15px;">
+//         ${logoHtml}
+//       </div>
+
+//       <div style="text-align: center; margin-bottom: 10px; font-size: 11px;">
+//         <p style="margin: 2px 0;">${companyAddress}</p>
+//         <p style="margin: 2px 0;">Tel: ${companyPhone} | Email: ${companyEmail}</p>
+//         <p style="margin: 2px 0;">${companyWebsite}</p>
+//       </div>
+
+//       <div style="background-color: #f0f0f0; padding: 3px; text-align: center; font-weight: bold; border-radius: 4px; margin: 8px 0;">
+//         RECEIPT
+//       </div>
+
+//       <div style="margin-bottom: 15px;">
+//         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+//           <div style="font-weight: bold;">Receipt #:</div>
+//           <div>${invoice.id}</div>
+//         </div>
+//         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+//           <div style="font-weight: bold;">Date:</div>
+//           <div>${formattedDate}</div>
+//         </div>
+//         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+//           <div style="font-weight: bold;">Time:</div>
+//           <div>${formattedTime}</div>
+//         </div>
+//         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+//           <div style="font-weight: bold;">Customer:</div>
+//           <div>${invoice.customer}</div>
+//         </div>
+//       </div>
+
+//       <div style="border-bottom: 1px dashed #aaa; margin: 10px 0;"></div>
+
+//       <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+//         <tr>
+//           <th style="text-align: left; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Item</th>
+//           <th style="text-align: center; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Qty</th>
+//           <th style="text-align: right; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Price</th>
+//           <th style="text-align: right; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Total</th>
+//         </tr>
+
+//         ${itemsHtml}
+
+//         <tr>
+//           <td colspan="3" style="text-align: right; padding-top: 5px;">Subtotal:</td>
+//           <td style="text-align: right; padding-top: 5px;">${formatCurrency(
+//             invoice.subtotal
+//           )}</td>
+//         </tr>
+
+//         ${
+//           invoice.discount
+//             ? `
+//         <tr>
+//           <td colspan="3" style="text-align: right; padding-top: 5px;">Discount:</td>
+//           <td style="text-align: right; padding-top: 5px; color: #d32f2f;">-${formatCurrency(
+//             invoice.discount
+//           )}</td>
+//         </tr>
+//         `
+//             : ""
+//         }
+
+//         <tr>
+//           <td colspan="3" style="text-align: right; padding-top: 5px;">Tax:</td>
+//           <td style="text-align: right; padding-top: 5px;">${formatCurrency(
+//             invoice.tax
+//           )}</td>
+//         </tr>
+
+//         <tr>
+//           <td colspan="3" style="text-align: right; padding-top: 8px; font-weight: bold;">TOTAL:</td>
+//           <td style="text-align: right; padding-top: 8px; font-weight: bold; color: ${themeColor};">${formatCurrency(
+//     invoice.total
+//   )}</td>
+//         </tr>
+//       </table>
+
+//       <div style="border-bottom: 1px dashed #aaa; margin: 10px 0;"></div>
+
+//       <div style="margin-bottom: 15px;">
+//         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+//           <div style="font-weight: bold;">Payment Method:</div>
+//           <div>Cash</div>
+//         </div>
+//         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+//           <div style="font-weight: bold;">Amount Tendered:</div>
+//           <div>${formatCurrency(Math.ceil(invoice.total / 5) * 5)}</div>
+//         </div>
+//         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+//           <div style="font-weight: bold;">Change:</div>
+//           <div>${formatCurrency(
+//             Math.ceil(invoice.total / 5) * 5 - invoice.total
+//           )}</div>
+//         </div>
+//       </div>
+
+//       <div style="border-bottom: 1px dashed #aaa; margin: 10px 0;"></div>
+
+//       <div style="text-align: center; font-size: 10px;">
+//         <p style="font-size: 12px; font-weight: bold; margin: 10px 0 5px; color: ${themeColor};">${receiptFooter}</p>
+//         <p style="margin: 5px 0;">${returnPolicy}</p>
+//         <p style="margin: 5px 0;">Customer support: ${companyEmail}</p>
+//         <p style="margin-top: 15px; font-size: 9px; color: #999;">Powered by MZLAD Billing System v2.1</p>
+//       </div>
+//     </div>
+//   `;
+// }
+
+// // Add professional receipt styles to be used by the unified-print.js system
+// const professionalReceiptStyles = `
+//   .professional-receipt {
+//     font-family: Arial, sans-serif;
+//     width: 100%;
+//     max-width: 300px;
+//     margin: 0 auto;
+//     padding: 10px;
+//     border: 1px solid #ddd;
+//     border-radius: 5px;
+//   }
+
+//   .professional-receipt img {
+//     max-width: 180px;
+//     max-height: 60px;
+//     margin: 0 auto;
+//     display: block;
+//   }
+
+//   .professional-receipt table {
+//     width: 100%;
+//     border-collapse: collapse;
+//     margin: 15px 0;
+//   }
+
+//   .professional-receipt th,
+//   .professional-receipt td {
+//     padding: 3px 5px;
+//   }
+
+//   .professional-receipt th {
+//     text-align: left;
+//     border-bottom: 1px solid #ccc;
+//   }
+
+//   .professional-receipt .total-row {
+//     font-weight: bold;
+//   }
+
+//   @media print {
+//     body {
+//       width: 80mm;
+//       margin: 0;
+//       padding: 0;
+//     }
+
+//     .professional-receipt {
+//       width: 100%;
+//       max-width: none;
+//       border: none;
+//       box-shadow: none;
+//     }
+//   }
+// `;
 // Function to play a sound
 function playCompletionSound() {
   try {

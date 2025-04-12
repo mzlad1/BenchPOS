@@ -330,6 +330,14 @@ function processBarcodeInput() {
   const barcodeStatus = document.getElementById("barcode-status");
   const barcode = barcodeInput.value.trim();
 
+  // CHECK FOR VIEW-ONLY MODE - Add this at the beginning of the function
+  if (isViewingInvoice && !isEditingInvoice) {
+    barcodeStatus.textContent =
+      "Please click 'Edit' first before making changes";
+    barcodeStatus.style.color = "red";
+    return; // Exit the function, don't process barcode
+  }
+
   if (!barcode) {
     barcodeStatus.textContent = "Please enter a barcode";
     barcodeStatus.style.color = "red";

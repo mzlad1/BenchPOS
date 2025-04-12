@@ -1,7 +1,18 @@
 let selectedItems = []; // Array to track selected item indices
 
 // Add product to cart
+// Add product to cart
 function addToCart(product) {
+  // CHECK FOR VIEW-ONLY MODE - Add this at the beginning of the function
+  if (isViewingInvoice && !isEditingInvoice) {
+    showToastNotification(
+      "Please click 'Edit' first before making changes.",
+      true
+    );
+    return; // Exit the function, don't add to cart
+  }
+
+  // Rest of the original function remains the same
   // Check if product is already in cart
   const existingItem = cart.find((item) => item.id === product.id);
 
@@ -44,6 +55,8 @@ function addToCart(product) {
 }
 
 // Render cart items
+// Render cart items
+// Render cart items - properly handling edit vs view mode
 function renderCart() {
   if (cart.length === 0) {
     cartItemsEl.innerHTML =
@@ -53,7 +66,19 @@ function renderCart() {
   }
 
   cartItemsEl.innerHTML = "";
-  completeSaleBtn.disabled = false;
+  completeSaleBtn.disabled = isViewingInvoice && !isEditingInvoice;
+
+  // Add info row when in view mode
+  if (isViewingInvoice && !isEditingInvoice) {
+    const infoRow = document.createElement("tr");
+    infoRow.className = "view-mode-info-row";
+    infoRow.innerHTML = `
+      <td colspan="6" style="text-align: center; padding: 10px; background-color: #f8f8f8; color: #333; font-weight: bold;">
+        Please click "Edit" to modify this invoice
+      </td>
+    `;
+    cartItemsEl.appendChild(infoRow);
+  }
 
   cart.forEach((item, index) => {
     const cartItemRow = document.createElement("tr");
@@ -63,45 +88,60 @@ function renderCart() {
       cartItemRow.classList.add("selected-row");
     }
 
-    // Calculate display details as before...
+    // Calculate display details
     let displayPrice = Math.abs(item.price);
     let displayTotal = Math.abs(item.price * item.quantity);
     let discountInfo = "";
 
     if (item.discount) {
-      // Discount calculations here...
+      const discountAmount = item.discount.amount;
+      const discountedPrice = displayPrice - discountAmount;
+
+      discountInfo = `
+        <div class="discounted-price">${formatCurrency(discountedPrice)}</div>
+        <div class="original-price">${formatCurrency(displayPrice)}</div>
+      `;
+
+      displayTotal = discountedPrice * item.quantity;
     } else {
       discountInfo = `${formatCurrency(displayPrice)}`;
     }
 
     const isRefund = item.price < 0;
 
+    // ONLY disable buttons in view mode, NOT in edit mode
+    const isDisabled = isViewingInvoice && !isEditingInvoice ? "disabled" : "";
+    const disabledStyle =
+      isViewingInvoice && !isEditingInvoice
+        ? "opacity:0.5; cursor:not-allowed;"
+        : "";
+
     // Add checkbox column and refund indicator
     cartItemRow.innerHTML = `
       <td>
         <input type="checkbox" class="item-select" data-index="${index}" ${
       selectedItems.includes(index) ? "checked" : ""
-    }>
+    } ${isDisabled}>
       </td>
       <td>${item.name}${isRefund ? " (Refund)" : ""}${
       item.isMiscellaneous ? " (Misc)" : ""
     }</td>
       <td>${discountInfo}</td>
       <td>
-        <button class="btn quantity-btn" data-action="decrease" data-index="${index}">-</button>
+        <button class="btn quantity-btn" data-action="decrease" data-index="${index}" ${isDisabled} style="${disabledStyle}">-</button>
         <span class="quantity">${item.quantity}</span>
-        <button class="btn quantity-btn" data-action="increase" data-index="${index}">+</button>
+        <button class="btn quantity-btn" data-action="increase" data-index="${index}" ${isDisabled} style="${disabledStyle}">+</button>
       </td>
       <td>${formatCurrency(Math.abs(displayTotal))}</td>
       <td>
-        <button class="btn remove-btn" data-index="${index}">Remove</button>
+        <button class="btn remove-btn" data-index="${index}" ${isDisabled} style="${disabledStyle}">Remove</button>
       </td>
     `;
 
     cartItemsEl.appendChild(cartItemRow);
   });
 
-  // Add event listeners for checkboxes
+  // Always add event listeners, but they'll only work when buttons aren't disabled
   document.querySelectorAll(".item-select").forEach((checkbox) => {
     checkbox.addEventListener("change", (event) => {
       const index = parseInt(event.target.dataset.index);
@@ -121,6 +161,40 @@ function renderCart() {
           row.classList.remove("selected-row");
         }
       });
+    });
+  });
+
+  document.querySelectorAll(".quantity-btn").forEach((btn) => {
+    btn.addEventListener("click", handleQuantityChange);
+  });
+
+  document.querySelectorAll(".remove-btn").forEach((btn) => {
+    btn.addEventListener("click", handleRemoveItem);
+  });
+
+  // Add click event to select rows
+  document.querySelectorAll("#cart-items tr").forEach((row, index) => {
+    row.addEventListener("click", (event) => {
+      // Skip the info row
+      if (row.classList.contains("view-mode-info-row")) return;
+
+      // Ignore clicks on buttons and checkboxes
+      if (event.target.tagName === "BUTTON" || event.target.tagName === "INPUT")
+        return;
+
+      // Don't allow selection in view mode
+      if (isViewingInvoice && !isEditingInvoice) return;
+
+      // Remove selection from other rows unless Ctrl key is pressed
+      if (!event.ctrlKey) {
+        document.querySelectorAll("#cart-items tr").forEach((r) => {
+          r.classList.remove("selected-row");
+        });
+      }
+
+      // Add selection to clicked row
+      row.classList.add("selected-row");
+      selectedCartIndex = index;
     });
   });
 }

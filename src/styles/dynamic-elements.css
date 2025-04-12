@@ -465,13 +465,13 @@ a:focus {
 }
 
 /* Enhanced button styling for better usability */
-.add-to-cart {
+/* .add-to-cart {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 38px;
   font-size: 0.9rem;
-}
+} */
 
 /* Barcode notification */
 #barcode-notification {
@@ -535,9 +535,9 @@ a:focus {
 }
 
 /* Enhanced hover states for better user feedback */
-.product-item:hover .add-to-cart {
+/* .product-item:hover .add-to-cart {
   background-color: var(--primary-hover);
-}
+} */
 
 /* Emphasize the selected cart item */
 .selected-row td {

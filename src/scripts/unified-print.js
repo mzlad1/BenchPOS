@@ -287,6 +287,9 @@
         styles = professionalReceiptStyles;
       }
 
+      // Get logo data directly from localStorage
+      const customLogo = localStorage.getItem("companyLogo");
+
       // If the HTML was passed directly, use it (from receipt container)
       if (invoiceData.isDirect && invoiceData.receiptHtml) {
         console.log("Using directly provided receipt HTML");
@@ -298,6 +301,8 @@
         // Generate receipt HTML
         if (typeof generateProfessionalReceipt === "function") {
           receiptHtml = generateProfessionalReceipt(invoiceData);
+        } else if (typeof generateReceiptHtmlWithDiscount === "function") {
+          receiptHtml = generateReceiptHtmlWithDiscount(invoiceData);
         } else if (typeof generateReceiptHtmlWithDiscount === "function") {
           receiptHtml = generateReceiptHtmlWithDiscount(invoiceData);
         } else if (typeof generateReceiptHtml === "function") {
@@ -330,48 +335,64 @@
       const frameDoc =
         printFrame.contentDocument || printFrame.contentWindow.document;
 
-      // Write print-ready HTML to the iframe
+      // Write print-ready HTML to the iframe, directly including the logo data
       frameDoc.open();
       frameDoc.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Print Receipt</title>
-          <style>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Print Receipt</title>
+        <style>
+          body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            max-width: 80mm;
+            margin: 0 auto;
+            padding: 0;
+          }
+          
+          /* Receipt Styles */
+          ${styles}
+          
+          /* Print-specific styles */
+          @media print {
             body {
-              font-family: 'Helvetica', 'Arial', sans-serif;
-              max-width: 80mm;
-              margin: 0 auto;
+              width: 80mm; /* Standard receipt width */
+              margin: 0;
               padding: 0;
             }
             
-            /* Receipt Styles */
-            ${styles}
-            
-            /* Print-specific styles */
-            @media print {
-              body {
-                width: 80mm; /* Standard receipt width */
-                margin: 0;
-                padding: 0;
-              }
-              
-              .professional-receipt {
-                width: 100%;
-                max-width: none;
-                border: none;
-                box-shadow: none;
-              }
+            .professional-receipt {
+              width: 100%;
+              max-width: none;
+              border: none;
+              box-shadow: none;
             }
-          </style>
-        </head>
-        <body onload="setTimeout(function() { window.print(); }, 200);">
-          <div class="receipt-content">
-            ${receiptHtml}
-          </div>
-        </body>
-        </html>
-      `);
+          }
+        </style>
+      </head>
+      <body>
+        <div class="receipt-content" id="receipt-content">
+          ${receiptHtml}
+        </div>
+        <script>
+          // We're using the CSP with 'img-src data:' allowed, so we can directly manipulate the images
+          const logoData = ${customLogo ? JSON.stringify(customLogo) : "null"};
+          
+          if (logoData) {
+            const logoImages = document.querySelectorAll('img[alt="ShopSmart"], img[alt="Company Logo"]');
+            logoImages.forEach(img => {
+              img.src = logoData;
+            });
+          }
+          
+          // Allow time for the logo to load
+          setTimeout(function() {
+            window.print();
+          }, 500);
+        </script>
+      </body>
+      </html>
+    `);
       frameDoc.close();
     } catch (error) {
       console.error("Error printing receipt:", error);

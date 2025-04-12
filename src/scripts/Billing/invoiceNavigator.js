@@ -216,6 +216,7 @@ function loadInvoice(invoice) {
 
   // Set viewing flag
   isViewingInvoice = true;
+  isEditingInvoice = false; // Ensure we start in view mode, not edit mode
 
   // Clear current cart
   cart = [];
@@ -245,9 +246,10 @@ function loadInvoice(invoice) {
     cartDiscount = { type: "none", value: 0, amount: 0 };
   }
 
-  // Update UI
+  // Update UI - this now has built-in handling for view mode
   renderCart();
   updateTotals();
+
   // Generate and update receipt HTML for the loaded invoice
   if (typeof generateProfessionalReceipt === "function") {
     receiptContainerEl.innerHTML = generateProfessionalReceipt(invoice);
@@ -256,6 +258,7 @@ function loadInvoice(invoice) {
   } else if (typeof generateReceiptHtml === "function") {
     receiptContainerEl.innerHTML = generateReceiptHtml(invoice);
   }
+
   // Add an invoice view indicator
   const invoicePanel = document.querySelector(".invoice-panel h2");
 
@@ -269,11 +272,13 @@ function loadInvoice(invoice) {
   const indicator = document.createElement("div");
   indicator.id = "invoice-view-indicator";
   indicator.className = "invoice-indicator";
+  indicator.style.position = "relative";
+  indicator.style.zIndex = "999";
   indicator.innerHTML = `
     <span>Viewing Invoice #${invoice.id}</span>
     <div class="invoice-actions">
-      <button id="edit-invoice-btn" class="btn secondary-btn">Edit</button>
-      <button id="new-invoice-btn" class="btn secondary-btn">New Invoice</button>
+      <button id="edit-invoice-btn" class="btn primary-btn" style="background-color: #4CAF50; color: white; font-weight: bold; position: relative; z-index: 1000;">Edit</button>
+      <button id="new-invoice-btn" class="btn secondary-btn" style="position: relative; z-index: 1000;">New Invoice</button>
     </div>
   `;
 
@@ -287,8 +292,28 @@ function loadInvoice(invoice) {
     .getElementById("new-invoice-btn")
     .addEventListener("click", startNewInvoice);
 
-  // Disable the regular cart buttons if not in edit mode
+  // Disable the regular cart buttons
   toggleCartButtons(false);
+
+  // Extra safety: explicitly disable all quantity buttons
+  setTimeout(() => {
+    document.querySelectorAll(".quantity-btn, .remove-btn").forEach((btn) => {
+      btn.disabled = true;
+      btn.style.opacity = "0.5";
+      btn.style.cursor = "not-allowed";
+
+      // Remove event listeners by cloning and replacing
+      const newBtn = btn.cloneNode(true);
+      if (btn.parentNode) {
+        btn.parentNode.replaceChild(newBtn, btn);
+      }
+    });
+
+    // Disable checkboxes
+    document.querySelectorAll(".item-select").forEach((checkbox) => {
+      checkbox.disabled = true;
+    });
+  }, 50);
 
   // Update navigation buttons
   updateNavigationButtons();
@@ -344,22 +369,46 @@ function toggleEditMode(invoice) {
     indicator.classList.add("editing");
     editBtn.textContent = "Save Changes";
     editBtn.classList.add("primary-btn");
+    editBtn.style.backgroundColor = "#FF9800"; // Orange for save mode
+
+    // Enable buttons
     toggleCartButtons(true);
+
+    // Re-render cart with enabled buttons
+    renderCart();
+
+    // Show a toast notification to confirm edit mode
+    showToastNotification(
+      "Edit mode enabled - you can now modify this invoice"
+    );
   } else {
     // Save changes
     if (confirm("Save changes to this invoice?")) {
       saveInvoiceChanges(invoice);
+
+      // Update UI
+      indicator.classList.remove("editing");
+      editBtn.textContent = "Edit";
+      editBtn.classList.remove("primary-btn");
+      editBtn.style.backgroundColor = "#4CAF50"; // Green for edit button
+
+      // Important: Set back to view mode explicitly
+      isViewingInvoice = true;
+      isEditingInvoice = false;
+
+      // Re-render cart with disabled buttons
+      renderCart();
+
+      // Disable buttons
+      toggleCartButtons(false);
+
+      // Show confirmation
+      showToastNotification("Invoice updated successfully", false);
     } else {
-      // Reload the original invoice to discard changes
-      loadInvoice(invoice);
+      // User cancelled - stay in edit mode
+      isEditingInvoice = true; // Revert the toggle
       return;
     }
-
-    // Update UI
-    indicator.classList.remove("editing");
-    editBtn.textContent = "Edit";
-    editBtn.classList.remove("primary-btn");
-    toggleCartButtons(false);
   }
 }
 
@@ -367,12 +416,16 @@ function toggleEditMode(invoice) {
 async function saveInvoiceChanges(originalInvoice) {
   try {
     // Calculate totals
-    const subtotal = parseFloat(subtotalEl.textContent.replace("$", ""));
-    const discount = parseFloat(
-      document.getElementById("discount-value").textContent.replace("$", "")
+    const subtotal = parseFloat(
+      subtotalEl.textContent.replace(/[^0-9.-]+/g, "")
     );
-    const tax = parseFloat(taxEl.textContent.replace("$", ""));
-    const total = parseFloat(totalEl.textContent.replace("$", ""));
+    const discount = parseFloat(
+      document
+        .getElementById("discount-value")
+        .textContent.replace(/[^0-9.-]+/g, "")
+    );
+    const tax = parseFloat(taxEl.textContent.replace(/[^0-9.-]+/g, ""));
+    const total = parseFloat(totalEl.textContent.replace(/[^0-9.-]+/g, ""));
 
     // Prepare updated invoice data
     const updatedInvoice = {
@@ -403,24 +456,49 @@ async function saveInvoiceChanges(originalInvoice) {
     // Update local copy
     allInvoices[currentInvoiceIndex] = updatedInvoice;
 
+    // IMPORTANT: Set the flags explicitly for view mode
+    isViewingInvoice = true;
+    isEditingInvoice = false;
+
+    // Update the UI to reflect view mode
+    const indicator = document.getElementById("invoice-view-indicator");
+    const editBtn = document.getElementById("edit-invoice-btn");
+
+    if (indicator) indicator.classList.remove("editing");
+    if (editBtn) {
+      editBtn.textContent = "Edit";
+      editBtn.classList.remove("primary-btn");
+    }
+
+    // Disable interaction - ensure this happens AFTER rendering
+    renderCart();
+    updateTotals();
+
+    // CRITICAL: Must call toggleCartButtons AFTER rendering
+    // to ensure newly rendered buttons are disabled
+    toggleCartButtons(false);
+
+    // Extra safety: Directly disable all quantity buttons
+    document.querySelectorAll(".quantity-btn").forEach((btn) => {
+      btn.disabled = true;
+      // Add visual indication
+      btn.style.opacity = "0.5";
+      btn.style.cursor = "not-allowed";
+    });
+
+    // Remove any event listeners for quantity buttons in view mode
+    document.querySelectorAll(".quantity-btn").forEach((btn) => {
+      // Clone and replace to remove event listeners
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+    });
+
     // Show confirmation
-    showNotification("Invoice updated successfully", false);
+    showToastNotification("Invoice updated successfully", false);
   } catch (error) {
     console.error("Error saving invoice changes:", error);
-    showNotification("Error saving changes", true);
+    showToastNotification("Error saving changes", true);
   }
-
-  isViewingInvoice = false;
-  isEditingInvoice = false;
-  toggleCartButtons(true);
-  document.getElementById("barcode-input").disabled = false;
-  document.getElementById("customer-name").disabled = false;
-  document.getElementById("product-search").disabled = false;
-
-  // Enable all input fields
-  document.querySelectorAll("input").forEach((input) => {
-    input.disabled = false;
-  });
 }
 
 // Start a new invoice
@@ -465,27 +543,81 @@ function startNewInvoice() {
 }
 
 // Enable/disable cart interaction buttons
+// Enable/disable cart interaction buttons
+// Enable/disable cart interaction buttons
+// Enable/disable cart interaction buttons
 function toggleCartButtons(enabled) {
   const quantityBtns = document.querySelectorAll(".quantity-btn");
   const removeBtns = document.querySelectorAll(".remove-btn");
   const clearBtn = document.getElementById("clear-invoice");
   const completeBtn = document.getElementById("complete-sale");
   const discountBtn = document.getElementById("add-discount-btn");
-  const refundBtn = document.getElementById("refund-selected"); // Add this line
+  const refundBtn = document.getElementById("refund-selected");
 
+  // Disable all interactive buttons
   quantityBtns.forEach((btn) => (btn.disabled = !enabled));
   removeBtns.forEach((btn) => (btn.disabled = !enabled));
 
-  clearBtn.disabled = !enabled;
-  completeBtn.disabled = !enabled;
+  if (clearBtn) clearBtn.disabled = !enabled;
+  if (completeBtn) completeBtn.disabled = !enabled;
+  if (discountBtn) discountBtn.disabled = !enabled;
+  if (refundBtn) refundBtn.disabled = !enabled;
 
-  if (discountBtn) {
-    discountBtn.disabled = !enabled;
+  // Also disable "Add to Cart" buttons
+  const addToCartBtns = document.querySelectorAll(".add-to-cart");
+  addToCartBtns.forEach((btn) => (btn.disabled = !enabled));
+
+  // Disable barcode input
+  const barcodeInput = document.getElementById("barcode-input");
+  if (barcodeInput) {
+    barcodeInput.disabled = !enabled;
   }
 
-  if (refundBtn) {
-    // Add this check
-    refundBtn.disabled = !enabled;
+  // Disable product search
+  const productSearch = document.getElementById("product-search");
+  if (productSearch) {
+    productSearch.disabled = !enabled;
+  }
+
+  // IMPORTANT: Remove any full-screen overlays that block interaction
+  const overlays = document.querySelectorAll(".view-only-overlay");
+  overlays.forEach((overlay) => {
+    overlay.parentNode.removeChild(overlay);
+  });
+
+  // Instead of overlays, add a clear message to the table
+  const cartTable = document.querySelector("#cart-items");
+  if (cartTable && !enabled) {
+    // Check if we already have a message row
+    let messageRow = document.querySelector(".edit-mode-message-row");
+    if (!messageRow) {
+      messageRow = document.createElement("tr");
+      messageRow.className = "edit-mode-message-row";
+
+      const messageCell = document.createElement("td");
+      messageCell.setAttribute("colspan", "6"); // Span all columns
+      messageCell.style.padding = "10px";
+      messageCell.style.textAlign = "center";
+      messageCell.style.backgroundColor = "#f8f8f8";
+      messageCell.style.color = "#333";
+      messageCell.innerHTML =
+        'Please click <strong>"Edit"</strong> to make changes';
+
+      messageRow.appendChild(messageCell);
+
+      // Insert as the first row
+      if (cartTable.firstChild) {
+        cartTable.insertBefore(messageRow, cartTable.firstChild);
+      } else {
+        cartTable.appendChild(messageRow);
+      }
+    }
+  } else if (cartTable && enabled) {
+    // Remove the message when in edit mode
+    const messageRow = document.querySelector(".edit-mode-message-row");
+    if (messageRow) {
+      messageRow.parentNode.removeChild(messageRow);
+    }
   }
 }
 

@@ -19,7 +19,6 @@ function generateProfessionalReceipt(invoice) {
     localStorage.getItem("returnPolicy") ||
     "Items can be returned within 30 days with receipt.";
   const themeColor = localStorage.getItem("receiptTheme") || "#3d5a80";
-  const customLogo = localStorage.getItem("companyLogo");
 
   // Format the date nicely
   const receiptDate = new Date(invoice.date);
@@ -33,22 +32,18 @@ function generateProfessionalReceipt(invoice) {
     minute: "2-digit",
   });
 
-  // Prepare logo - either custom or SVG
+  // Always use the text-based logo for CSP compatibility
+  // Instead of trying to use an image which will be blocked by CSP
+  // To this:
   let logoHtml;
+  const customLogo = localStorage.getItem("companyLogo");
   if (customLogo) {
     // Use the custom uploaded logo
     logoHtml = `<img src="${customLogo}" alt="${companyName}" style="max-width: 180px; max-height: 60px;" />`;
   } else {
-    // Company logo as inline SVG using the theme color from settings
-    logoHtml = `
-      <svg width="180" height="60" viewBox="0 0 180 60" xmlns="http://www.w3.org/2000/svg">
-        <rect x="10" y="10" width="40" height="40" rx="5" fill="${themeColor}"/>
-        <text x="60" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="${themeColor}">${companyName}</text>
-        <text x="60" y="48" font-family="Arial, sans-serif" font-size="12" fill="#666">${companyTagline}</text>
-      </svg>
-    `;
+    // Fall back to text-based logo
+    logoHtml = generateTextLogo(companyName, companyTagline, themeColor);
   }
-
   // Generate receipt items HTML with support for discounts
   let itemsHtml = "";
   let subtotal = 0;
@@ -104,12 +99,7 @@ function generateProfessionalReceipt(invoice) {
 
   // Get the currency setting if available
   const currencySymbol = localStorage.getItem("currency") === "ILS" ? "₪" : "$";
-  // Format currency based on user settings
-  function formatCurrency(amount) {
-    const currency = localStorage.getItem("currency") || "USD";
-    const symbol = currency === "ILS" ? "₪" : "$";
-    return `${symbol}${parseFloat(amount).toFixed(2)}`;
-  }
+
   // Build the complete receipt HTML
   return `
     <div class="professional-receipt ${transactionClass}">
@@ -221,20 +211,10 @@ function generateProfessionalReceipt(invoice) {
         <p class="return-policy">${returnPolicy}</p>
         <p class="support">Customer support: ${companyEmail}</p>
         <div class="barcode">
-          <svg viewBox="0 0 200 30">
-            <!-- Simple barcode representation -->
-            <g fill="black">
-              ${Array(30)
-                .fill()
-                .map(
-                  (_, i) =>
-                    `<rect x="${i * 3}" y="0" width="${
-                      Math.random() > 0.5 ? 2 : 1
-                    }" height="30"/>`
-                )
-                .join("")}
-            </g>
-          </svg>
+          <!-- Simple text-based barcode representation -->
+          <div style="font-family: monospace; letter-spacing: -0.2em; font-size: 16px; line-height: 0.8em; overflow: hidden; text-align: center; padding: 10px 0;">
+            |||||| |||| | |||||| || |||||
+          </div>
           <div class="barcode-text">${invoice.id}</div>
         </div>
         <p class="software-credit">Powered by MZLAD Billing System v2.1</p>
@@ -242,7 +222,16 @@ function generateProfessionalReceipt(invoice) {
     </div>
   `;
 }
-
+function generateTextLogo(companyName, tagline, themeColor) {
+  return `
+    <div style="text-align: center; margin-bottom: 10px;">
+      <div style="font-size: 24px; font-weight: bold; color: ${themeColor};">${companyName}</div>
+      <div style="font-size: 12px; color: #666;">${
+        tagline || "Retail Solutions"
+      }</div>
+    </div>
+  `;
+}
 // Helper function to adjust color brightness
 function adjustColorBrightness(hex, percent) {
   // Convert hex to RGB

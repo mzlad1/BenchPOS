@@ -369,23 +369,23 @@ function enhanceProductGrid() {
       margin-bottom: auto;
     }
     
-    .add-to-cart {
-      width: 100%;
-      padding: 8px;
-      background-color: var(--primary-light);
-      color: var(--primary-dark);
-      font-weight: 500;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      margin-top: auto;
-    }
+    // .add-to-cart {
+    //   width: 100%;
+    //   padding: 8px;
+    //   background-color: var(--primary-light);
+    //   color: var(--primary-dark);
+    //   font-weight: 500;
+    //   border: none;
+    //   border-radius: 6px;
+    //   cursor: pointer;
+    //   transition: background-color 0.2s;
+    //   margin-top: auto;
+    // }
     
-    .add-to-cart:hover {
-      background-color: var(--primary-color);
-      color: white;
-    }
+    // .add-to-cart:hover {
+    //   background-color: var(--primary-color);
+    //   color: white;
+    // }
     
     @media (max-width: 768px) {
       .products-grid {

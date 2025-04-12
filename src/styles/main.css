@@ -723,18 +723,18 @@ tbody tr:hover {
   color: var(--mid-gray);
 }
 
-.add-to-cart {
+/* .add-to-cart {
   margin-top: auto;
   width: 100%;
   background-color: var(--primary-light);
   color: var(--primary-dark);
   font-size: 0.85rem;
-}
+} */
 
-.add-to-cart:hover {
+/* .add-to-cart:hover {
   background-color: var(--primary-color);
   color: white;
-}
+} */
 
 /* Invoice Panel */
 .invoice-details {
