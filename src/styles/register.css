@@ -391,3 +391,62 @@
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
+/* RTL Support for Form Icons */
+
+/* Default LTR behavior - icons on the right */
+.form-group::before {
+    position: absolute;
+    right: 1rem;
+    left: auto;
+    top: 2.6rem;
+    color: var(--text-tertiary);
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+/* RTL behavior - icons on the left */
+html.rtl .form-group::before,
+body.rtl-layout .form-group::before {
+    right: auto;
+    left: 1rem;
+}
+
+/* RTL support for select dropdown arrow */
+html.rtl .form-group select,
+body.rtl-layout .form-group select {
+    background-position: left 1rem center;
+    padding-right: 1rem;
+    padding-left: 2.5rem;
+}
+
+/* RTL support for form padding adjustment */
+html.rtl .form-group input,
+body.rtl-layout .form-group input {
+    padding-right: 2.5rem;
+    padding-left: 1rem;
+}
+
+html.ltr .form-group input {
+    padding-right: 2.5rem;
+    padding-left: 1rem;
+}
+
+/* RTL support for labels */
+html.rtl .form-group label,
+body.rtl-layout .form-group label {
+    transform-origin: right;
+}
+
+/* RTL support for error message */
+html.rtl .error-message,
+body.rtl-layout .error-message {
+    border-left: none;
+    border-right: 4px solid var(--danger);
+}
+
+html.rtl .error-message.success,
+body.rtl-layout .error-message.success {
+    border-left: none;
+    border-right: 4px solid var(--success);
+}

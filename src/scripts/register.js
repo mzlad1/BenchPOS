@@ -1,6 +1,7 @@
 // register.js - Handles user registration functionality within the main app
 
 let isOnline = false;
+let translationsApplied = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("register-button").disabled = true;
@@ -43,22 +44,24 @@ async function waitForI18n() {
   // If i18n is already initialized and integrated with layout, return immediately
   if (window.i18n && window.i18n.layoutIntegrated) {
     console.log("i18n already initialized and integrated");
+    await forceApplyTranslations();
     return;
   }
 
   // Otherwise wait for the i18nReady event or try to manually initialize
   return new Promise((resolve) => {
-    const checkI18n = () => {
+    const checkI18n = async () => {
       if (window.i18n && window.i18n.layoutIntegrated) {
         console.log("i18n is now initialized and integrated");
+        await forceApplyTranslations();
         resolve();
       } else if (window.i18n) {
         // Try to manually initialize if present but not ready
         console.log("Trying to manually initialize i18n");
-        window.i18n.init().then(() => {
-          console.log("i18n manually initialized");
-          resolve();
-        });
+        await window.i18n.init();
+        console.log("i18n manually initialized");
+        await forceApplyTranslations();
+        resolve();
       } else {
         // Check again in 100ms
         console.log("i18n not found, checking again soon");
@@ -70,19 +73,137 @@ async function waitForI18n() {
     checkI18n();
 
     // Also listen for the ready event as a backup
-    window.addEventListener('i18nReady', () => {
+    window.addEventListener('i18nReady', async () => {
       console.log("i18nReady event received");
+      await forceApplyTranslations();
       resolve();
     }, { once: true });
 
     // Set a timeout to resolve anyway after 3 seconds to prevent hanging
-    setTimeout(() => {
-      console.warn("i18n initialization timed out, continuing anyway");
+    setTimeout(async () => {
+      console.warn("i18n initialization timed out, trying one more translation update");
+      await forceApplyTranslations();
       resolve();
     }, 3000);
   });
 }
+async function forceApplyTranslations() {
+  if (translationsApplied) {
+    console.log("Translations already applied, skipping");
+    return;
+  }
 
+  try {
+    console.log("Force applying translations to all elements");
+
+    // Get current language
+    const lang = localStorage.getItem('language') || 'en';
+    console.log(`Current language: ${lang}`);
+
+    // First ensure translations are loaded
+    if (window.i18n) {
+      // Try to directly load the translation file for current language
+      try {
+        // Try absolute paths - this might work better in Electron
+        const possiblePaths = [
+          `/locales/${lang}.json`,
+          `./locales/${lang}.json`,
+          `../locales/${lang}.json`,
+          `${lang}.json`
+        ];
+
+        console.log("Trying to load translations from paths:", possiblePaths);
+
+        let translationsLoaded = false;
+
+        for (const path of possiblePaths) {
+          try {
+            const response = await fetch(path);
+            if (response.ok) {
+              const data = await response.json();
+              console.log(`Successfully loaded translations from ${path}`);
+
+              // Flatten and apply translations
+              if (typeof window.i18n.flattenTranslations === 'function') {
+                const flattened = window.i18n.flattenTranslations(data);
+
+                // Merge with existing translations
+                window.i18n.translations[lang] = {
+                  ...(window.i18n.translations[lang] || {}),
+                  ...flattened
+                };
+
+                console.log(`Added ${Object.keys(flattened).length} translations`);
+                translationsLoaded = true;
+                break;
+              }
+            }
+          } catch (e) {
+            console.warn(`Failed loading from ${path}:`, e);
+          }
+        }
+
+        if (!translationsLoaded) {
+          console.warn(`Could not load translations for ${lang} from files`);
+        }
+      } catch (e) {
+        console.error("Error loading translation file:", e);
+      }
+
+      // Log available translations before applying
+      if (window.i18n.translations && window.i18n.translations[lang]) {
+        console.log(`Available translation keys: ${Object.keys(window.i18n.translations[lang]).length}`);
+
+        // Debug: Log some specific keys
+        const keysToCheck = [
+          'register.title',
+          'register.fullName',
+          'register.email',
+          'register.password',
+          'register.button'
+        ];
+
+        keysToCheck.forEach(key => {
+          console.log(`Translation for "${key}": ${window.i18n.translations[lang][key] || "NOT FOUND"}`);
+        });
+      } else {
+        console.warn(`No translations available for ${lang}`);
+      }
+
+      // Now manually apply translations to all elements with data-i18n
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        console.log(`Translating element with key: ${key}`);
+
+        let translated = window.t(key);
+        if (translated === key) {
+          console.warn(`Translation not found for key: ${key}`);
+        } else {
+          console.log(`Translated "${key}" to "${translated}"`);
+        }
+
+        el.textContent = translated;
+      });
+
+      // Update placeholders
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        const translated = window.t(key);
+        console.log(`Setting placeholder for key: ${key} to "${translated}"`);
+        el.setAttribute('placeholder', translated);
+      });
+
+      // After manual translation, call the official update method
+      if (typeof window.i18n.updatePageContent === 'function') {
+        window.i18n.updatePageContent();
+      }
+
+      translationsApplied = true;
+    }
+  } catch (error) {
+    console.error("Error in forceApplyTranslations:", error);
+  }
+}
 async function checkConnectionStatus() {
   try {
     console.log("Checking connection status");

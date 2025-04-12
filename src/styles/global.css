@@ -1592,15 +1592,10 @@ body[class*="dark"] .sync-actions .btn:focus {
 }
 /* Add these CSS rules to your global.css or create a new file called rtl.css */
 
-/* RTL support for the entire application */
-.rtl-layout {
-  direction: rtl;
-  text-align: right;
-}
 
-.rtl-layout .header-actions {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .header-actions {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 .rtl-layout .settings-header,
 .rtl-layout .settings-section-header,
@@ -1617,21 +1612,21 @@ body[class*="dark"] .sync-actions .btn:focus {
   justify-content: flex-start;
 }
 
-.rtl-layout .sidebar-header {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .sidebar-header {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 .rtl-layout .menu-toggle {
   transform: rotate(180deg);
 }
 
-.rtl-layout .logo {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .logo {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
-.rtl-layout .menu-item {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .menu-item {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 .rtl-layout .menu-icon {
   margin-left: 10px;
@@ -1639,16 +1634,16 @@ body[class*="dark"] .sync-actions .btn:focus {
 
 .rtl-layout .badge {
   margin-left: 0;
-  margin-right: auto;
+  margin-right: 85%;
 }
 
-.rtl-layout .user-profile {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .user-profile {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
-.rtl-layout .search-bare {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .search-bare {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 .rtl-layout .toast-container {
   right: auto;
@@ -1686,22 +1681,22 @@ body[class*="dark"] .sync-actions .btn:focus {
   text-align: right;
 }
 
-.rtl-layout .logo-controls {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .logo-controls {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
-.rtl-layout .logo-upload-buttons {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .logo-upload-buttons {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
-/* Fix for flex-based layouts in RTL mode */
-.rtl-layout .toggle-wrapper {
-  flex-direction: row-reverse;
-}
+/*!* Fix for flex-based layouts in RTL mode *!*/
+/*.rtl-layout .toggle-wrapper {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
-.rtl-layout .input-action {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .input-action {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 /* Fix spacing in RTL mode */
 .rtl-layout .menu-text {
@@ -1727,18 +1722,18 @@ body[class*="dark"] .sync-actions .btn:focus {
   text-align: right;
 }
 
-.rtl-layout .report-tabs {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .report-tabs {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 .rtl-layout .report-summary {
   direction: rtl;
 }
 
 /* Fix for flexbox elements */
-.rtl-layout .filter-actions {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .filter-actions {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 /* Ensure text doesn't overflow in RTL */
 .rtl-layout .summary-item h3,
@@ -1769,17 +1764,17 @@ body[class*="dark"] .sync-actions .btn:focus {
 }
 
 /* Fix for the report controls */
-.rtl-layout .report-controls {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .report-controls {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
-.rtl-layout .date-filters {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .date-filters {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
-.rtl-layout .filter-actions {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .filter-actions {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 /* Fix for summary cards */
 .rtl-layout .report-summary {
@@ -1796,15 +1791,15 @@ body[class*="dark"] .sync-actions .btn:focus {
 }
 
 /* Fix for report tabs */
-.rtl-layout .report-tabs {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .report-tabs {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 
 
-.rtl-layout .report-actions {
-  flex-direction: row-reverse;
-}
+/*.rtl-layout .report-actions {*/
+/*  flex-direction: row-reverse;*/
+/*}*/
 
 /* Table adjustments for RTL */
 .rtl-layout table.report-table th,
@@ -1893,4 +1888,144 @@ html[dir="rtl"] .register-form-container {
 .register-form-container,
 .register-form-container * {
   transition: all 0.3s ease-in-out;
+}
+html.rtl .dashboard-header,
+body.rtl-layout .dashboard-header {
+  flex-direction: row-reverse;
+}
+
+html.rtl .welcome-section,
+body.rtl-layout .welcome-section {
+  text-align: right;
+}
+
+html.rtl .action-buttons,
+body.rtl-layout .action-buttons {
+  flex-direction: row-reverse;
+}
+
+/* Stats Grid */
+html.rtl .stat-card-header,
+body.rtl-layout .stat-card-header {
+  flex-direction: row-reverse;
+}
+
+html.rtl .stat-title,
+body.rtl-layout .stat-title {
+  text-align: right;
+}
+
+html.rtl .stat-trend,
+body.rtl-layout .stat-trend {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+/* Chart section */
+html.rtl .chart-header,
+body.rtl-layout .chart-header {
+  flex-direction: row-reverse;
+}
+
+html.rtl .chart-actions,
+body.rtl-layout .chart-actions {
+  flex-direction: row-reverse;
+}
+
+html.rtl .chart-tabs,
+body.rtl-layout .chart-tabs {
+  flex-direction: row-reverse;
+}
+
+/* Activity section */
+html.rtl .activity-header,
+body.rtl-layout .activity-header {
+  flex-direction: row-reverse;
+}
+
+html.rtl .activity-item,
+body.rtl-layout .activity-item {
+  flex-direction: row-reverse;
+}
+
+html.rtl .activity-icon,
+body.rtl-layout .activity-icon {
+  margin-left: 0.75rem;
+  margin-right: 0;
+}
+
+html.rtl .activity-content,
+body.rtl-layout .activity-content {
+  text-align: right;
+}
+
+html.rtl .activity-badge,
+body.rtl-layout .activity-badge {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+/* Quick Access Cards */
+html.rtl .quick-card-header,
+body.rtl-layout .quick-card-header {
+  text-align: right;
+}
+
+html.rtl .quick-card-body,
+body.rtl-layout .quick-card-body {
+  text-align: right;
+}
+
+html.rtl .feature-item,
+body.rtl-layout .feature-item {
+  flex-direction: row-reverse;
+}
+
+html.rtl .feature-icon,
+body.rtl-layout .feature-icon {
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+/* Sync section */
+html.rtl .sync-section,
+body.rtl-layout .sync-section {
+  flex-direction: row-reverse;
+}
+
+html.rtl .sync-info,
+body.rtl-layout .sync-info {
+  text-align: right;
+}
+
+/* Button icons */
+html.rtl .btn .btn-icon,
+body.rtl-layout .btn .btn-icon {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+/* Progress bars */
+html.rtl .stat-progress .progress-bar,
+body.rtl-layout .stat-progress .progress-bar {
+  transform-origin: right;
+}
+
+/* Dashboard grid */
+@media (max-width: 768px) {
+  html.rtl .dashboard-grid,
+  body.rtl-layout .dashboard-grid {
+    flex-direction: column-reverse;
+  }
+
+  html.rtl .quick-access-grid,
+  body.rtl-layout .quick-access-grid {
+    flex-direction: column;
+  }
+}
+
+/* Chart direction */
+html.rtl .chart-container canvas,
+body.rtl-layout .chart-container canvas {
+  direction: ltr; /* Charts always ltr for numerical display */
 }
