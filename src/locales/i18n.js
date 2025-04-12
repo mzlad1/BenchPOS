@@ -4,6 +4,7 @@
 /**
  * Translation Cache - Persistent storage of translations
  */
+
 class TranslationCache {
     constructor(prefix = 'i18n_cache_') {
         this.prefix = prefix;

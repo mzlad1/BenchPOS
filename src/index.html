@@ -8,7 +8,7 @@
           content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
   />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <title>MZLAD Billing System</title>
+  <title data-i18n="dashboard.pageTitle">MZLAD Billing System</title>
   <link rel="stylesheet" href="styles/global.css" />
   <link rel="stylesheet" href="styles/index.css" />
 </head>
@@ -27,7 +27,7 @@
       <div class="dashboard-header">
         <div class="welcome-section">
           <div class="welcome-message" id="welcome-message">
-            Welcome back, <span id="user-greeting">User</span>!
+            <span data-i18n="dashboard.welcome">Welcome back</span>, <span id="user-greeting">User</span>!
           </div>
           <div class="date-display" id="current-date">
             Friday, March 21, 2025
@@ -37,12 +37,12 @@
         <div class="action-buttons">
           <button class="btn btn-outline" id="sync-button">
             <div class="btn-icon">🔄</div>
-            <span>Sync Data</span>
+            <span data-i18n="dashboard.syncData">Sync Data</span>
           </button>
 
           <button class="btn btn-primary">
             <div class="btn-icon">➕</div>
-            <span>New Sale</span>
+            <span data-i18n="dashboard.newSale">New Sale</span>
           </button>
         </div>
       </div>
@@ -51,13 +51,13 @@
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-card-header">
-            <div class="stat-title">TOTAL SALES</div>
+            <div class="stat-title" data-i18n="dashboard.stats.totalSales">TOTAL SALES</div>
             <div class="stat-icon sales">💵</div>
           </div>
           <div class="stat-value" id="sales-count">0</div>
           <div class="stat-trend trend-up">
             <span>↑ 12%</span>
-            <span>vs last week</span>
+            <span data-i18n="dashboard.stats.vsLastWeek">vs last week</span>
           </div>
           <div class="stat-progress">
             <div class="progress-bar" style="width: 75%"></div>
@@ -66,13 +66,13 @@
 
         <div class="stat-card">
           <div class="stat-card-header">
-            <div class="stat-title">REVENUE</div>
+            <div class="stat-title" data-i18n="dashboard.stats.revenue">REVENUE</div>
             <div class="stat-icon revenue">💰</div>
           </div>
           <div class="stat-value" id="revenue-value">$0.00</div>
           <div class="stat-trend trend-up">
             <span>↑ 8%</span>
-            <span>vs last week</span>
+            <span data-i18n="dashboard.stats.vsLastWeek">vs last week</span>
           </div>
           <div class="stat-progress">
             <div class="progress-bar" style="width: 65%"></div>
@@ -81,12 +81,12 @@
 
         <div class="stat-card">
           <div class="stat-card-header">
-            <div class="stat-title">PRODUCTS</div>
+            <div class="stat-title" data-i18n="dashboard.stats.products">PRODUCTS</div>
             <div class="stat-icon products">📦</div>
           </div>
           <div class="stat-value" id="products-count">0</div>
           <div class="stat-trend">
-            <span>Recently added: 0</span>
+            <span data-i18n="dashboard.stats.recentlyAdded">Recently added</span>: <span id="recent-products">0</span>
           </div>
           <div class="stat-progress">
             <div class="progress-bar" style="width: 50%"></div>
@@ -95,12 +95,12 @@
 
         <div class="stat-card">
           <div class="stat-card-header">
-            <div class="stat-title">LOW STOCK ITEMS</div>
+            <div class="stat-title" data-i18n="dashboard.stats.lowStockItems">LOW STOCK ITEMS</div>
             <div class="stat-icon low-stock">⚠️</div>
           </div>
           <div class="stat-value" id="low-stock-count">0</div>
           <div class="stat-trend trend-down">
-            <span>Requires attention</span>
+            <span data-i18n="dashboard.stats.requiresAttention">Requires attention</span>
           </div>
           <div class="stat-progress">
             <div class="progress-bar" style="width: 25%"></div>
@@ -114,29 +114,29 @@
         <div class="dashboard-section col-span-8">
           <div class="chart-container">
             <div class="chart-header">
-              <div class="chart-title">Sales Performance</div>
+              <div class="chart-title" data-i18n="dashboard.chart.salesPerformance">Sales Performance</div>
               <div class="chart-actions">
                 <button class="btn btn-primary" id="chart-week">
-                  This Week
+                  <span data-i18n="dashboard.chart.thisWeek">This Week</span>
                 </button>
                 <button class="btn btn-ghost" id="chart-month">
-                  This Month
+                  <span data-i18n="dashboard.chart.thisMonth">This Month</span>
                 </button>
                 <button class="btn btn-ghost" id="chart-year">
-                  This Year
+                  <span data-i18n="dashboard.chart.thisYear">This Year</span>
                 </button>
               </div>
             </div>
 
             <div class="chart-tabs">
-              <div class="chart-tab active" id="tab-revenue">Revenue</div>
-              <div class="chart-tab" id="tab-orders">Orders</div>
-              <div class="chart-tab" id="tab-products">Products</div>
+              <div class="chart-tab active" id="tab-revenue" data-i18n="dashboard.chart.revenue">Revenue</div>
+              <div class="chart-tab" id="tab-orders" data-i18n="dashboard.chart.orders">Orders</div>
+              <div class="chart-tab" id="tab-products" data-i18n="dashboard.chart.products">Products</div>
             </div>
 
             <!-- We're adding a wrapper div for lazy loading -->
             <div id="chart-wrapper">
-              <div id="chart-loading">Loading chart data...</div>
+              <div id="chart-loading" data-i18n="dashboard.chart.loading">Loading chart data...</div>
             </div>
           </div>
         </div>
@@ -145,7 +145,7 @@
         <div class="dashboard-section col-span-4">
           <div class="activity-container">
             <div class="activity-header">
-              <div class="activity-title">Recent Activity</div>
+              <div class="activity-title" data-i18n="dashboard.activity.title">Recent Activity</div>
               <button class="btn btn-ghost" style="padding: 0.4rem">
                 <span>•••</span>
               </button>
@@ -154,7 +154,7 @@
               <!-- Activity items will be dynamically inserted here -->
               <div class="activity-item" id="activity-loading">
                 <div class="activity-content">
-                  <div class="activity-text">
+                  <div class="activity-text" data-i18n="dashboard.activity.loading">
                     Loading recent activities...
                   </div>
                 </div>
@@ -168,8 +168,8 @@
       <div class="quick-access-grid">
         <div class="quick-card billing" id="billing-card">
           <div class="quick-card-header">
-            <div class="quick-card-title">New Sale</div>
-            <div class="quick-card-subtitle">
+            <div class="quick-card-title" data-i18n="dashboard.quickAccess.newSale.title">New Sale</div>
+            <div class="quick-card-subtitle" data-i18n="dashboard.quickAccess.newSale.subtitle">
               Create invoices and receipts
             </div>
             <div class="quick-card-icon">💵</div>
@@ -178,15 +178,15 @@
             <div class="feature-list">
               <div class="feature-item">
                 <div class="feature-icon">✓</div>
-                <span>Process transactions quickly</span>
+                <span data-i18n="dashboard.quickAccess.newSale.feature1">Process transactions quickly</span>
               </div>
               <div class="feature-item">
                 <div class="feature-icon">✓</div>
-                <span>Apply discounts and taxes</span>
+                <span data-i18n="dashboard.quickAccess.newSale.feature2">Apply discounts and taxes</span>
               </div>
               <div class="feature-item">
                 <div class="feature-icon">✓</div>
-                <span>Print or email receipts</span>
+                <span data-i18n="dashboard.quickAccess.newSale.feature3">Print or email receipts</span>
               </div>
             </div>
           </div>
@@ -194,23 +194,23 @@
 
         <div class="quick-card inventory" id="inventory-card">
           <div class="quick-card-header">
-            <div class="quick-card-title">Inventory</div>
-            <div class="quick-card-subtitle">Manage products and stock</div>
+            <div class="quick-card-title" data-i18n="dashboard.quickAccess.inventory.title">Inventory</div>
+            <div class="quick-card-subtitle" data-i18n="dashboard.quickAccess.inventory.subtitle">Manage products and stock</div>
             <div class="quick-card-icon">📦</div>
           </div>
           <div class="quick-card-body">
             <div class="feature-list">
               <div class="feature-item">
                 <div class="feature-icon">✓</div>
-                <span>Add and update products</span>
+                <span data-i18n="dashboard.quickAccess.inventory.feature1">Add and update products</span>
               </div>
               <div class="feature-item">
                 <div class="feature-icon">✓</div>
-                <span>Track stock levels</span>
+                <span data-i18n="dashboard.quickAccess.inventory.feature2">Track stock levels</span>
               </div>
               <div class="feature-item">
                 <div class="feature-icon">✓</div>
-                <span>Set price and tax rules</span>
+                <span data-i18n="dashboard.quickAccess.inventory.feature3">Set price and tax rules</span>
               </div>
             </div>
           </div>
@@ -218,23 +218,23 @@
 
         <div class="quick-card reports" id="reports-card">
           <div class="quick-card-header">
-            <div class="quick-card-title">Reports</div>
-            <div class="quick-card-subtitle">Analytics and insights</div>
+            <div class="quick-card-title" data-i18n="dashboard.quickAccess.reports.title">Reports</div>
+            <div class="quick-card-subtitle" data-i18n="dashboard.quickAccess.reports.subtitle">Analytics and insights</div>
             <div class="quick-card-icon">📊</div>
           </div>
           <div class="quick-card-body">
             <div class="feature-list">
               <div class="feature-item">
                 <div class="feature-icon">✓</div>
-                <span>Sales performance analysis</span>
+                <span data-i18n="dashboard.quickAccess.reports.feature1">Sales performance analysis</span>
               </div>
               <div class="feature-item">
                 <div class="feature-icon">✓</div>
-                <span>Inventory movement reports</span>
+                <span data-i18n="dashboard.quickAccess.reports.feature2">Inventory movement reports</span>
               </div>
               <div class="feature-item">
                 <div class="feature-icon">✓</div>
-                <span>Export data to CSV/PDF</span>
+                <span data-i18n="dashboard.quickAccess.reports.feature3">Export data to CSV/PDF</span>
               </div>
             </div>
           </div>
@@ -244,27 +244,37 @@
       <!-- Sync Section -->
       <div class="sync-section">
         <div class="sync-info">
-          <div class="sync-title">Data Synchronization</div>
-          <div class="sync-subtitle" id="last-sync">Last sync: Never</div>
+          <div class="sync-title" data-i18n="dashboard.sync.title">Data Synchronization</div>
+          <div class="sync-subtitle" id="last-sync" data-i18n="dashboard.sync.lastSyncNever">Last sync: Never</div>
         </div>
         <button class="btn btn-primary" id="sync-button-bottom">
           <div class="btn-icon">🔄</div>
-          <span>Sync Now</span>
+          <span data-i18n="dashboard.sync.button">Sync Now</span>
         </button>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Load i18n Script First -->
+<script src="./locales/i18n.js"></script>
+
 <script src="./services/login-sync-dialog.js"></script>
-<script src="scripts/activity-logger.js"></script>
 <script src="scripts/layout.js"></script>
-<script src="scripts/index.js"></script>
+<script src="scripts/activity-logger.js"></script>
 <script src="scripts/activity-modal.js"></script>
+<script src="scripts/index.js"></script>
 
 <script>
   // We'll modify the initialization approach to properly integrate with dashboard functionality
   document.addEventListener("DOMContentLoaded", async function() {
     try {
+      // Initialize i18n
+      if (window.i18n) {
+        await window.i18n.init();
+        console.log("i18n initialized");
+      }
+
       // Check if user is logged in
       const user = await window.api.getCurrentUser();
       if (!user) {
@@ -276,6 +286,11 @@
       await LayoutManager.init("dashboard");
 
       console.log("Layout initialized for dashboard");
+
+      // Force apply translations after layout is loaded
+      if (window.forceApplyTranslations && typeof window.forceApplyTranslations === 'function') {
+        await window.forceApplyTranslations();
+      }
 
       // Important: We need to ensure the dashboard data loading still happens
       // This was missing in our previous update, causing stats to show 0

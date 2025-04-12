@@ -17,40 +17,40 @@ function setupActivityModal() {
     if (!activityModal) {
         console.log("Activity modal not found, creating it now...");
 
-        // Create modal HTML
+        // Create modal HTML with translations
         const modalHTML = `
     <!-- Activity History Modal -->
     <div id="activity-modal" class="modal">
       <div class="modal-content" style="width: 80%; max-width: 800px;">
         <div class="modal-header">
-          <h2>Activity History</h2>
+          <h2 data-i18n="dashboard.activity.modal.title">Activity History</h2>
           <span class="close" id="close-activity-modal">&times;</span>
         </div>
         <div class="modal-body">
           <!-- Activity filters -->
           <div class="activity-filters">
             <div class="filter-group">
-              <label for="activity-type-filter">Type:</label>
+              <label for="activity-type-filter" data-i18n="dashboard.activity.modal.typeFilter">Type:</label>
               <select id="activity-type-filter">
-                <option value="all">All Activities</option>
-                <option value="update">Updates</option>
-                <option value="delete">Deletions</option>
-                <option value="add">Additions</option>
-                <option value="sync">Sync</option>
-                <option value="sale">Sales</option>
-                <option value="stock">Stock</option>
+                <option value="all" data-i18n="dashboard.activity.modal.allActivities">All Activities</option>
+                <option value="update" data-i18n="dashboard.activity.modal.updates">Updates</option>
+                <option value="delete" data-i18n="dashboard.activity.modal.deletions">Deletions</option>
+                <option value="add" data-i18n="dashboard.activity.modal.additions">Additions</option>
+                <option value="sync" data-i18n="dashboard.activity.modal.sync">Sync</option>
+                <option value="sale" data-i18n="dashboard.activity.modal.sales">Sales</option>
+                <option value="stock" data-i18n="dashboard.activity.modal.stock">Stock</option>
               </select>
             </div>
             <div class="filter-group">
-              <label for="activity-date-filter">Date Range:</label>
+              <label for="activity-date-filter" data-i18n="dashboard.activity.modal.dateRange">Date Range:</label>
               <select id="activity-date-filter">
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
+                <option value="all" data-i18n="dashboard.activity.modal.allTime">All Time</option>
+                <option value="today" data-i18n="dashboard.activity.modal.today">Today</option>
+                <option value="week" data-i18n="dashboard.activity.modal.thisWeek">This Week</option>
+                <option value="month" data-i18n="dashboard.activity.modal.thisMonth">This Month</option>
               </select>
             </div>
-            <button id="clear-activity-filters" class="btn secondary-btn">Clear Filters</button>
+            <button id="clear-activity-filters" class="btn secondary-btn" data-i18n="dashboard.activity.modal.clearFilters">Clear Filters</button>
           </div>
 
           <!-- Activity list container -->
@@ -59,7 +59,7 @@ function setupActivityModal() {
               <!-- Activities will be loaded here -->
               <div class="activity-item loading-item">
                 <div class="activity-content">
-                  <div class="activity-text">Loading activities...</div>
+                  <div class="activity-text" data-i18n="dashboard.activity.modal.loading">Loading activities...</div>
                 </div>
               </div>
             </div>
@@ -68,9 +68,9 @@ function setupActivityModal() {
           <!-- Pagination controls -->
           <div class="pagination" id="activity-pagination">
             <div class="pagination-controls">
-              <button class="btn pagination-btn" id="prev-activity-page" disabled>« Previous</button>
-              <span class="page-info" id="activity-page-info">Page 1 of 1</span>
-              <button class="btn pagination-btn" id="next-activity-page" disabled>Next »</button>
+              <button class="btn pagination-btn" id="prev-activity-page" disabled data-i18n="dashboard.activity.modal.previous">« Previous</button>
+              <span class="page-info" id="activity-page-info" data-i18n="dashboard.activity.modal.pageInfo">Page 1 of 1</span>
+              <button class="btn pagination-btn" id="next-activity-page" disabled data-i18n="dashboard.activity.modal.next">Next »</button>
             </div>
           </div>
         </div>
@@ -211,9 +211,67 @@ function setupActivityModal() {
         from {opacity: 0; transform: translateY(-20px);}
         to {opacity: 1; transform: translateY(0);}
       }
+      
+      /* RTL Support for activity modal */
+      html.rtl .modal-header,
+      body.rtl-layout .modal-header {
+        flex-direction: row-reverse;
+      }
+      
+      html.rtl .activity-filters,
+      body.rtl-layout .activity-filters {
+        flex-direction: row-reverse;
+      }
+      
+      html.rtl .filter-group,
+      body.rtl-layout .filter-group {
+        flex-direction: row-reverse;
+      }
+      
+      html.rtl #full-activity-list .activity-item,
+      body.rtl-layout #full-activity-list .activity-item {
+        flex-direction: row-reverse;
+      }
+      
+      html.rtl .activity-content,
+      body.rtl-layout .activity-content {
+        text-align: right;
+      }
+      
+      html.rtl .activity-icon,
+      body.rtl-layout .activity-icon {
+        margin-left: 12px;
+        margin-right: 0;
+      }
+      
+      html.rtl .activity-badge,
+      body.rtl-layout .activity-badge {
+        margin-right: auto;
+        margin-left: 0;
+      }
+      
+      html.rtl #activity-pagination .pagination-controls,
+      body.rtl-layout #activity-pagination .pagination-controls {
+        flex-direction: row-reverse;
+      }
+      
+      html.rtl .close,
+      body.rtl-layout .close {
+        margin-left: 0;
+      }
+      
+      html.rtl .no-activities,
+      body.rtl-layout .no-activities {
+        direction: rtl;
+      }
     </style>`;
 
         document.head.insertAdjacentHTML('beforeend', modalStyles);
+    }
+
+    // Apply translations if needed
+    if (window.i18n && typeof window.i18n.updatePageContent === 'function') {
+        window.i18n.updatePageContent();
     }
 
     // 4. Set up event listeners directly
@@ -308,7 +366,7 @@ function setupActivityModal() {
 
 // Variables for activity modal pagination
 let activityModalCurrentPage = 1;
-const activityModalPageSize = 10;
+const activityModalPageSize = 5;
 let filteredActivities = [];
 
 // Load full activity list with filtering
@@ -322,11 +380,11 @@ async function loadFullActivityList() {
             return;
         }
 
-        // Show loading state
+        // Show loading state with translation
         activityList.innerHTML = `
       <div class="activity-item loading-item">
         <div class="activity-content">
-          <div class="activity-text">Loading activities...</div>
+          <div class="activity-text">${window.t("dashboard.activity.modal.loading", "Loading activities...")}</div>
         </div>
       </div>
     `;
@@ -359,30 +417,41 @@ async function loadFullActivityList() {
 
         console.log(`Adding activities from ${invoices.length} invoices and ${products.length} products`);
 
-        // Add sales activities
+        // Add sales activities with translations
         invoices.forEach(invoice => {
             allActivities.push({
                 action: 'sale',
                 itemType: 'invoice',
                 itemName: `Invoice #${invoice.id || ''}`,
                 timestamp: new Date(invoice.createdAt || Date.now()).toISOString(),
-                text: `New sale completed for <strong>$${(invoice.total || 0).toFixed(2)}</strong>`,
+                text: translateTemplate(
+                    "dashboard.activity.newSale",
+                    "New sale completed for <strong>${amount}</strong>",
+                    { amount: (invoice.total || 0).toFixed(2) }
+                ),
                 icon: '💵',
-                badge: 'Sale',
+                badge: window.t("dashboard.activity.badges.sale", "Sale"),
                 badgeClass: 'badge-success'
             });
         });
 
-        // Add low stock activities
+        // Add low stock activities with translations
         products.filter(product => (product.stock || 0) < 10).forEach(product => {
             allActivities.push({
                 action: 'stock',
                 itemType: 'product',
-                itemName: product.name || 'Unknown',
+                itemName: product.name || window.t("dashboard.activity.unknown", "Unknown"),
                 timestamp: new Date(product.updatedAt || Date.now()).toISOString(),
-                text: `Product <strong>${product.name || 'Unknown'}</strong> is running low on stock (${product.stock || 0} left)`,
+                text: translateTemplate(
+                    "dashboard.activity.lowStock",
+                    "Product <strong>{name}</strong> is running low on stock ({count} left)",
+                    {
+                        name: product.name || window.t("dashboard.activity.unknown", "Unknown"),
+                        count: product.stock || 0
+                    }
+                ),
                 icon: '📦',
-                badge: 'Stock',
+                badge: window.t("dashboard.activity.badges.stock", "Stock"),
                 badgeClass: 'badge-warning'
             });
         });
@@ -455,7 +524,7 @@ async function loadFullActivityList() {
             activityList.innerHTML = `
         <div class="activity-item error-item">
           <div class="activity-content">
-            <div class="activity-text">Error loading activities. Please try again.</div>
+            <div class="activity-text">${window.t("dashboard.activity.modal.error", "Error loading activities. Please try again.")}</div>
           </div>
         </div>
       `;
@@ -487,34 +556,64 @@ function renderActivityModalPage() {
     if (filteredActivities.length === 0) {
         activityList.innerHTML = `
       <div class="no-activities">
-        <p>No activities found matching the selected filters.</p>
+        <p>${window.t("dashboard.activity.modal.noActivities", "No activities found matching the selected filters.")}</p>
       </div>
     `;
         console.log("No activities to display");
     } else {
+        // Get current language for date formatting
+        const lang = localStorage.getItem('language') || 'en';
+        const locale = lang === 'ar' ? 'ar-SA' : 'en-US';
+
         // Render activities for current page
         currentPageActivities.forEach((activity, index) => {
             const activityItem = document.createElement('div');
             activityItem.className = 'activity-item';
 
-            // Format date for display
+            // Format date for display with localization
             const activityDate = new Date(activity.timestamp);
-            const dateFormatted = activityDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-            });
-            const timeFormatted = activityDate.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+
+            let dateFormatted, timeFormatted;
+
+            try {
+                // Try to format with the current locale
+                dateFormatted = activityDate.toLocaleDateString(locale, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                });
+
+                timeFormatted = activityDate.toLocaleTimeString(locale, {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                // Fallback to default locale
+                dateFormatted = activityDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                });
+
+                timeFormatted = activityDate.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            // Format the full timestamp with translation
+            const formattedTimestamp = translateTemplate(
+                "dashboard.activity.modal.dateTime",
+                "{date} at {time}",
+                { date: dateFormatted, time: timeFormatted }
+            );
 
             // Create HTML structure
             let html = `
         <div class="activity-icon">${activity.icon || getIconForAction(activity.action)}</div>
         <div class="activity-content">
           <div class="activity-text">${activity.text || getTextForActivity(activity)}</div>
-          <div class="activity-timestamp">${dateFormatted} at ${timeFormatted}</div>
+          <div class="activity-timestamp">${formattedTimestamp}</div>
         </div>
       `;
 
@@ -542,7 +641,12 @@ function updateActivityPagination() {
     const nextButton = document.getElementById('next-activity-page');
 
     if (pageInfo) {
-        pageInfo.textContent = `Page ${activityModalCurrentPage} of ${totalPages || 1}`;
+        // Translate the page info text
+        pageInfo.textContent = translateTemplate(
+            "dashboard.activity.modal.pageOf",
+            "Page {current} of {total}",
+            { current: activityModalCurrentPage, total: totalPages || 1 }
+        );
     }
 
     if (prevButton) {
@@ -586,20 +690,81 @@ function getBadgeClassForAction(action) {
 function getTextForActivity(activity) {
     switch (activity.action) {
         case 'update':
-            return `Updated <strong>${activity.itemName || activity.itemType || 'item'}</strong>`;
+            return translateTemplate(
+                "dashboard.activity.itemUpdated",
+                "Updated <strong>{name}</strong>",
+                { name: activity.itemName || activity.itemType || window.t("dashboard.activity.item", "item") }
+            );
         case 'delete':
-            return `Deleted <strong>${activity.itemName || activity.itemType || 'item'}</strong>`;
+            return translateTemplate(
+                "dashboard.activity.itemDeleted",
+                "Deleted <strong>{name}</strong>",
+                { name: activity.itemName || activity.itemType || window.t("dashboard.activity.item", "item") }
+            );
         case 'add':
-            return `Added <strong>${activity.itemName || activity.itemType || 'item'}</strong>`;
+            return translateTemplate(
+                "dashboard.activity.itemAdded",
+                "Added <strong>{name}</strong>",
+                { name: activity.itemName || activity.itemType || window.t("dashboard.activity.item", "item") }
+            );
         case 'sync':
-            return 'Data synced with cloud';
+            return window.t("dashboard.activity.dataSync", "Data synced with cloud");
         case 'sale':
-            return `New sale completed${activity.itemName ? ` for <strong>${activity.itemName}</strong>` : ''}`;
+            if (activity.itemName) {
+                return translateTemplate(
+                    "dashboard.activity.saleWithName",
+                    "New sale completed for <strong>{name}</strong>",
+                    { name: activity.itemName }
+                );
+            } else {
+                return window.t("dashboard.activity.saleCompleted", "New sale completed");
+            }
         case 'stock':
-            return `Low stock alert for <strong>${activity.itemName || 'product'}</strong>`;
+            return translateTemplate(
+                "dashboard.activity.lowStockAlert",
+                "Low stock alert for <strong>{name}</strong>",
+                { name: activity.itemName || window.t("dashboard.activity.product", "product") }
+            );
         default:
-            return `${activity.action || 'Activity'} for ${activity.itemName || activity.itemType || 'item'}`;
+            return translateTemplate(
+                "dashboard.activity.genericActivity",
+                "{action} for {name}",
+                {
+                    action: activity.action || window.t("dashboard.activity.activity", "Activity"),
+                    name: activity.itemName || activity.itemType || window.t("dashboard.activity.item", "item")
+                }
+            );
     }
+}
+
+// Helper function for template translation
+function translateTemplate(key, defaultText, variables = {}) {
+    // If window.t doesn't exist yet, use the default text with variable replacement
+    if (typeof window.t !== 'function') {
+        let result = defaultText;
+        for (const [name, value] of Object.entries(variables)) {
+            const placeholder = `{${name}}`;
+            result = result.replace(new RegExp(placeholder, 'g'), value);
+        }
+        return result;
+    }
+
+    // Get the translated template
+    const template = window.t(key, defaultText);
+
+    // If no variables to replace, return as is
+    if (!variables || Object.keys(variables).length === 0) {
+        return template;
+    }
+
+    // Replace each variable in the template
+    let result = template;
+    for (const [name, value] of Object.entries(variables)) {
+        const placeholder = `{${name}}`;
+        result = result.replace(new RegExp(placeholder, 'g'), value);
+    }
+
+    return result;
 }
 
 // Call this function during document ready or initialization

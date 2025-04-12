@@ -51,6 +51,198 @@
     "fillRequired": "يرجى ملء جميع الحقول المطلوبة",
     "permissionDenied": "ليس لديك صلاحية الوصول إلى صفحة تسجيل المستخدم."
   },
+  "userManager": {
+    "pageTitle": "إدارة المستخدمين - نظام مزلاد للفواتير",
+    "searchPlaceholder": "البحث عن المستخدمين بالاسم أو البريد الإلكتروني أو الدور...",
+    "filters": {
+      "allRoles": "جميع الأدوار",
+      "allStatus": "جميع الحالات"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "deleted": "محذوف"
+    },
+    "table": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "status": "الحالة",
+      "lastLogin": "آخر تسجيل دخول",
+      "actions": "الإجراءات"
+    },
+    "pagination": {
+      "showing": "عرض 0 من 0 مستخدم",
+      "showingRange": "عرض {start} إلى {end} من {total} مستخدم",
+      "previous": "السابق",
+      "next": "التالي",
+      "page": "صفحة 1",
+      "pageOf": "صفحة {current} من {total}"
+    },
+    "modal": {
+      "addUser": "إضافة مستخدم جديد",
+      "editUser": "تعديل المستخدم",
+      "selectRole": "اختر دور",
+      "passwordHint": "الحد الأدنى 6 أحرف",
+      "passwordKeep": "اتركه فارغًا للاحتفاظ بكلمة المرور الحالية",
+      "saveUser": "حفظ المستخدم"
+    },
+    "confirm": {
+      "title": "تأكيد الإجراء",
+      "message": "هل أنت متأكد أنك تريد المتابعة؟",
+      "deleteMessage": "هل أنت متأكد أنك تريد حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirmBtn": "تأكيد"
+    },
+    "loading": "جاري تحميل المستخدمين...",
+    "filtering": "جاري تصفية المستخدمين...",
+    "noUsersFound": "لم يتم العثور على مستخدمين",
+    "noUsersFoundAdjust": "لم يتم العثور على مستخدمين. حاول ضبط التصفية أو أضف مستخدمًا جديدًا.",
+    "userNeverLoggedIn": "أبدًا",
+    "errors": {
+      "ipcNotAvailable": "خطأ في التطبيق: اتصال IPC غير متوفر",
+      "authRequired": "يجب أن تكون مسجل الدخول للوصول إلى إدارة المستخدمين.",
+      "permissionDenied": "ليس لديك صلاحية للوصول إلى هذه الصفحة.",
+      "loadFailed": "فشل تحميل المستخدمين. يرجى المحاولة مرة أخرى.",
+      "loadError": "حدث خطأ أثناء تحميل المستخدمين. يرجى المحاولة مرة أخرى.",
+      "userNotFound": "لم يتم العثور على المستخدم",
+      "loadUserData": "فشل تحميل بيانات المستخدم",
+      "updateFailed": "فشل تحديث المستخدم",
+      "saveFailed": "فشل حفظ المستخدم",
+      "cannotDeleteSelf": "لا يمكنك حذف حسابك الخاص",
+      "deleteFailed": "فشل حذف المستخدم"
+    },
+    "success": {
+      "userUpdated": "تم تحديث المستخدم بنجاح",
+      "userDeleted": "تم حذف المستخدم بنجاح"
+    }
+  },
+  "dashboard": {
+    "pageTitle": "نظام مزلاد للفواتير",
+    "welcome": "مرحبًا بعودتك",
+    "syncData": "مزامنة البيانات",
+    "newSale": "بيع جديد",
+
+    "stats": {
+      "totalSales": "إجمالي المبيعات",
+      "revenue": "الإيرادات",
+      "products": "المنتجات",
+      "lowStockItems": "العناصر منخفضة المخزون",
+      "vsLastWeek": "مقارنة بالأسبوع الماضي",
+      "recentlyAdded": "أضيف مؤخرًا",
+      "requiresAttention": "يتطلب الاهتمام"
+    },
+
+    "chart": {
+      "salesPerformance": "أداء المبيعات",
+      "thisWeek": "هذا الأسبوع",
+      "thisMonth": "هذا الشهر",
+      "thisYear": "هذه السنة",
+      "revenue": "الإيرادات",
+      "orders": "الطلبات",
+      "products": "المنتجات",
+      "productsSold": "المنتجات المباعة",
+      "loading": "جاري تحميل بيانات الرسم البياني...",
+      "noData": "لا توجد بيانات",
+      "noDataPeriod": "لا توجد بيانات للفترة المحددة",
+      "error": "خطأ في تحميل بيانات الرسم البياني"
+    },
+
+    "activity": {
+      "modal": {
+        "title": "سجل النشاطات",
+        "typeFilter": "النوع:",
+        "allActivities": "جميع الأنشطة",
+        "updates": "التحديثات",
+        "deletions": "الحذف",
+        "additions": "الإضافات",
+        "sync": "المزامنة",
+        "sales": "المبيعات",
+        "stock": "المخزون",
+        "dateRange": "النطاق الزمني:",
+        "allTime": "كل الوقت",
+        "today": "اليوم",
+        "thisWeek": "هذا الأسبوع",
+        "thisMonth": "هذا الشهر",
+        "clearFilters": "مسح التصفية",
+        "loading": "جاري تحميل الأنشطة...",
+        "error": "خطأ في تحميل الأنشطة. يرجى المحاولة مرة أخرى.",
+        "noActivities": "لم يتم العثور على أنشطة تطابق المرشحات المحددة.",
+        "previous": "« السابق",
+        "next": "التالي »",
+        "pageInfo": "صفحة 1 من 1",
+        "pageOf": "صفحة {current} من {total}",
+        "dateTime": "{date} في {time}"
+      },
+      "itemUpdated": "تم تحديث <strong>{name}</strong>",
+      "itemDeleted": "تم حذف <strong>{name}</strong>",
+      "itemAdded": "تمت إضافة <strong>{name}</strong>",
+      "saleWithName": "تمت عملية بيع جديدة لـ <strong>{name}</strong>",
+      "saleCompleted": "تمت عملية بيع جديدة",
+      "lowStockAlert": "تنبيه انخفاض المخزون لـ <strong>{name}</strong>",
+      "genericActivity": "{action} لـ {name}",
+      "activity": "نشاط",
+      "item": "عنصر",
+      "product": "منتج",
+      "title": "النشاط الأخير",
+      "loading": "جاري تحميل الأنشطة الأخيرة...",
+      "noActivities": "لم يتم العثور على أنشطة حديثة",
+      "loadError": "خطأ في تحميل الأنشطة",
+      "unknown": "غير معروف",
+      "newSale": "تمت عملية بيع جديدة بقيمة <strong>${amount}</strong>",
+      "lowStock": "المنتج <strong>{name}</strong> ينخفض مخزونه ({count} متبقي)",
+      "dataSync": "تمت مزامنة البيانات بنجاح مع السحابة",
+      "badges": {
+        "sale": "بيع",
+        "stock": "مخزون",
+        "sync": "مزامنة",
+        "update": "تحديث",
+        "delete": "حذف",
+        "new": "جديد"
+      }
+    },
+
+    "quickAccess": {
+      "newSale": {
+        "title": "بيع جديد",
+        "subtitle": "إنشاء الفواتير والإيصالات",
+        "feature1": "معالجة المعاملات بسرعة",
+        "feature2": "تطبيق الخصومات والضرائب",
+        "feature3": "طباعة أو إرسال الإيصالات بالبريد الإلكتروني"
+      },
+      "inventory": {
+        "title": "المخزون",
+        "subtitle": "إدارة المنتجات والمخزون",
+        "feature1": "إضافة وتحديث المنتجات",
+        "feature2": "تتبع مستويات المخزون",
+        "feature3": "تعيين قواعد الأسعار والضرائب"
+      },
+      "reports": {
+        "title": "التقارير",
+        "subtitle": "التحليلات والرؤى",
+        "feature1": "تحليل أداء المبيعات",
+        "feature2": "تقارير حركة المخزون",
+        "feature3": "تصدير البيانات إلى CSV/PDF"
+      }
+    },
+
+    "sync": {
+      "title": "مزامنة البيانات",
+      "lastSyncNever": "آخر مزامنة: لم تتم أبدًا",
+      "lastSync": "آخر مزامنة: {time}",
+      "button": "مزامنة الآن",
+      "syncing": "جاري المزامنة...",
+      "success": "تمت مزامنة البيانات بنجاح!",
+      "failed": "فشلت المزامنة. يرجى التحقق من اتصالك.",
+      "notAvailable": "وظيفة المزامنة غير متوفرة في هذا الإصدار.",
+      "error": "خطأ في مزامنة البيانات: {message}"
+    },
+
+    "time": {
+      "today": "اليوم الساعة {time}",
+      "yesterday": "الأمس الساعة {time}",
+      "daysAgo": "منذ {days} أيام"
+    }
+  },
   "reports": {
     "title": "التقارير",
     "controls": {
