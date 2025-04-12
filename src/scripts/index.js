@@ -20,7 +20,7 @@ function translateTemplate(key, defaultText, variables = {}) {
   let result = template;
   for (const [name, value] of Object.entries(variables)) {
     const placeholder = `{${name}}`;
-    result = result.replace(new RegExp(placeholder, 'g'), value);
+    result = result.replace(new RegExp(placeholder, "g"), value);
   }
 
   return result;
@@ -37,7 +37,7 @@ async function forceApplyTranslations() {
     console.log("Dashboard: Force applying translations to all elements");
 
     // Get current language
-    const lang = localStorage.getItem('language') || 'en';
+    const lang = localStorage.getItem("language") || "en";
     console.log(`Dashboard: Current language: ${lang}`);
 
     // First ensure translations are loaded
@@ -49,10 +49,13 @@ async function forceApplyTranslations() {
           `/locales/${lang}.json`,
           `./locales/${lang}.json`,
           `../locales/${lang}.json`,
-          `${lang}.json`
+          `${lang}.json`,
         ];
 
-        console.log("Dashboard: Trying to load translations from paths:", possiblePaths);
+        console.log(
+          "Dashboard: Trying to load translations from paths:",
+          possiblePaths
+        );
 
         let translationsLoaded = false;
 
@@ -61,19 +64,25 @@ async function forceApplyTranslations() {
             const response = await fetch(path);
             if (response.ok) {
               const data = await response.json();
-              console.log(`Dashboard: Successfully loaded translations from ${path}`);
+              console.log(
+                `Dashboard: Successfully loaded translations from ${path}`
+              );
 
               // Flatten and apply translations
-              if (typeof window.i18n.flattenTranslations === 'function') {
+              if (typeof window.i18n.flattenTranslations === "function") {
                 const flattened = window.i18n.flattenTranslations(data);
 
                 // Merge with existing translations
                 window.i18n.translations[lang] = {
                   ...(window.i18n.translations[lang] || {}),
-                  ...flattened
+                  ...flattened,
                 };
 
-                console.log(`Dashboard: Added ${Object.keys(flattened).length} translations`);
+                console.log(
+                  `Dashboard: Added ${
+                    Object.keys(flattened).length
+                  } translations`
+                );
                 translationsLoaded = true;
                 break;
               }
@@ -84,15 +93,17 @@ async function forceApplyTranslations() {
         }
 
         if (!translationsLoaded) {
-          console.warn(`Dashboard: Could not load translations for ${lang} from files`);
+          console.warn(
+            `Dashboard: Could not load translations for ${lang} from files`
+          );
         }
       } catch (e) {
         console.error("Dashboard: Error loading translation file:", e);
       }
 
       // Now manually apply translations to all elements with data-i18n
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.getAttribute("data-i18n");
         console.log(`Dashboard: Translating element with key: ${key}`);
 
         let translated = window.t(key);
@@ -104,30 +115,35 @@ async function forceApplyTranslations() {
 
         el.textContent = translated;
       });
-      document.head.insertAdjacentHTML('beforeend', `
+      document.head.insertAdjacentHTML(
+        "beforeend",
+        `
   <style id="activity-limiter">
     #activity-list .activity-item:nth-child(n+6) {
       display: none !important;
     }
   </style>
-`);
+`
+      );
       // Update placeholders
-      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        const key = el.getAttribute('data-i18n-placeholder');
+      document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+        const key = el.getAttribute("data-i18n-placeholder");
         const translated = window.t(key);
-        console.log(`Dashboard: Setting placeholder for key: ${key} to "${translated}"`);
-        el.setAttribute('placeholder', translated);
+        console.log(
+          `Dashboard: Setting placeholder for key: ${key} to "${translated}"`
+        );
+        el.setAttribute("placeholder", translated);
       });
 
       // After manual translation, call the official update method
-      if (typeof window.i18n.updatePageContent === 'function') {
+      if (typeof window.i18n.updatePageContent === "function") {
         window.i18n.updatePageContent();
       }
 
       translationsApplied = true;
 
       // Add a listener for language changes to reapply translations
-      window.addEventListener('languageChanged', async () => {
+      window.addEventListener("languageChanged", async () => {
         console.log("Dashboard: Language changed, reapplying translations");
         translationsApplied = false; // Reset so we can apply again
         await forceApplyTranslations();
@@ -169,7 +185,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Update UI with user info - LayoutManager will handle some of this
     document.getElementById("user-greeting").textContent =
-        user.name.split(" ")[0];
+      user.name.split(" ")[0];
 
     // Set current date with internationalization
     updateDateDisplay();
@@ -192,8 +208,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Set up event listeners - some are now handled by LayoutManager
     document.getElementById("sync-button").addEventListener("click", syncData);
     document
-        .getElementById("sync-button-bottom")
-        .addEventListener("click", syncData);
+      .getElementById("sync-button-bottom")
+      .addEventListener("click", syncData);
 
     // Set up chart period buttons
     document.getElementById("chart-week").addEventListener("click", () => {
@@ -227,34 +243,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     document
-        .getElementById("inventory-card")
-        .addEventListener("click", (event) => {
-          if (
-              !document
-                  .getElementById("inventory-card")
-                  .classList.contains("disabled")
-          ) {
-            window.location.href = "views/inventory.html";
-          } else {
-            event.preventDefault();
-            alert(window.t("dashboard.permissions.inventoryAccess", "You do not have permission to access Inventory."));
-          }
-        });
+      .getElementById("inventory-card")
+      .addEventListener("click", (event) => {
+        if (
+          !document
+            .getElementById("inventory-card")
+            .classList.contains("disabled")
+        ) {
+          window.location.href = "views/inventory.html";
+        } else {
+          event.preventDefault();
+          alert(
+            window.t(
+              "dashboard.permissions.inventoryAccess",
+              "You do not have permission to access Inventory."
+            )
+          );
+        }
+      });
 
     document
-        .getElementById("reports-card")
-        .addEventListener("click", (event) => {
-          if (
-              !document
-                  .getElementById("reports-card")
-                  .classList.contains("disabled")
-          ) {
-            window.location.href = "views/reports.html";
-          } else {
-            event.preventDefault();
-            alert(window.t("dashboard.permissions.reportsAccess", "You do not have permission to access Reports."));
-          }
-        });
+      .getElementById("reports-card")
+      .addEventListener("click", (event) => {
+        if (
+          !document
+            .getElementById("reports-card")
+            .classList.contains("disabled")
+        ) {
+          window.location.href = "views/reports.html";
+        } else {
+          event.preventDefault();
+          alert(
+            window.t(
+              "dashboard.permissions.reportsAccess",
+              "You do not have permission to access Reports."
+            )
+          );
+        }
+      });
 
     // Check connection status
     checkConnectionStatus();
@@ -276,7 +302,7 @@ function updateDateDisplay() {
   };
 
   // Get current language
-  const lang = localStorage.getItem('language') || 'en';
+  const lang = localStorage.getItem("language") || "en";
 
   // Format date according to language
   const dateDisplay = document.getElementById("current-date");
@@ -284,10 +310,13 @@ function updateDateDisplay() {
     const date = new Date();
     try {
       // Try language-specific formatting
-      dateDisplay.textContent = date.toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', dateOptions);
+      dateDisplay.textContent = date.toLocaleDateString(
+        lang === "ar" ? "ar-SA" : "en-US",
+        dateOptions
+      );
     } catch (e) {
       // Fallback to default
-      dateDisplay.textContent = date.toLocaleDateString('en-US', dateOptions);
+      dateDisplay.textContent = date.toLocaleDateString("en-US", dateOptions);
     }
   }
 }
@@ -313,7 +342,9 @@ function applyRoleBasedAccess(user) {
   }
   // Admins can access everything (no restrictions)
 
-  console.log(`Applied dashboard-specific access restrictions for role: ${user.role}`);
+  console.log(
+    `Applied dashboard-specific access restrictions for role: ${user.role}`
+  );
 }
 
 // Set chart period and update chart
@@ -376,11 +407,11 @@ async function fetchDashboardData() {
     // Get products
     cachedProducts = await window.api.getProducts();
     document.getElementById("products-count").textContent =
-        cachedProducts.length;
+      cachedProducts.length;
 
     // Count low stock items (stock < 5)
     const lowStockItems = cachedProducts.filter(
-        (product) => product.stock <= 5
+      (product) => product.stock <= 5
     ).length;
     document.getElementById("low-stock-count").textContent = lowStockItems;
 
@@ -396,31 +427,33 @@ async function fetchDashboardData() {
 
     // Calculate total revenue
     const totalRevenue = cachedInvoices.reduce(
-        (sum, invoice) => sum + (invoice.total || 0),
-        0
+      (sum, invoice) => sum + (invoice.total || 0),
+      0
     );
 
     // Get current language for number formatting
-    const lang = localStorage.getItem('language') || 'en';
+    const lang = localStorage.getItem("language") || "en";
 
     // Format revenue with current locale
     const revenueEl = document.getElementById("revenue-value");
     if (revenueEl) {
-      if (lang === 'ar') {
-        // For Arabic, format with Arabic numerals if possible
-        try {
-          revenueEl.textContent = `$${totalRevenue.toLocaleString('ar-SA', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          })}`;
-        } catch (e) {
-          // Fallback to standard format
-          revenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
-        }
-      } else {
-        // For English and other languages
-        revenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
-      }
+      // if (lang === "ar") {
+      //   // For Arabic, format with Arabic numerals if possible
+      //   try {
+      //     revenueEl.textContent = `$${totalRevenue.toLocaleString("ar-SA", {
+      //       minimumFractionDigits: 2,
+      //       maximumFractionDigits: 2,
+      //     })}`;
+      //   } catch (e) {
+      //     // Fallback to standard format
+      //     revenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
+      //   }
+      // } else {
+      //   // For English and other languages
+      //   revenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
+      // }
+      // For English and other languages
+      revenueEl.textContent = formatCurrency(totalRevenue);
     }
 
     // Calculate trends
@@ -429,7 +462,12 @@ async function fetchDashboardData() {
     console.error("Error fetching dashboard data:", error);
   }
 }
-
+// Format currency based on user settings
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount).toFixed(2)}`;
+}
 function calculateAndDisplayTrends(invoices) {
   try {
     const now = new Date();
@@ -442,12 +480,12 @@ function calculateAndDisplayTrends(invoices) {
     twoWeeksAgo.setDate(now.getDate() - 14);
 
     // Filter invoices by time periods
-    const currentWeekInvoices = invoices.filter(invoice => {
+    const currentWeekInvoices = invoices.filter((invoice) => {
       const invoiceDate = new Date(invoice.createdAt || Date.now());
       return invoiceDate >= oneWeekAgo && invoiceDate <= now;
     });
 
-    const previousWeekInvoices = invoices.filter(invoice => {
+    const previousWeekInvoices = invoices.filter((invoice) => {
       const invoiceDate = new Date(invoice.createdAt || Date.now());
       return invoiceDate >= twoWeeksAgo && invoiceDate < oneWeekAgo;
     });
@@ -458,51 +496,78 @@ function calculateAndDisplayTrends(invoices) {
 
     let salesTrendPercentage = 0;
     if (previousWeekSalesCount > 0) {
-      salesTrendPercentage = ((currentWeekSalesCount - previousWeekSalesCount) / previousWeekSalesCount) * 100;
+      salesTrendPercentage =
+        ((currentWeekSalesCount - previousWeekSalesCount) /
+          previousWeekSalesCount) *
+        100;
     }
 
     // Calculate revenue trends
     const currentWeekRevenue = currentWeekInvoices.reduce(
-        (sum, invoice) => sum + (invoice.total || 0), 0
+      (sum, invoice) => sum + (invoice.total || 0),
+      0
     );
 
     const previousWeekRevenue = previousWeekInvoices.reduce(
-        (sum, invoice) => sum + (invoice.total || 0), 0
+      (sum, invoice) => sum + (invoice.total || 0),
+      0
     );
 
     let revenueTrendPercentage = 0;
     if (previousWeekRevenue > 0) {
-      revenueTrendPercentage = ((currentWeekRevenue - previousWeekRevenue) / previousWeekRevenue) * 100;
+      revenueTrendPercentage =
+        ((currentWeekRevenue - previousWeekRevenue) / previousWeekRevenue) *
+        100;
     }
 
     // Calculate product trend (newly added products in last week)
-    const recentlyAddedProducts = cachedProducts.filter(product => {
+    const recentlyAddedProducts = cachedProducts.filter((product) => {
       const createdDate = new Date(product.createdAt || Date.now());
       return createdDate >= oneWeekAgo && createdDate <= now;
     }).length;
 
     // Update sales trend UI
-    updateTrendUI('sales-count', salesTrendPercentage, window.t("dashboard.stats.vsLastWeek", "vs last week"));
+    updateTrendUI(
+      "sales-count",
+      salesTrendPercentage,
+      window.t("dashboard.stats.vsLastWeek", "vs last week")
+    );
 
     // Update revenue trend UI
-    updateTrendUI('revenue-value', revenueTrendPercentage, window.t("dashboard.stats.vsLastWeek", "vs last week"));
+    updateTrendUI(
+      "revenue-value",
+      revenueTrendPercentage,
+      window.t("dashboard.stats.vsLastWeek", "vs last week")
+    );
 
     // Update products trend UI with recently added count
-    const productTrendElement = document.querySelector('#products-count').nextElementSibling;
+    const productTrendElement =
+      document.querySelector("#products-count").nextElementSibling;
     if (productTrendElement) {
-      const recentlyAddedText = window.t("dashboard.stats.recentlyAdded", "Recently added");
+      const recentlyAddedText = window.t(
+        "dashboard.stats.recentlyAdded",
+        "Recently added"
+      );
       productTrendElement.innerHTML = `<span>${recentlyAddedText}: ${recentlyAddedProducts}</span>`;
     }
 
     // Update low stock trend UI
-    const lowStockTrendElement = document.querySelector('#low-stock-count').nextElementSibling;
+    const lowStockTrendElement =
+      document.querySelector("#low-stock-count").nextElementSibling;
     if (lowStockTrendElement) {
-      const requiresAttentionText = window.t("dashboard.stats.requiresAttention", "Requires attention");
+      const requiresAttentionText = window.t(
+        "dashboard.stats.requiresAttention",
+        "Requires attention"
+      );
       lowStockTrendElement.innerHTML = `<span>${requiresAttentionText}</span>`;
-      lowStockTrendElement.className = 'stat-trend trend-down';
+      lowStockTrendElement.className = "stat-trend trend-down";
     }
 
-    console.log(`Calculated trends - Sales: ${salesTrendPercentage.toFixed(1)}%, Revenue: ${revenueTrendPercentage.toFixed(1)}%`);
+    console.log(
+      `Calculated trends - Sales: ${salesTrendPercentage.toFixed(
+        1
+      )}%, Revenue: ${revenueTrendPercentage.toFixed(1)}%`
+    );
   } catch (error) {
     console.error("Error calculating trends:", error);
   }
@@ -518,17 +583,17 @@ function updateTrendUI(elementId, percentage, comparisonText) {
 
   // Determine trend direction and class
   const isUp = percentage >= 0;
-  const trendClass = isUp ? 'trend-up' : 'trend-down';
-  const trendSymbol = isUp ? '↑' : '↓';
+  const trendClass = isUp ? "trend-up" : "trend-down";
+  const trendSymbol = isUp ? "↑" : "↓";
 
   // Get current language for number formatting
-  const lang = localStorage.getItem('language') || 'en';
+  const lang = localStorage.getItem("language") || "en";
 
   // Format the percentage with current locale
   let formattedPercentage;
-  if (lang === 'ar') {
+  if (lang === "ar") {
     try {
-      formattedPercentage = roundedPercentage.toLocaleString('ar-SA');
+      formattedPercentage = roundedPercentage.toLocaleString("ar-SA");
     } catch (e) {
       formattedPercentage = roundedPercentage;
     }
@@ -564,7 +629,7 @@ async function checkConnectionStatus() {
 // Update UI based on connection status
 function updateConnectionUI(isOnline) {
   const syncButtons = document.querySelectorAll(
-      "#sync-button, #sync-button-bottom"
+    "#sync-button, #sync-button-bottom"
   );
 
   syncButtons.forEach((button) => {
@@ -588,15 +653,14 @@ function setupOnlineListeners() {
 async function syncData() {
   try {
     const syncButtons = document.querySelectorAll(
-        "#sync-button, #sync-button-bottom"
+      "#sync-button, #sync-button-bottom"
     );
 
     const syncingText = window.t("dashboard.sync.syncing", "Syncing...");
 
     syncButtons.forEach((button) => {
       button.disabled = true;
-      button.innerHTML =
-          `<div class="btn-icon" style="animation: spin 1s linear infinite;">🔄</div><span>${syncingText}</span>`;
+      button.innerHTML = `<div class="btn-icon" style="animation: spin 1s linear infinite;">🔄</div><span>${syncingText}</span>`;
     });
 
     if (typeof window.api.syncData === "function") {
@@ -605,16 +669,19 @@ async function syncData() {
       if (success) {
         // Get last sync time text with translation
         const lastSyncText = translateTemplate(
-            "dashboard.sync.lastSync",
-            "Last sync: {time}",
-            { time: new Date().toLocaleString() }
+          "dashboard.sync.lastSync",
+          "Last sync: {time}",
+          { time: new Date().toLocaleString() }
         );
 
         document.getElementById("last-sync").textContent = lastSyncText;
 
         // Log the sync activity
         logActivity("sync", "database", "All data", {
-          text: window.t("dashboard.activity.dataSync", "Data synced successfully with cloud"),
+          text: window.t(
+            "dashboard.activity.dataSync",
+            "Data synced successfully with cloud"
+          ),
           icon: "🔄",
           badge: window.t("dashboard.activity.badges.sync", "Sync"),
           badgeClass: "badge-info",
@@ -630,8 +697,11 @@ async function syncData() {
         alertDiv.style.color = "var(--success)";
         alertDiv.style.marginTop = "1rem";
         alertDiv.style.textAlign = "center";
-        alertDiv.style.width = "100%";
-        alertDiv.textContent = window.t("dashboard.sync.success", "Data synced successfully!");
+        alertDiv.style.width = "50%";
+        alertDiv.textContent = window.t(
+          "dashboard.sync.success",
+          "Data synced successfully!"
+        );
 
         // Remove any existing alerts
         const existingAlert = syncSection.querySelector(".sync-alert");
@@ -668,7 +738,10 @@ async function syncData() {
         alertDiv.style.marginTop = "1rem";
         alertDiv.style.textAlign = "center";
         alertDiv.style.width = "100%";
-        alertDiv.textContent = window.t("dashboard.sync.failed", "Sync failed. Please check your connection.");
+        alertDiv.textContent = window.t(
+          "dashboard.sync.failed",
+          "Sync failed. Please check your connection."
+        );
 
         // Remove any existing alerts
         const existingAlert = syncSection.querySelector(".sync-alert");
@@ -686,19 +759,24 @@ async function syncData() {
         }, 5000);
       }
     } else {
-      alert(window.t("dashboard.sync.notAvailable", "Sync functionality is not available in this version."));
+      alert(
+        window.t(
+          "dashboard.sync.notAvailable",
+          "Sync functionality is not available in this version."
+        )
+      );
     }
   } catch (error) {
     console.error("Sync error:", error);
     const errorMessage = translateTemplate(
-        "dashboard.sync.error",
-        "Error syncing data: {message}",
-        { message: error.message || "Unknown error" }
+      "dashboard.sync.error",
+      "Error syncing data: {message}",
+      { message: error.message || "Unknown error" }
     );
     alert(errorMessage);
   } finally {
     const syncButtons = document.querySelectorAll(
-        "#sync-button, #sync-button-bottom"
+      "#sync-button, #sync-button-bottom"
     );
 
     const syncDataText = window.t("dashboard.syncData", "Sync Data");
@@ -725,12 +803,12 @@ async function loadRecentActivity() {
 
     // First try the global activity logger
     if (
-        window.activityLogger &&
-        typeof window.activityLogger.getAll === "function"
+      window.activityLogger &&
+      typeof window.activityLogger.getAll === "function"
     ) {
       activityLogs = window.activityLogger.getAll();
       console.log(
-          `Loaded ${activityLogs.length} activities from global logger`
+        `Loaded ${activityLogs.length} activities from global logger`
       );
     } else {
       // Legacy fallback
@@ -739,7 +817,7 @@ async function loadRecentActivity() {
         if (storedLogs) {
           activityLogs = JSON.parse(storedLogs);
           console.log(
-              `Loaded ${activityLogs.length} activities from localStorage directly`
+            `Loaded ${activityLogs.length} activities from localStorage directly`
           );
         }
       } catch (error) {
@@ -754,7 +832,7 @@ async function loadRecentActivity() {
 
         // Merge API logs with other logs, avoiding duplicates
         const existingTimestamps = new Set(
-            activityLogs.map((log) => log.timestamp)
+          activityLogs.map((log) => log.timestamp)
         );
         for (const apiLog of apiLogs) {
           if (!existingTimestamps.has(apiLog.timestamp)) {
@@ -781,9 +859,9 @@ async function loadRecentActivity() {
         type: "sale",
         icon: "💵",
         text: translateTemplate(
-            "dashboard.activity.newSale",
-            "New sale completed for <strong>${amount}</strong>",
-            { amount: (invoice.total || 0).toFixed(2) }
+          "dashboard.activity.newSale",
+          "New sale completed for <strong>${amount}</strong>",
+          { amount: (invoice.total || 0).toFixed(2) }
         ),
         timestamp: new Date(invoice.createdAt || Date.now()),
         badge: window.t("dashboard.activity.badges.sale", "Sale"),
@@ -793,34 +871,39 @@ async function loadRecentActivity() {
 
     // Add low stock activities with translations
     products
-        .filter((product) => (product.stock || 0) < 10)
-        .forEach((product) => {
-          activities.push({
-            type: "stock",
-            icon: "📦",
-            text: translateTemplate(
-                "dashboard.activity.lowStock",
-                "Product <strong>{name}</strong> is running low on stock ({count} left)",
-                {
-                  name: product.name || window.t("dashboard.activity.unknown", "Unknown"),
-                  count: product.stock || 0
-                }
-            ),
-            timestamp: new Date(product.updatedAt || Date.now()),
-            badge: window.t("dashboard.activity.badges.stock", "Stock"),
-            badgeClass: "badge-warning",
-          });
+      .filter((product) => (product.stock || 0) < 10)
+      .forEach((product) => {
+        activities.push({
+          type: "stock",
+          icon: "📦",
+          text: translateTemplate(
+            "dashboard.activity.lowStock",
+            "Product <strong>{name}</strong> is running low on stock ({count} left)",
+            {
+              name:
+                product.name ||
+                window.t("dashboard.activity.unknown", "Unknown"),
+              count: product.stock || 0,
+            }
+          ),
+          timestamp: new Date(product.updatedAt || Date.now()),
+          badge: window.t("dashboard.activity.badges.stock", "Stock"),
+          badgeClass: "badge-warning",
         });
+      });
 
     // Get sync time if available
     const lastSyncTime = window.api.getLastSyncTime
-        ? await window.api.getLastSyncTime()
-        : null;
+      ? await window.api.getLastSyncTime()
+      : null;
     if (lastSyncTime) {
       activities.push({
         type: "sync",
         icon: "🔄",
-        text: window.t("dashboard.activity.dataSync", "Data synced successfully with cloud"),
+        text: window.t(
+          "dashboard.activity.dataSync",
+          "Data synced successfully with cloud"
+        ),
         timestamp: new Date(lastSyncTime),
         badge: window.t("dashboard.activity.badges.sync", "Sync"),
         badgeClass: "badge-info",
@@ -835,9 +918,14 @@ async function loadRecentActivity() {
             type: "update",
             icon: "✏️",
             text: translateTemplate(
-                "dashboard.activity.itemUpdated",
-                "Updated <strong>{name}</strong>",
-                { name: log.itemName || log.itemType || window.t("dashboard.activity.item", "item") }
+              "dashboard.activity.itemUpdated",
+              "Updated <strong>{name}</strong>",
+              {
+                name:
+                  log.itemName ||
+                  log.itemType ||
+                  window.t("dashboard.activity.item", "item"),
+              }
             ),
             timestamp: new Date(log.timestamp || Date.now()),
             badge: window.t("dashboard.activity.badges.update", "Update"),
@@ -849,9 +937,14 @@ async function loadRecentActivity() {
             type: "delete",
             icon: "🗑️",
             text: translateTemplate(
-                "dashboard.activity.itemDeleted",
-                "Deleted <strong>{name}</strong>",
-                { name: log.itemName || log.itemType || window.t("dashboard.activity.item", "item") }
+              "dashboard.activity.itemDeleted",
+              "Deleted <strong>{name}</strong>",
+              {
+                name:
+                  log.itemName ||
+                  log.itemType ||
+                  window.t("dashboard.activity.item", "item"),
+              }
             ),
             timestamp: new Date(log.timestamp || Date.now()),
             badge: window.t("dashboard.activity.badges.delete", "Delete"),
@@ -863,9 +956,14 @@ async function loadRecentActivity() {
             type: "add",
             icon: "✚",
             text: translateTemplate(
-                "dashboard.activity.itemAdded",
-                "Added <strong>{name}</strong>",
-                { name: log.itemName || log.itemType || window.t("dashboard.activity.item", "item") }
+              "dashboard.activity.itemAdded",
+              "Added <strong>{name}</strong>",
+              {
+                name:
+                  log.itemName ||
+                  log.itemType ||
+                  window.t("dashboard.activity.item", "item"),
+              }
             ),
             timestamp: new Date(log.timestamp || Date.now()),
             badge: window.t("dashboard.activity.badges.new", "New"),
@@ -878,7 +976,10 @@ async function loadRecentActivity() {
             activities.push({
               type: "sync",
               icon: "🔄",
-              text: window.t("dashboard.activity.dataSync", "Data synced with cloud"),
+              text: window.t(
+                "dashboard.activity.dataSync",
+                "Data synced with cloud"
+              ),
               timestamp: new Date(log.timestamp || Date.now()),
               badge: window.t("dashboard.activity.badges.sync", "Sync"),
               badgeClass: "badge-info",
@@ -903,9 +1004,9 @@ async function loadRecentActivity() {
     // Sort activities by timestamp, most recent first
     activities.sort((a, b) => {
       const dateA =
-          a.timestamp instanceof Date ? a.timestamp : new Date(a.timestamp);
+        a.timestamp instanceof Date ? a.timestamp : new Date(a.timestamp);
       const dateB =
-          b.timestamp instanceof Date ? b.timestamp : new Date(b.timestamp);
+        b.timestamp instanceof Date ? b.timestamp : new Date(b.timestamp);
       return dateB - dateA;
     });
 
@@ -918,7 +1019,10 @@ async function loadRecentActivity() {
       noActivityItem.className = "activity-item";
       noActivityItem.innerHTML = `
         <div class="activity-content">
-          <div class="activity-text">${window.t("dashboard.activity.noActivities", "No recent activities found")}</div>
+          <div class="activity-text">${window.t(
+            "dashboard.activity.noActivities",
+            "No recent activities found"
+          )}</div>
         </div>
       `;
       activityList.appendChild(noActivityItem);
@@ -965,7 +1069,10 @@ async function loadRecentActivity() {
     errorItem.className = "activity-item";
     errorItem.innerHTML = `
       <div class="activity-content">
-        <div class="activity-text">${window.t("dashboard.activity.loadError", "Error loading activities")}</div>
+        <div class="activity-text">${window.t(
+          "dashboard.activity.loadError",
+          "Error loading activities"
+        )}</div>
       </div>
     `;
     activityList.appendChild(errorItem);
@@ -1036,35 +1143,39 @@ function formatTimestamp(date) {
       time: date.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
-      })
+      }),
     });
   } else if (dayDiff === 1) {
     // Yesterday
-    return translateTemplate("dashboard.time.yesterday", "Yesterday at {time}", {
-      time: date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    });
+    return translateTemplate(
+      "dashboard.time.yesterday",
+      "Yesterday at {time}",
+      {
+        time: date.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }
+    );
   } else if (dayDiff < 7) {
     // Within the last week
     return translateTemplate("dashboard.time.daysAgo", "{days} days ago", {
-      days: dayDiff
+      days: dayDiff,
     });
   } else {
     // Get current language
-    const lang = localStorage.getItem('language') || 'en';
+    const lang = localStorage.getItem("language") || "en";
 
     // Older than a week, show date
     try {
-      return date.toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', {
+      return date.toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", {
         month: "long",
         day: "numeric",
         year: "numeric",
       });
     } catch (e) {
       // Fallback to default
-      return date.toLocaleDateString('en-US', {
+      return date.toLocaleDateString("en-US", {
         month: "long",
         day: "numeric",
         year: "numeric",
@@ -1111,7 +1222,7 @@ function initSalesChart() {
 
 function getCurrentViewLabel() {
   if (currentChartView === "revenue") {
-    return window.t("dashboard.chart.revenue", "Revenue ($)");
+    return window.t("dashboard.chart.revenue", "Revenue ");
   } else if (currentChartView === "orders") {
     return window.t("dashboard.chart.orders", "Orders");
   } else {
@@ -1156,14 +1267,16 @@ function processChartData(invoices) {
 
   if (filteredInvoices.length === 0) {
     return {
-      labels: [window.t("dashboard.chart.noDataPeriod", "No data for selected period")],
+      labels: [
+        window.t("dashboard.chart.noDataPeriod", "No data for selected period"),
+      ],
       data: [0],
     };
   }
 
   // Get current language
-  const lang = localStorage.getItem('language') || 'en';
-  const locale = lang === 'ar' ? 'ar-SA' : 'en-US';
+  const lang = localStorage.getItem("language") || "en";
+  const locale = lang === "ar" ? "ar-SA" : "en-US";
 
   // Group data by date
   const groupedData = {};
@@ -1193,12 +1306,12 @@ function processChartData(invoices) {
 
         // Count products sold in this invoice
         const productCount = invoice.items
-            ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
-            : 0;
+          ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+          : 0;
         groupedData[day].products += productCount;
       } catch (e) {
         // Fallback to default locale if there's an error
-        const day = date.toLocaleDateString('en-US', {
+        const day = date.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
         });
@@ -1216,8 +1329,8 @@ function processChartData(invoices) {
 
         // Count products sold in this invoice
         const productCount = invoice.items
-            ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
-            : 0;
+          ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+          : 0;
         groupedData[day].products += productCount;
       }
     });
@@ -1232,8 +1345,8 @@ function processChartData(invoices) {
       try {
         const monthName = date.toLocaleDateString(locale, { month: "short" });
         const chunk = `${monthName} ${dayChunk + 1}-${Math.min(
-            dayChunk + 3,
-            31
+          dayChunk + 3,
+          31
         )}`;
 
         if (!groupedData[chunk]) {
@@ -1249,15 +1362,15 @@ function processChartData(invoices) {
 
         // Count products sold in this invoice
         const productCount = invoice.items
-            ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
-            : 0;
+          ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+          : 0;
         groupedData[chunk].products += productCount;
       } catch (e) {
         // Fallback to default locale
-        const monthName = date.toLocaleDateString('en-US', { month: "short" });
+        const monthName = date.toLocaleDateString("en-US", { month: "short" });
         const chunk = `${monthName} ${dayChunk + 1}-${Math.min(
-            dayChunk + 3,
-            31
+          dayChunk + 3,
+          31
         )}`;
 
         if (!groupedData[chunk]) {
@@ -1272,8 +1385,8 @@ function processChartData(invoices) {
         groupedData[chunk].orders += 1;
 
         const productCount = invoice.items
-            ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
-            : 0;
+          ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+          : 0;
         groupedData[chunk].products += productCount;
       }
     });
@@ -1298,12 +1411,12 @@ function processChartData(invoices) {
 
         // Count products sold in this invoice
         const productCount = invoice.items
-            ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
-            : 0;
+          ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+          : 0;
         groupedData[month].products += productCount;
       } catch (e) {
         // Fallback to default locale
-        const month = date.toLocaleDateString('en-US', { month: "short" });
+        const month = date.toLocaleDateString("en-US", { month: "short" });
 
         if (!groupedData[month]) {
           groupedData[month] = {
@@ -1317,8 +1430,8 @@ function processChartData(invoices) {
         groupedData[month].orders += 1;
 
         const productCount = invoice.items
-            ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
-            : 0;
+          ? invoice.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+          : 0;
         groupedData[month].products += productCount;
       }
     });
@@ -1461,16 +1574,16 @@ async function createAndUpdateChart() {
             mode: "index",
             intersect: false,
             backgroundColor: getComputedStyle(document.body).getPropertyValue(
-                "--base-100"
+              "--base-100"
             ),
             titleColor: getComputedStyle(document.body).getPropertyValue(
-                "--text-primary"
+              "--text-primary"
             ),
             bodyColor: getComputedStyle(document.body).getPropertyValue(
-                "--text-secondary"
+              "--text-secondary"
             ),
             borderColor: getComputedStyle(document.body).getPropertyValue(
-                "--primary"
+              "--primary"
             ),
             borderWidth: 1,
             // Limited callbacks for performance
@@ -1482,7 +1595,7 @@ async function createAndUpdateChart() {
                 }
                 if (context.parsed.y !== null) {
                   if (currentChartView === "revenue") {
-                    label += "$" + context.parsed.y.toFixed(2);
+                    label += "$" + formatCurrency(context.parsed.y);
                   } else {
                     label += context.parsed.y;
                   }
@@ -1499,7 +1612,7 @@ async function createAndUpdateChart() {
             },
             ticks: {
               color: getComputedStyle(document.body).getPropertyValue(
-                  "--text-secondary"
+                "--text-secondary"
               ),
             },
           },
@@ -1511,7 +1624,7 @@ async function createAndUpdateChart() {
             },
             ticks: {
               color: getComputedStyle(document.body).getPropertyValue(
-                  "--text-secondary"
+                "--text-secondary"
               ),
               maxTicksLimit: 5, // Limit number of ticks for better performance
             },
@@ -1524,8 +1637,10 @@ async function createAndUpdateChart() {
   } catch (error) {
     console.error("Error creating/updating chart:", error);
     const chartWrapper = document.getElementById("chart-wrapper");
-    chartWrapper.innerHTML =
-        `<div class="chart-error">${window.t("dashboard.chart.error", "Error loading chart data")}</div>`;
+    chartWrapper.innerHTML = `<div class="chart-error">${window.t(
+      "dashboard.chart.error",
+      "Error loading chart data"
+    )}</div>`;
   }
 }
 
@@ -1542,7 +1657,9 @@ async function updateSalesChart() {
 
     if (!invoices.length) {
       // No data available
-      salesChart.data.labels = [window.t("dashboard.chart.noData", "No data available")];
+      salesChart.data.labels = [
+        window.t("dashboard.chart.noData", "No data available"),
+      ];
       salesChart.data.datasets[0].data = [0];
       salesChart.update();
       return;
@@ -1560,7 +1677,9 @@ async function updateSalesChart() {
 
     // Update chart
     salesChart.update();
-    console.log(`Updated sales chart: ${currentChartPeriod} / ${currentChartView}`);
+    console.log(
+      `Updated sales chart: ${currentChartPeriod} / ${currentChartView}`
+    );
   } catch (error) {
     console.error("Error updating sales chart:", error);
   }

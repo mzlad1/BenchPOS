@@ -17,11 +17,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Event listeners
   document
-      .getElementById("add-product-form")
-      .addEventListener("submit", handleAddProduct);
+    .getElementById("add-product-form")
+    .addEventListener("submit", handleAddProduct);
 
   document.getElementById("add-new-btn").addEventListener("click", () => {
-    document.getElementById("product-form-title").textContent = window.t("inventory.productForm.addTitle");
+    document.getElementById("product-form-title").textContent = window.t(
+      "inventory.productForm.addTitle"
+    );
     document.getElementById("add-product-form").reset();
     document.getElementById("product-modal").style.display = "block";
     editingProductId = null;
@@ -43,21 +45,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add this to your DOMContentLoaded event listener
   document
-      .getElementById("products-table-body")
-      .addEventListener("click", (event) => {
-        if (event.target.classList.contains("edit-btn")) {
-          handleEditProduct(event);
-        } else if (event.target.classList.contains("delete-btn")) {
-          handleDeleteProduct(event);
-        }
-      });
+    .getElementById("products-table-body")
+    .addEventListener("click", (event) => {
+      if (event.target.classList.contains("edit-btn")) {
+        handleEditProduct(event);
+      } else if (event.target.classList.contains("delete-btn")) {
+        handleDeleteProduct(event);
+      }
+    });
   document
-      .getElementById("product-search")
-      .addEventListener("input", filterProducts);
+    .getElementById("product-search")
+    .addEventListener("input", filterProducts);
 
   document
-      .getElementById("clear-search")
-      .addEventListener("click", clearSearch);
+    .getElementById("clear-search")
+    .addEventListener("click", clearSearch);
 
   // Close modal when clicking outside
   window.addEventListener("click", (event) => {
@@ -91,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
           selectedProductIds.push(productId);
         } else if (!this.checked) {
           selectedProductIds = selectedProductIds.filter(
-              (id) => id !== productId
+            (id) => id !== productId
           );
         }
       });
@@ -102,23 +104,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Set up bulk action event listeners
   document
-      .getElementById("bulk-action-select")
-      .addEventListener("change", function () {
-        const applyButton = document.getElementById("apply-bulk-action");
-        applyButton.disabled = !this.value || selectedProductIds.length === 0;
-      });
+    .getElementById("bulk-action-select")
+    .addEventListener("change", function () {
+      const applyButton = document.getElementById("apply-bulk-action");
+      applyButton.disabled = !this.value || selectedProductIds.length === 0;
+    });
 
   document
-      .getElementById("apply-bulk-action")
-      .addEventListener("click", handleBulkAction);
+    .getElementById("apply-bulk-action")
+    .addEventListener("click", handleBulkAction);
 
   // Set up export/import listeners
   document
-      .getElementById("export-csv-btn")
-      .addEventListener("click", exportProductsToCSV);
+    .getElementById("export-csv-btn")
+    .addEventListener("click", exportProductsToCSV);
   document
-      .getElementById("import-csv-btn")
-      .addEventListener("click", showImportModal);
+    .getElementById("import-csv-btn")
+    .addEventListener("click", showImportModal);
 
   // Category modal listeners
   if (document.getElementById("new-category")) {
@@ -154,12 +156,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (document.getElementById("csv-file")) {
     document
-        .getElementById("csv-file")
-        .addEventListener("change", handleFileSelect);
+      .getElementById("csv-file")
+      .addEventListener("change", handleFileSelect);
   }
 
   // Listen for language changes
-  window.addEventListener('languageChanged', function() {
+  window.addEventListener("languageChanged", function () {
     updateUITranslations();
   });
 });
@@ -216,7 +218,7 @@ async function checkConnectionStatus() {
 
     // Enable/disable certain buttons based on connection
     const syncButtons = document.querySelectorAll(
-        "#sync-button, #sync-button-bottom"
+      "#sync-button, #sync-button-bottom"
     );
     if (syncButtons) {
       syncButtons.forEach((btn) => {
@@ -236,13 +238,15 @@ async function syncData() {
 
     // Disable sync buttons during sync
     const syncButtons = document.querySelectorAll(
-        "#sync-button, #sync-button-bottom"
+      "#sync-button, #sync-button-bottom"
     );
     if (syncButtons) {
       syncButtons.forEach((btn) => {
         btn.disabled = true;
         btn.innerHTML =
-            '<div class="btn-icon" style="animation: rotate 1s linear infinite;">🔄</div><span>' + window.t("common.loading") + '</span>';
+          '<div class="btn-icon" style="animation: rotate 1s linear infinite;">🔄</div><span>' +
+          window.t("common.loading") +
+          "</span>";
       });
     }
 
@@ -264,21 +268,30 @@ async function syncData() {
     if (syncButtons) {
       syncButtons.forEach((btn) => {
         btn.disabled = false;
-        btn.innerHTML = '<div class="btn-icon">🔄</div><span>' + window.t("common.sync") + '</span>';
+        btn.innerHTML =
+          '<div class="btn-icon">🔄</div><span>' +
+          window.t("common.sync") +
+          "</span>";
       });
     }
   } catch (error) {
     console.error("Error syncing data:", error);
-    showNotification(window.t("inventory.notifications.syncError", {message: error.message}), "error");
+    showNotification(
+      window.t("inventory.notifications.syncError", { message: error.message }),
+      "error"
+    );
 
     // Re-enable sync buttons
     const syncButtons = document.querySelectorAll(
-        "#sync-button, #sync-button-bottom"
+      "#sync-button, #sync-button-bottom"
     );
     if (syncButtons) {
       syncButtons.forEach((btn) => {
         btn.disabled = false;
-        btn.innerHTML = '<div class="btn-icon">🔄</div><span>' + window.t("common.sync") + '</span>';
+        btn.innerHTML =
+          '<div class="btn-icon">🔄</div><span>' +
+          window.t("common.sync") +
+          "</span>";
       });
     }
   }
@@ -309,9 +322,9 @@ function showNotification(message, type = "info") {
 
   // Check if dark mode is active
   const isDarkMode =
-      document.body.classList.contains("dark-mode") ||
-      document.documentElement.classList.contains("dark-mode") ||
-      document.body.classList.contains("dark");
+    document.body.classList.contains("dark-mode") ||
+    document.documentElement.classList.contains("dark-mode") ||
+    document.body.classList.contains("dark");
 
   // Set base styles based on theme
   if (isDarkMode) {
@@ -327,21 +340,21 @@ function showNotification(message, type = "info") {
   // Set type styling with different colors for dark/light mode
   if (type === "success") {
     notification.style.borderLeftColor = isDarkMode
-        ? "#34d399"
-        : "var(--success-color)";
+      ? "#34d399"
+      : "var(--success-color)";
   } else if (type === "error") {
     notification.style.borderLeftColor = isDarkMode
-        ? "#f87171"
-        : "var(--danger-color)";
+      ? "#f87171"
+      : "var(--danger-color)";
   } else if (type === "warning") {
     notification.style.borderLeftColor = isDarkMode
-        ? "#fbbf24"
-        : "var(--warning-color)";
+      ? "#fbbf24"
+      : "var(--warning-color)";
   } else {
     // Default info style
     notification.style.borderLeftColor = isDarkMode
-        ? "#6366f1"
-        : "var(--primary-color)";
+      ? "#6366f1"
+      : "var(--primary-color)";
   }
 
   // Set content and show
@@ -366,7 +379,7 @@ async function loadProducts() {
     // Make sure products is always an array, even if the API returns null
     if (!products || !Array.isArray(products)) {
       console.warn(
-          "Products is null or not an array, initializing empty array"
+        "Products is null or not an array, initializing empty array"
       );
       products = [];
     }
@@ -377,14 +390,16 @@ async function loadProducts() {
     // Update inventory badge in sidebar if LayoutManager is available
     if (window.LayoutManager) {
       const lowStockCount = products.filter(
-          (product) => product.stock <= 5
+        (product) => product.stock <= 5
       ).length;
       window.LayoutManager.updateInventoryBadge(lowStockCount);
     }
   } catch (error) {
     console.error("Error loading products:", error);
     document.getElementById("products-table-body").innerHTML =
-        '<tr><td colspan="9">' + window.t("reports.messages.dataLoadError") + '</td></tr>';
+      '<tr><td colspan="9">' +
+      window.t("reports.messages.dataLoadError") +
+      "</td></tr>";
     // Initialize empty products array to prevent further errors
     products = [];
   }
@@ -400,15 +415,18 @@ function renderProducts(productsToRender) {
   // Get search element safely
   const searchElement = document.getElementById("product-search");
   const searchTerm = searchElement
-      ? searchElement.value.toLowerCase().trim()
-      : "";
+    ? searchElement.value.toLowerCase().trim()
+    : "";
 
   // Get filter element safely
   const filterElement = document.getElementById("search-filter");
   const filterField = filterElement ? filterElement.value : "all";
 
   if (!productsToRender || productsToRender.length === 0) {
-    tableBody.innerHTML = '<tr><td colspan="9">' + window.t("inventory.table.noProducts") + '</td></tr>';
+    tableBody.innerHTML =
+      '<tr><td colspan="9">' +
+      window.t("inventory.table.noProducts") +
+      "</td></tr>";
     // Reset pagination when no products
     currentPage = 1;
     setupPagination();
@@ -452,13 +470,14 @@ function renderProducts(productsToRender) {
     // Highlight search terms based on filter field
     let skuText = product.sku || "N/A";
     let nameText = product.name;
-    let categoryText = product.category || window.t("common.none") || "Uncategorized";
+    let categoryText =
+      product.category || window.t("common.none") || "Uncategorized";
 
     // Get search element safely
     const searchElement = document.getElementById("product-search");
     const searchTerm = searchElement
-        ? searchElement.value.toLowerCase().trim()
-        : "";
+      ? searchElement.value.toLowerCase().trim()
+      : "";
 
     // Get filter element safely
     const filterElement = document.getElementById("search-filter");
@@ -481,9 +500,9 @@ function renderProducts(productsToRender) {
       { content: skuText },
       { content: nameText },
       { content: categoryText },
-      { content: `$${product.price.toFixed(2)}` },
-      { content: `$${product.cost ? product.cost.toFixed(2) : "0.00"}` },
-      { content: `$${calculateProfit(product).toFixed(2)}` },
+      { content: formatCurrency(product.price) },
+      { content: formatCurrency(product.cost) || 0 },
+      { content: formatCurrency(calculateProfit(product)) },
       { content: product.stock, className: stockStatusClass },
     ];
 
@@ -524,7 +543,7 @@ function renderProducts(productsToRender) {
         selectedProductIds.push(productId);
       } else if (!this.checked && selectedProductIds.includes(productId)) {
         selectedProductIds = selectedProductIds.filter(
-            (id) => id !== productId
+          (id) => id !== productId
         );
       }
 
@@ -540,31 +559,41 @@ function renderProducts(productsToRender) {
   const selectAllCheckbox = document.getElementById("select-all-checkbox");
   if (selectAllCheckbox) {
     const allSelected =
-        currentPageProducts.length > 0 &&
-        currentPageProducts.every((p) => selectedProductIds.includes(p.id));
+      currentPageProducts.length > 0 &&
+      currentPageProducts.every((p) => selectedProductIds.includes(p.id));
     selectAllCheckbox.checked = allSelected;
     selectAllCheckbox.indeterminate =
-        !allSelected &&
-        currentPageProducts.some((p) => selectedProductIds.includes(p.id));
+      !allSelected &&
+      currentPageProducts.some((p) => selectedProductIds.includes(p.id));
   }
 
   // Update bulk actions UI
   updateBulkActionsUI();
   window.LayoutManager.refreshInventoryBadge();
 }
-
+// Format currency based on user settings
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount).toFixed(2)}`;
+}
 // Update the bulk actions UI based on selection
 function updateBulkActionsUI() {
   const selectedCount = document.getElementById("selected-count");
   const bulkActionSelect = document.getElementById("bulk-action-select");
   const applyButton = document.getElementById("apply-bulk-action");
   const bulkActionsContainer = document.getElementById(
-      "bulk-actions-container"
+    "bulk-actions-container"
   );
 
   if (selectedCount) {
-    const text = window.t("inventory.bulkActions.selected", {count: selectedProductIds.length}) ||
-        `${selectedProductIds.length} item${selectedProductIds.length !== 1 ? "s" : ""} selected`;
+    const text =
+      window.t("inventory.bulkActions.selected", {
+        count: selectedProductIds.length,
+      }) ||
+      `${selectedProductIds.length} item${
+        selectedProductIds.length !== 1 ? "s" : ""
+      } selected`;
     selectedCount.textContent = text;
   }
 
@@ -574,7 +603,7 @@ function updateBulkActionsUI() {
 
   if (applyButton) {
     applyButton.disabled =
-        selectedProductIds.length === 0 || !bulkActionSelect.value;
+      selectedProductIds.length === 0 || !bulkActionSelect.value;
   }
 
   // Show/hide the bulk actions container based on selection
@@ -593,8 +622,8 @@ function updateBulkActionsUI() {
 function renderCurrentPage() {
   // If filtering is active, use filtered products, otherwise use all products
   const searchTerm = document
-      .getElementById("product-search")
-      .value.toLowerCase();
+    .getElementById("product-search")
+    .value.toLowerCase();
 
   if (!searchTerm) {
     renderProducts(products);
@@ -609,8 +638,8 @@ function renderCurrentPage() {
 function filterProducts() {
   currentPage = 1; // Reset to first page when filtering
   const searchTerm = document
-      .getElementById("product-search")
-      .value.toLowerCase();
+    .getElementById("product-search")
+    .value.toLowerCase();
   const filterField = document.getElementById("search-filter").value;
   const searchStatus = document.getElementById("search-status");
 
@@ -625,46 +654,47 @@ function filterProducts() {
   switch (filterField) {
     case "sku":
       filteredProducts = products.filter(
-          (product) =>
-              product.sku && product.sku.toLowerCase().includes(searchTerm)
+        (product) =>
+          product.sku && product.sku.toLowerCase().includes(searchTerm)
       );
       break;
     case "name":
       filteredProducts = products.filter(
-          (product) =>
-              product.name && product.name.toLowerCase().includes(searchTerm)
+        (product) =>
+          product.name && product.name.toLowerCase().includes(searchTerm)
       );
       break;
     case "category":
       filteredProducts = products.filter(
-          (product) =>
-              product.category &&
-              product.category.toLowerCase().includes(searchTerm)
+        (product) =>
+          product.category &&
+          product.category.toLowerCase().includes(searchTerm)
       );
       break;
     default:
       // 'all' - search all fields
       filteredProducts = products.filter(
-          (product) =>
-              (product.name && product.name.toLowerCase().includes(searchTerm)) ||
-              (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
-              (product.category &&
-                  product.category.toLowerCase().includes(searchTerm))
+        (product) =>
+          (product.name && product.name.toLowerCase().includes(searchTerm)) ||
+          (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
+          (product.category &&
+            product.category.toLowerCase().includes(searchTerm))
       );
   }
 
   // Update search status
   if (searchStatus) {
     const foundText = window.t("common.found") || "found";
-    searchStatus.textContent = `${filteredProducts.length} ${window.t("inventory.table.name")}${
-        filteredProducts.length !== 1 ? "s" : ""
-    } ${foundText}`;
+    searchStatus.textContent = `${filteredProducts.length} ${window.t(
+      "inventory.table.name"
+    )}${filteredProducts.length !== 1 ? "s" : ""} ${foundText}`;
 
     // If no products found, show a message with reset option
     if (filteredProducts.length === 0) {
       const resetText = window.t("common.reset") || "Reset search";
-      searchStatus.innerHTML =
-          `${window.t("inventory.table.noProducts")}. <a href="#" id="reset-search">${resetText}</a>`;
+      searchStatus.innerHTML = `${window.t(
+        "inventory.table.noProducts"
+      )}. <a href="#" id="reset-search">${resetText}</a>`;
       document.getElementById("reset-search").addEventListener("click", (e) => {
         e.preventDefault();
         clearSearch();
@@ -758,8 +788,10 @@ async function handleAddProduct(event) {
         // Log the update activity
         try {
           logActivity("update", "product", productData.name, {
-            text: window.t("inventory.notifications.productUpdated", {name: productData.name}) ||
-                `Updated product <strong>${productData.name}</strong>`,
+            text:
+              window.t("inventory.notifications.productUpdated", {
+                name: productData.name,
+              }) || `Updated product <strong>${productData.name}</strong>`,
             icon: "✏️",
             badge: "Update",
             badgeClass: "badge-info",
@@ -768,11 +800,14 @@ async function handleAddProduct(event) {
           console.error("Error logging activity for update:", error);
         }
 
-        showNotification(window.t("inventory.notifications.productUpdated"), "success");
+        showNotification(
+          window.t("inventory.notifications.productUpdated"),
+          "success"
+        );
       } else {
         showNotification(
-            window.t("inventory.notifications.failedToUpdate"),
-            "error"
+          window.t("inventory.notifications.failedToUpdate"),
+          "error"
         );
       }
     } else {
@@ -789,14 +824,19 @@ async function handleAddProduct(event) {
 
       // Log the add activity
       logActivity("add", "product", productData.name, {
-        text: window.t("inventory.notifications.productAdded", {name: productData.name}) ||
-            `Added new product <strong>${productData.name}</strong>`,
+        text:
+          window.t("inventory.notifications.productAdded", {
+            name: productData.name,
+          }) || `Added new product <strong>${productData.name}</strong>`,
         icon: "✚",
         badge: "New",
         badgeClass: "badge-success",
       });
 
-      showNotification(window.t("inventory.notifications.productAdded"), "success");
+      showNotification(
+        window.t("inventory.notifications.productAdded"),
+        "success"
+      );
     }
 
     // Reset form and close modal
@@ -815,10 +855,10 @@ async function handleAddProduct(event) {
   } catch (error) {
     console.error("Error saving product:", error);
     showNotification(
-        editingProductId
-            ? window.t("inventory.notifications.failedToUpdate")
-            : window.t("inventory.notifications.failedToAdd"),
-        "error"
+      editingProductId
+        ? window.t("inventory.notifications.failedToUpdate")
+        : window.t("inventory.notifications.failedToAdd"),
+      "error"
     );
   }
 
@@ -843,7 +883,9 @@ function handleEditProduct(event) {
 
   // Set editing mode
   editingProductId = productId;
-  document.getElementById("product-form-title").textContent = window.t("inventory.productForm.editTitle");
+  document.getElementById("product-form-title").textContent = window.t(
+    "inventory.productForm.editTitle"
+  );
 
   // Show modal
   document.getElementById("product-modal").style.display = "block";
@@ -868,8 +910,10 @@ async function handleDeleteProduct(event) {
 
       // Log the deletion activity
       logActivity("delete", "product", productToDelete.name, {
-        text: window.t("inventory.notifications.productDeleted", {name: productToDelete.name}) ||
-            `Deleted product <strong>${productToDelete.name}</strong>`,
+        text:
+          window.t("inventory.notifications.productDeleted", {
+            name: productToDelete.name,
+          }) || `Deleted product <strong>${productToDelete.name}</strong>`,
         icon: "🗑️",
         badge: "Delete",
         badgeClass: "badge-danger",
@@ -888,13 +932,22 @@ async function handleDeleteProduct(event) {
         syncData();
       }
 
-      showNotification(window.t("inventory.notifications.productDeleted"), "success");
+      showNotification(
+        window.t("inventory.notifications.productDeleted"),
+        "success"
+      );
     } else {
-      showNotification(window.t("inventory.notifications.failedToDelete"), "error");
+      showNotification(
+        window.t("inventory.notifications.failedToDelete"),
+        "error"
+      );
     }
   } catch (error) {
     console.error("Error deleting product:", error);
-    showNotification(window.t("inventory.notifications.failedToDelete"), "error");
+    showNotification(
+      window.t("inventory.notifications.failedToDelete"),
+      "error"
+    );
   }
 
   window.LayoutManager.refreshInventoryBadge();
@@ -908,9 +961,11 @@ async function handleBulkAction() {
   switch (action) {
     case "delete":
       if (
-          confirm(
-              window.t("inventory.confirmations.bulkDelete", {count: selectedProductIds.length})
-          )
+        confirm(
+          window.t("inventory.confirmations.bulkDelete", {
+            count: selectedProductIds.length,
+          })
+        )
       ) {
         await bulkDeleteProducts();
       }
@@ -937,7 +992,7 @@ async function bulkDeleteProducts() {
 
     // Get product names for logging before deletion
     const productsToDelete = products.filter((p) =>
-        selectedProductIds.includes(p.id)
+      selectedProductIds.includes(p.id)
     );
     const productNames = productsToDelete.map((p) => p.name).join(", ");
 
@@ -948,11 +1003,12 @@ async function bulkDeleteProducts() {
 
     // Log the bulk deletion activity
     logActivity("delete", "products", "Multiple products", {
-      text: window.t("inventory.notifications.bulkDeleteSuccess", {
-            count: selectedProductIds.length,
-            names: productNames
-          }) ||
-          `Deleted ${selectedProductIds.length} products: <strong>${productNames}</strong>`,
+      text:
+        window.t("inventory.notifications.bulkDeleteSuccess", {
+          count: selectedProductIds.length,
+          names: productNames,
+        }) ||
+        `Deleted ${selectedProductIds.length} products: <strong>${productNames}</strong>`,
       icon: "🗑️",
       badge: "Bulk Delete",
       badgeClass: "badge-danger",
@@ -979,12 +1035,17 @@ async function bulkDeleteProducts() {
     }
 
     showNotification(
-        window.t("inventory.notifications.bulkDeleteSuccess", {count: previousLength}),
-        "success"
+      window.t("inventory.notifications.bulkDeleteSuccess", {
+        count: previousLength,
+      }),
+      "success"
     );
   } catch (error) {
     console.error("Error in bulk delete:", error);
-    showNotification(window.t("inventory.notifications.failedToDelete"), "error");
+    showNotification(
+      window.t("inventory.notifications.failedToDelete"),
+      "error"
+    );
   }
 
   window.LayoutManager.refreshInventoryBadge();
@@ -994,7 +1055,11 @@ async function bulkDeleteProducts() {
 function showCategoryChangeModal() {
   // Get unique categories from products
   const uniqueCategories = [
-    ...new Set(products.map((p) => p.category || window.t("common.none") || "Uncategorized")),
+    ...new Set(
+      products.map(
+        (p) => p.category || window.t("common.none") || "Uncategorized"
+      )
+    ),
   ];
 
   // Create sorted categories list without duplicates
@@ -1018,7 +1083,8 @@ function showCategoryChangeModal() {
   // Add "new category" option
   const newOption = document.createElement("option");
   newOption.value = "new";
-  newOption.textContent = window.t("inventory.categoryModal.addNew") || "+ Add New Category";
+  newOption.textContent =
+    window.t("inventory.categoryModal.addNew") || "+ Add New Category";
   categorySelect.appendChild(newOption);
 
   // Hide the "new category" input
@@ -1026,84 +1092,91 @@ function showCategoryChangeModal() {
 
   // Set up the save button
   document.getElementById("save-category").addEventListener(
-      "click",
-      async () => {
-        let newCategory = document.getElementById("new-category").value;
-        if (newCategory === "new") {
-          newCategory = document.getElementById("new-category-name").value.trim();
-          if (!newCategory) {
-            showNotification(window.t("inventory.notifications.categoryRequired"), "error");
-            return;
+    "click",
+    async () => {
+      let newCategory = document.getElementById("new-category").value;
+      if (newCategory === "new") {
+        newCategory = document.getElementById("new-category-name").value.trim();
+        if (!newCategory) {
+          showNotification(
+            window.t("inventory.notifications.categoryRequired"),
+            "error"
+          );
+          return;
+        }
+      }
+
+      try {
+        // Show loading state
+        const saveButton = document.getElementById("save-category");
+        saveButton.textContent = window.t("common.loading") || "Updating...";
+        saveButton.disabled = true;
+
+        // Get product names for logging
+        const productsToUpdate = products.filter((p) =>
+          selectedProductIds.includes(p.id)
+        );
+        const productNames = productsToUpdate.map((p) => p.name).join(", ");
+
+        // Update each product
+        for (const productId of selectedProductIds) {
+          const product = products.find((p) => p.id === productId);
+          if (product) {
+            await window.api.updateProduct({
+              ...product,
+              category: newCategory,
+            });
+
+            // Update in local array
+            product.category = newCategory;
           }
         }
 
-        try {
-          // Show loading state
-          const saveButton = document.getElementById("save-category");
-          saveButton.textContent = window.t("common.loading") || "Updating...";
-          saveButton.disabled = true;
+        // Log the category update activity
+        logActivity("update", "products", "Multiple products", {
+          text:
+            window.t("inventory.notifications.bulkCategorySuccess", {
+              count: selectedProductIds.length,
+              category: newCategory,
+            }) ||
+            `Updated category to <strong>${newCategory}</strong> for ${selectedProductIds.length} products`,
+          icon: "📂",
+          badge: "Category",
+          badgeClass: "badge-info",
+        });
 
-          // Get product names for logging
-          const productsToUpdate = products.filter((p) =>
-              selectedProductIds.includes(p.id)
-          );
-          const productNames = productsToUpdate.map((p) => p.name).join(", ");
+        // Close modal
+        modal.style.display = "none";
 
-          // Update each product
-          for (const productId of selectedProductIds) {
-            const product = products.find((p) => p.id === productId);
-            if (product) {
-              await window.api.updateProduct({
-                ...product,
-                category: newCategory,
-              });
+        // Re-render products
+        renderProducts(products);
 
-              // Update in local array
-              product.category = newCategory;
-            }
-          }
-
-          // Log the category update activity
-          logActivity("update", "products", "Multiple products", {
-            text: window.t("inventory.notifications.bulkCategorySuccess", {
-                  count: selectedProductIds.length,
-                  category: newCategory
-                }) ||
-                `Updated category to <strong>${newCategory}</strong> for ${selectedProductIds.length} products`,
-            icon: "📂",
-            badge: "Category",
-            badgeClass: "badge-info",
-          });
-
-          // Close modal
-          modal.style.display = "none";
-
-          // Re-render products
-          renderProducts(products);
-
-          // If we're online, try to sync
-          if (isOnline && window.api.syncData) {
-            syncData();
-          }
-
-          showNotification(
-              window.t("inventory.notifications.bulkCategorySuccess", {count: selectedProductIds.length}),
-              "success"
-          );
-        } catch (error) {
-          console.error("Error updating categories:", error);
-          showNotification(
-              window.t("inventory.notifications.failedToUpdate"),
-              "error"
-          );
-        } finally {
-          // Reset save button
-          const saveButton = document.getElementById("save-category");
-          saveButton.textContent = window.t("inventory.categoryModal.apply") || "Apply";
-          saveButton.disabled = false;
+        // If we're online, try to sync
+        if (isOnline && window.api.syncData) {
+          syncData();
         }
-      },
-      { once: true }
+
+        showNotification(
+          window.t("inventory.notifications.bulkCategorySuccess", {
+            count: selectedProductIds.length,
+          }),
+          "success"
+        );
+      } catch (error) {
+        console.error("Error updating categories:", error);
+        showNotification(
+          window.t("inventory.notifications.failedToUpdate"),
+          "error"
+        );
+      } finally {
+        // Reset save button
+        const saveButton = document.getElementById("save-category");
+        saveButton.textContent =
+          window.t("inventory.categoryModal.apply") || "Apply";
+        saveButton.disabled = false;
+      }
+    },
+    { once: true }
   );
 
   // Show the modal
@@ -1123,109 +1196,122 @@ function showStockUpdateModal() {
 
   // Set up the save button
   document.getElementById("save-stock").addEventListener(
-      "click",
-      async () => {
-        const method = document.getElementById("stock-update-method").value;
-        const value = parseInt(document.getElementById("stock-value").value) || 0;
+    "click",
+    async () => {
+      const method = document.getElementById("stock-update-method").value;
+      const value = parseInt(document.getElementById("stock-value").value) || 0;
 
-        if (value < 0) {
-          showNotification(window.t("inventory.notifications.nonnegativeValue"), "error");
-          return;
+      if (value < 0) {
+        showNotification(
+          window.t("inventory.notifications.nonnegativeValue"),
+          "error"
+        );
+        return;
+      }
+
+      try {
+        // Show loading state
+        const saveButton = document.getElementById("save-stock");
+        saveButton.textContent = window.t("common.loading") || "Updating...";
+        saveButton.disabled = true;
+
+        // Get product names for logging
+        const productsToUpdate = products.filter((p) =>
+          selectedProductIds.includes(p.id)
+        );
+        const productNames = productsToUpdate.map((p) => p.name).join(", ");
+
+        // Get action text for the log
+        let actionText = "";
+        switch (method) {
+          case "set":
+            actionText =
+              window.t("inventory.stockModal.methods.set") + " " + value;
+            break;
+          case "add":
+            actionText =
+              window.t("inventory.stockModal.methods.add") + " " + value;
+            break;
+          case "subtract":
+            actionText =
+              window.t("inventory.stockModal.methods.subtract") + " " + value;
+            break;
         }
 
-        try {
-          // Show loading state
-          const saveButton = document.getElementById("save-stock");
-          saveButton.textContent = window.t("common.loading") || "Updating...";
-          saveButton.disabled = true;
+        // Update each product
+        for (const productId of selectedProductIds) {
+          const product = products.find((p) => p.id === productId);
+          if (product) {
+            let newStock = product.stock;
 
-          // Get product names for logging
-          const productsToUpdate = products.filter((p) =>
-              selectedProductIds.includes(p.id)
-          );
-          const productNames = productsToUpdate.map((p) => p.name).join(", ");
-
-          // Get action text for the log
-          let actionText = "";
-          switch (method) {
-            case "set":
-              actionText = window.t("inventory.stockModal.methods.set") + " " + value;
-              break;
-            case "add":
-              actionText = window.t("inventory.stockModal.methods.add") + " " + value;
-              break;
-            case "subtract":
-              actionText = window.t("inventory.stockModal.methods.subtract") + " " + value;
-              break;
-          }
-
-          // Update each product
-          for (const productId of selectedProductIds) {
-            const product = products.find((p) => p.id === productId);
-            if (product) {
-              let newStock = product.stock;
-
-              switch (method) {
-                case "set":
-                  newStock = value;
-                  break;
-                case "add":
-                  newStock += value;
-                  break;
-                case "subtract":
-                  newStock = Math.max(0, newStock - value);
-                  break;
-              }
-
-              await window.api.updateProduct({
-                ...product,
-                stock: newStock,
-              });
-
-              // Update in local array
-              product.stock = newStock;
+            switch (method) {
+              case "set":
+                newStock = value;
+                break;
+              case "add":
+                newStock += value;
+                break;
+              case "subtract":
+                newStock = Math.max(0, newStock - value);
+                break;
             }
+
+            await window.api.updateProduct({
+              ...product,
+              stock: newStock,
+            });
+
+            // Update in local array
+            product.stock = newStock;
           }
-
-          // Log the stock update activity
-          logActivity("update", "products", "Multiple products", {
-            text: window.t("inventory.notifications.bulkStockSuccess", {
-                  count: selectedProductIds.length,
-                  action: actionText
-                }) ||
-                `Stock ${actionText} for ${selectedProductIds.length} products`,
-            icon: "📦",
-            badge: "Stock",
-            badgeClass: "badge-info",
-          });
-
-          // Close modal
-          modal.style.display = "none";
-
-          // Re-render products
-          renderProducts(products);
-          updateProductStats();
-
-          // If we're online, try to sync
-          if (isOnline && window.api.syncData) {
-            syncData();
-          }
-
-          showNotification(
-              window.t("inventory.notifications.bulkStockSuccess", {count: selectedProductIds.length}),
-              "success"
-          );
-        } catch (error) {
-          console.error("Error updating stock:", error);
-          showNotification(window.t("inventory.notifications.failedToUpdate"), "error");
-        } finally {
-          // Reset save button
-          const saveButton = document.getElementById("save-stock");
-          saveButton.textContent = window.t("inventory.stockModal.apply") || "Apply";
-          saveButton.disabled = false;
         }
-      },
-      { once: true }
+
+        // Log the stock update activity
+        logActivity("update", "products", "Multiple products", {
+          text:
+            window.t("inventory.notifications.bulkStockSuccess", {
+              count: selectedProductIds.length,
+              action: actionText,
+            }) ||
+            `Stock ${actionText} for ${selectedProductIds.length} products`,
+          icon: "📦",
+          badge: "Stock",
+          badgeClass: "badge-info",
+        });
+
+        // Close modal
+        modal.style.display = "none";
+
+        // Re-render products
+        renderProducts(products);
+        updateProductStats();
+
+        // If we're online, try to sync
+        if (isOnline && window.api.syncData) {
+          syncData();
+        }
+
+        showNotification(
+          window.t("inventory.notifications.bulkStockSuccess", {
+            count: selectedProductIds.length,
+          }),
+          "success"
+        );
+      } catch (error) {
+        console.error("Error updating stock:", error);
+        showNotification(
+          window.t("inventory.notifications.failedToUpdate"),
+          "error"
+        );
+      } finally {
+        // Reset save button
+        const saveButton = document.getElementById("save-stock");
+        saveButton.textContent =
+          window.t("inventory.stockModal.apply") || "Apply";
+        saveButton.disabled = false;
+      }
+    },
+    { once: true }
   );
 
   // Show modal
@@ -1237,7 +1323,10 @@ function showStockUpdateModal() {
 function exportProductsToCSV() {
   try {
     if (products.length === 0) {
-      showNotification(window.t("inventory.notifications.noProductsExport"), "warning");
+      showNotification(
+        window.t("inventory.notifications.noProductsExport"),
+        "warning"
+      );
       return;
     }
 
@@ -1254,15 +1343,15 @@ function exportProductsToCSV() {
       };
 
       csvContent +=
-          [
-            formatCSVField(product.id),
-            formatCSVField(product.sku),
-            formatCSVField(product.name),
-            formatCSVField(product.category),
-            formatCSVField(product.price),
-            formatCSVField(product.cost),
-            formatCSVField(product.stock),
-          ].join(",") + "\n";
+        [
+          formatCSVField(product.id),
+          formatCSVField(product.sku),
+          formatCSVField(product.name),
+          formatCSVField(product.category),
+          formatCSVField(product.price),
+          formatCSVField(product.cost),
+          formatCSVField(product.stock),
+        ].join(",") + "\n";
     });
 
     // Create download link
@@ -1271,8 +1360,8 @@ function exportProductsToCSV() {
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute(
-        "download",
-        `inventory_export_${new Date().toISOString().slice(0, 10)}.csv`
+      "download",
+      `inventory_export_${new Date().toISOString().slice(0, 10)}.csv`
     );
     link.style.visibility = "hidden";
 
@@ -1283,8 +1372,10 @@ function exportProductsToCSV() {
 
     // Show success message
     showNotification(
-        window.t("inventory.notifications.exportSuccess", {count: products.length}),
-        "success"
+      window.t("inventory.notifications.exportSuccess", {
+        count: products.length,
+      }),
+      "success"
     );
   } catch (error) {
     console.error("Error exporting to CSV:", error);
@@ -1329,18 +1420,15 @@ function handleFileSelect(event) {
 
       // Add event listener for import button
       document.getElementById("process-import").addEventListener(
-          "click",
-          () => {
-            processCSVImport(csvData);
-          },
-          { once: true }
+        "click",
+        () => {
+          processCSVImport(csvData);
+        },
+        { once: true }
       );
     } catch (error) {
       console.error("Error reading CSV:", error);
-      showNotification(
-          window.t("common.error"),
-          "error"
-      );
+      showNotification(window.t("common.error"), "error");
       document.getElementById("process-import").disabled = true;
     }
   };
@@ -1359,7 +1447,7 @@ function previewCSVData(csvData) {
 
   // Create preview table
   let tableHTML =
-      '<table class="preview-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;"><thead><tr>';
+    '<table class="preview-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;"><thead><tr>';
 
   // Add headers
   headers.forEach((header) => {
@@ -1384,11 +1472,12 @@ function previewCSVData(csvData) {
 
   // Show total rows
   const totalDataRows = lines.filter(
-      (line, index) => index > 0 && line.trim()
+    (line, index) => index > 0 && line.trim()
   ).length;
-  tableHTML += `<p style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-secondary);">` +
-      window.t("inventory.importModal.totalRows", {count: totalDataRows}) +
-      `</p>`;
+  tableHTML +=
+    `<p style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-secondary);">` +
+    window.t("inventory.importModal.totalRows", { count: totalDataRows }) +
+    `</p>`;
 
   previewEl.innerHTML = tableHTML;
 }
@@ -1431,12 +1520,14 @@ async function processCSVImport(csvData) {
 
     // Check required headers
     const missingHeaders = requiredHeaders.filter(
-        (header) => !(header in headerIndexes)
+      (header) => !(header in headerIndexes)
     );
     if (missingHeaders.length > 0) {
       showNotification(
-          window.t("inventory.notifications.missingColumns", {columns: missingHeaders.join(", ")}),
-          "error"
+        window.t("inventory.notifications.missingColumns", {
+          columns: missingHeaders.join(", "),
+        }),
+        "error"
       );
       return;
     }
@@ -1556,12 +1647,12 @@ async function processCSVImport(csvData) {
 
     // Show result
     showNotification(
-        window.t("inventory.notifications.importComplete", {
-          added: addedCount,
-          updated: updatedCount,
-          errors: errorCount
-        }),
-        errorCount > 0 ? "warning" : "success"
+      window.t("inventory.notifications.importComplete", {
+        added: addedCount,
+        updated: updatedCount,
+        errors: errorCount,
+      }),
+      errorCount > 0 ? "warning" : "success"
     );
   } catch (error) {
     console.error("Error importing CSV:", error);
@@ -1570,7 +1661,8 @@ async function processCSVImport(csvData) {
     // Reset button
     const processButton = document.getElementById("process-import");
     if (processButton) {
-      processButton.textContent = window.t("inventory.importModal.import") || "Import Products";
+      processButton.textContent =
+        window.t("inventory.importModal.import") || "Import Products";
       processButton.disabled = false;
     }
   }
@@ -1593,8 +1685,8 @@ function setupPagination() {
     // Add it after the table-container
     const tableContainer = document.querySelector(".table-container");
     tableContainer.parentNode.insertBefore(
-        paginationContainer,
-        tableContainer.nextSibling
+      paginationContainer,
+      tableContainer.nextSibling
     );
   }
 
@@ -1608,7 +1700,8 @@ function setupPagination() {
   // Previous button
   const prevButton = document.createElement("button");
   prevButton.className = "btn pagination-btn";
-  prevButton.textContent = window.t("inventory.pagination.previous") || "« Previous";
+  prevButton.textContent =
+    window.t("inventory.pagination.previous") || "« Previous";
   prevButton.disabled = currentPage === 1;
   prevButton.addEventListener("click", () => {
     if (currentPage > 1) {
@@ -1632,10 +1725,11 @@ function setupPagination() {
   // Page info
   const pageInfo = document.createElement("span");
   pageInfo.className = "page-info";
-  pageInfo.textContent = window.t("inventory.pagination.page", {
-    current: currentPage,
-    total: totalPages
-  }) || `Page ${currentPage} of ${totalPages}`;
+  pageInfo.textContent =
+    window.t("inventory.pagination.page", {
+      current: currentPage,
+      total: totalPages,
+    }) || `Page ${currentPage} of ${totalPages}`;
 
   // Add page selector for larger data sets
   const pageSelector = document.createElement("select");
@@ -1648,10 +1742,13 @@ function setupPagination() {
   for (let i = 1; i <= totalPages; i++) {
     const option = document.createElement("option");
     option.value = i;
-    option.textContent = window.t("inventory.pagination.page", {
-      current: i,
-      total: totalPages
-    }).replace(` ${totalPages}`, "") || `Page ${i}`;
+    option.textContent =
+      window
+        .t("inventory.pagination.page", {
+          current: i,
+          total: totalPages,
+        })
+        .replace(` ${totalPages}`, "") || `Page ${i}`;
     option.selected = i === currentPage;
     pageSelector.appendChild(option);
   }
@@ -1681,15 +1778,14 @@ function calculateProfit(product) {
 function updateProductStats() {
   const totalProducts = products.length;
   const totalValue = products.reduce(
-      (sum, product) => sum + product.price * product.stock,
-      0
+    (sum, product) => sum + product.price * product.stock,
+    0
   );
   const lowStockCount = products.filter((product) => product.stock <= 5).length;
 
   document.getElementById("total-products").textContent = totalProducts;
-  document.getElementById(
-      "inventory-value"
-  ).textContent = `$${totalValue.toFixed(2)}`;
+  document.getElementById("inventory-value").textContent =
+    formatCurrency(totalValue);
   document.getElementById("low-stock-count").textContent = lowStockCount;
 
   // Update badge in sidebar if LayoutManager is available
@@ -1713,9 +1809,9 @@ function highlightSearchTerms(text, searchTerm) {
   const endIndex = startIndex + lcSearchTerm.length;
 
   return (
-      text.substring(0, startIndex) +
-      `<span class="highlight">${text.substring(startIndex, endIndex)}</span>` +
-      text.substring(endIndex)
+    text.substring(0, startIndex) +
+    `<span class="highlight">${text.substring(startIndex, endIndex)}</span>` +
+    text.substring(endIndex)
   );
 }
 

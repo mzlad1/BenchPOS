@@ -72,7 +72,12 @@ function fixProductCards() {
     observer.observe(productsListEl, { childList: true, subtree: true });
   }
 }
-
+// Format currency based on user settings
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount).toFixed(2)}`;
+}
 // Render products to the products grid
 function renderProducts(productsToRender) {
   if (!productsListEl) return;
@@ -107,7 +112,7 @@ function renderProducts(productsToRender) {
     productEl.className = "product-item";
     productEl.innerHTML = `
       <div class="product-name">${product.name}</div>
-      <div class="product-price">$${product.price.toFixed(2)}</div>
+      <div class="product-price">${formatCurrency(product.price)}</div>
       <div class="product-stock">In stock: ${product.stock}</div>
       <button class="btn add-to-cart" data-id="${
         product.id

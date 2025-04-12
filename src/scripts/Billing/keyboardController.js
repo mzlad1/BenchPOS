@@ -420,7 +420,7 @@ function addMiscellaneousItem() {
             <input type="text" id="misc-name" placeholder="Item description" required>
           </div>
           <div class="form-group">
-            <label for="misc-price">Price ($)</label>
+            <label for="misc-price">Price</label>
             <input type="number" id="misc-price" step="0.01" min="0" value="0.00" required>
           </div>
           <div class="form-actions">
@@ -653,7 +653,7 @@ function showProductDetails() {
             </tr>
             <tr>
               <th>Unit Price:</th>
-              <td>$${Math.abs(item.price).toFixed(2)}</td>
+              <td>${formatCurrency(Math.abs(item.price))}</td>
             </tr>
             <tr>
               <th>Quantity:</th>
@@ -661,7 +661,7 @@ function showProductDetails() {
             </tr>
             <tr>
               <th>Total:</th>
-              <td>$${Math.abs(item.price * item.quantity).toFixed(2)}</td>
+              <td>${formatCurrency(Math.abs(item.price * item.quantity))}</td>
             </tr>
             ${
               item.isRefund ? "<tr><th>Type:</th><td>Refund Item</td></tr>" : ""
@@ -738,7 +738,12 @@ function increaseQuantity() {
     alert("Please select an item from the cart first");
   }
 }
-
+// Format currency based on user settings
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount).toFixed(2)}`;
+}
 // F10: Decrease quantity
 function decreaseQuantity() {
   if (selectedCartIndex >= 0 && selectedCartIndex < cart.length) {

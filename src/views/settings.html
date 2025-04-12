@@ -1,306 +1,517 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta
-          http-equiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
-  />
-  <title data-i18n="app.name">MZLAD Billing System - Settings</title>
-  <link rel="stylesheet" href="../styles/index.css" />
-  <link rel="stylesheet" href="../styles/advanced-settings.css" />
-  <link rel="stylesheet" href="../styles/global.css" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+    />
+    <title data-i18n="app.name">MZLAD Billing System - Settings</title>
+    <link rel="stylesheet" href="../styles/index.css" />
+    <link rel="stylesheet" href="../styles/global.css" />
+    <link rel="stylesheet" href="../styles/advanced-settings.css" />
+  </head>
+  <body class="light-mode">
+    <div class="app-container">
+      <!-- Sidebar Container (will be filled by layout.js) -->
+      <div id="sidebar-container"></div>
 
-</head>
-<body class="light-mode">
-<div class="app-container">
-  <!-- Sidebar Container (will be filled by layout.js) -->
-  <div id="sidebar-container"></div>
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Header Container (will be filled by layout.js) -->
+        <div id="header-container"></div>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Header Container (will be filled by layout.js) -->
-    <div id="header-container"></div>
-
-    <!-- Settings Content -->
-    <div class="settings-container">
-      <div class="settings-header">
-        <h2 data-i18n="settings.title">System Settings</h2>
-        <p data-i18n="settings.subtitle">Configure your application preferences</p>
-      </div>
-
-      <div class="settings-grid">
-        <!-- Appearance Section -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <div class="settings-icon">🎨</div>
-            <h3 data-i18n="settings.appearance.title">Appearance</h3>
+        <!-- Settings Content -->
+        <div class="settings-container">
+          <div class="settings-header">
+            <h2 data-i18n="settings.title">System Settings</h2>
+            <p data-i18n="settings.subtitle">
+              Configure your application preferences
+            </p>
           </div>
-          <div class="settings-option">
-            <label for="theme-select" data-i18n="settings.appearance.theme">Theme</label>
-            <div class="select-wrapper">
-              <select id="theme-select">
-                <option value="light" data-i18n="settings.appearance.lightMode">Light Mode</option>
-                <option value="dark" data-i18n="settings.appearance.darkMode">Dark Mode</option>
-                <option value="system" data-i18n="settings.appearance.systemDefault">System Default</option>
-              </select>
-            </div>
-          </div>
-          <div class="settings-option">
-            <label data-i18n="settings.appearance.sidebarBehavior">Sidebar Behavior</label>
-            <div class="toggle-wrapper">
-              <label class="toggle">
-                <input type="checkbox" id="sidebar-collapsed" />
-                <span class="toggle-slider"></span>
-              </label>
-              <span data-i18n="settings.appearance.collapsedByDefault">Collapsed by default</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- Regional Settings -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <div class="settings-icon">🌐</div>
-            <h3 data-i18n="settings.regional.title">Regional Settings</h3>
+          <!-- Settings Tabs Navigation -->
+          <div class="settings-tabs">
+            <button
+              class="tab-btn active"
+              data-tab="general-tab"
+              data-i18n="settings.tabs.general"
+            >
+              General
+            </button>
+            <button
+              class="tab-btn"
+              data-tab="receipt-tab"
+              data-i18n="settings.tabs.receipt"
+            >
+              Receipt Settings
+            </button>
           </div>
-          <div class="settings-option">
-            <label for="language-select" data-i18n="settings.regional.language">Language</label>
-            <div class="select-wrapper">
-              <select id="language-select">
-                <option value="en">English</option>
-                <option value="ar">العربية</option>
-              </select>
-            </div>
-          </div>
-          <div class="settings-option">
-            <label for="currency-select" data-i18n="settings.regional.currency">Currency</label>
-            <div class="select-wrapper">
-              <select id="currency-select">
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
-                <option value="INR">INR (₹)</option>
-              </select>
-            </div>
-          </div>
-          <div class="settings-option">
-            <label for="date-format-select" data-i18n="settings.regional.dateFormat">Date Format</label>
-            <div class="select-wrapper">
-              <select id="date-format-select">
-                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
-                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-              </select>
-            </div>
-          </div>
-        </div>
 
-        <!-- Data Management -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <div class="settings-icon">💾</div>
-            <h3 data-i18n="settings.dataManagement.title">Data Management</h3>
-          </div>
-          <div class="settings-option">
-            <label data-i18n="settings.dataManagement.autoSync">Auto Sync</label>
-            <div class="toggle-wrapper">
-              <label class="toggle">
-                <input type="checkbox" id="auto-sync" />
-                <span class="toggle-slider"></span>
-              </label>
-              <span data-i18n="settings.dataManagement.autoSyncDescription">Sync data automatically when online</span>
-            </div>
-          </div>
-          <div class="settings-option">
-            <label for="sync-interval-select" data-i18n="settings.dataManagement.syncInterval">Sync Interval</label>
-            <div class="select-wrapper">
-              <select id="sync-interval-select">
-                <option value="15" data-i18n="settings.dataManagement.syncIntervals.15min">Every 15 minutes</option>
-                <option value="30" data-i18n="settings.dataManagement.syncIntervals.30min">Every 30 minutes</option>
-                <option value="60" data-i18n="settings.dataManagement.syncIntervals.60min">Every hour</option>
-                <option value="manual" data-i18n="settings.dataManagement.syncIntervals.manual">Manual only</option>
-              </select>
-            </div>
-          </div>
-          <div class="settings-option">
-            <label data-i18n="settings.dataManagement.storageLocation">Data Storage Location</label>
-            <div class="input-action">
-              <input type="text" id="data-storage-path" readonly />
-              <button class="btn btn-outline" id="browse-data-path" data-i18n="settings.dataManagement.browse">
-                Browse
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Receipt Settings - Space Efficient Layout -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <div class="settings-icon">🧾</div>
-            <h3 data-i18n="settings.receipt.title">Receipt Settings</h3>
-          </div>
-          <!-- Added container div for grid layout -->
-          <div class="settings-option-container">
-            <!-- First Column -->
-            <div class="settings-option">
-              <label for="company-name" data-i18n="settings.receipt.companyName">Company Name</label>
-              <input
-                      type="text"
-                      id="company-name"
-                      data-i18n-placeholder="settings.receipt.companyName"
-                      placeholder="Your Company"
-              />
-            </div>
-
-            <div class="settings-option">
-              <label for="company-tagline" data-i18n="settings.receipt.companyTagline">Company Tagline</label>
-              <input
-                      type="text"
-                      id="company-tagline"
-                      data-i18n-placeholder="settings.receipt.companyTagline"
-                      placeholder="Retail Solutions"
-              />
-            </div>
-
-            <div class="settings-option">
-              <label for="company-address" data-i18n="settings.receipt.address">Address</label>
-              <textarea
-                      id="company-address"
-                      rows="2"
-                      data-i18n-placeholder="settings.receipt.address"
-                      placeholder="Company Address"
-              ></textarea>
-            </div>
-
-            <div class="settings-option">
-              <label for="company-phone" data-i18n="settings.receipt.phone">Phone Number</label>
-              <input
-                      type="text"
-                      id="company-phone"
-                      data-i18n-placeholder="settings.receipt.phone"
-                      placeholder="(555) 123-4567"
-              />
-            </div>
-
-            <div class="settings-option">
-              <label for="company-email" data-i18n="settings.receipt.email">Email</label>
-              <input
-                      type="email"
-                      id="company-email"
-                      data-i18n-placeholder="settings.receipt.email"
-                      placeholder="info@yourcompany.com"
-              />
-            </div>
-
-            <div class="settings-option">
-              <label for="company-website" data-i18n="settings.receipt.website">Website</label>
-              <input
-                      type="text"
-                      id="company-website"
-                      data-i18n-placeholder="settings.receipt.website"
-                      placeholder="www.yourcompany.com"
-              />
-            </div>
-
-            <div class="settings-option">
-              <label for="receipt-footer" data-i18n="settings.receipt.footer">Receipt Footer</label>
-              <textarea
-                      id="receipt-footer"
-                      rows="2"
-                      data-i18n-placeholder="settings.receipt.footer"
-                      placeholder="Thank you for your business!"
-              ></textarea>
-            </div>
-
-            <div class="settings-option">
-              <label for="company-logo" data-i18n="settings.receipt.logo">Company Logo</label>
-              <div class="logo-upload-container">
-                <div class="logo-preview" id="logo-preview">
-                  <div class="default-logo-text" data-i18n="settings.receipt.noLogo">No logo uploaded</div>
+          <!-- General Settings Tab -->
+          <div class="tab-content active" id="general-tab">
+            <div class="settings-grid">
+              <!-- Appearance Section -->
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <div class="settings-icon">🎨</div>
+                  <h3 data-i18n="settings.appearance.title">Appearance</h3>
                 </div>
-                <div class="logo-controls">
-                  <div class="logo-upload-buttons">
-                    <input
+                <div class="settings-option">
+                  <label
+                    for="theme-select"
+                    data-i18n="settings.appearance.theme"
+                    >Theme</label
+                  >
+                  <div class="select-wrapper">
+                    <select id="theme-select">
+                      <option
+                        value="light"
+                        data-i18n="settings.appearance.lightMode"
+                      >
+                        Light Mode
+                      </option>
+                      <option
+                        value="dark"
+                        data-i18n="settings.appearance.darkMode"
+                      >
+                        Dark Mode
+                      </option>
+                      <option
+                        value="system"
+                        data-i18n="settings.appearance.systemDefault"
+                      >
+                        System Default
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="settings-option">
+                  <label data-i18n="settings.appearance.sidebarBehavior"
+                    >Sidebar Behavior</label
+                  >
+                  <div class="toggle-wrapper">
+                    <label class="toggle">
+                      <input type="checkbox" id="sidebar-collapsed" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <span data-i18n="settings.appearance.collapsedByDefault"
+                      >Collapsed by default</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Regional Settings -->
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <div class="settings-icon">🌐</div>
+                  <h3 data-i18n="settings.regional.title">Regional Settings</h3>
+                </div>
+                <div class="settings-option">
+                  <label
+                    for="language-select"
+                    data-i18n="settings.regional.language"
+                    >Language</label
+                  >
+                  <div class="select-wrapper">
+                    <select id="language-select">
+                      <option value="en">English</option>
+                      <option value="ar">العربية</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="settings-option">
+                  <label
+                    for="currency-select"
+                    data-i18n="settings.regional.currency"
+                    >Currency</label
+                  >
+                  <div class="select-wrapper">
+                    <select id="currency-select">
+                      <option value="USD">USD</option>
+                      <option value="ILS">ILS (₪)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="settings-option">
+                  <label
+                    for="date-format-select"
+                    data-i18n="settings.regional.dateFormat"
+                    >Date Format</label
+                  >
+                  <div class="select-wrapper">
+                    <select id="date-format-select">
+                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Data Management -->
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <div class="settings-icon">💾</div>
+                  <h3 data-i18n="settings.dataManagement.title">
+                    Data Management
+                  </h3>
+                </div>
+                <div class="settings-option">
+                  <label data-i18n="settings.dataManagement.autoSync"
+                    >Auto Sync</label
+                  >
+                  <div class="toggle-wrapper">
+                    <label class="toggle">
+                      <input type="checkbox" id="auto-sync" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <span
+                      data-i18n="settings.dataManagement.autoSyncDescription"
+                      >Sync data automatically when online</span
+                    >
+                  </div>
+                </div>
+                <div class="settings-option">
+                  <label
+                    for="sync-interval-select"
+                    data-i18n="settings.dataManagement.syncInterval"
+                    >Sync Interval</label
+                  >
+                  <div class="select-wrapper">
+                    <select id="sync-interval-select">
+                      <option
+                        value="15"
+                        data-i18n="settings.dataManagement.syncIntervals.15min"
+                      >
+                        Every 15 minutes
+                      </option>
+                      <option
+                        value="30"
+                        data-i18n="settings.dataManagement.syncIntervals.30min"
+                      >
+                        Every 30 minutes
+                      </option>
+                      <option
+                        value="60"
+                        data-i18n="settings.dataManagement.syncIntervals.60min"
+                      >
+                        Every hour
+                      </option>
+                      <option
+                        value="manual"
+                        data-i18n="settings.dataManagement.syncIntervals.manual"
+                      >
+                        Manual only
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="settings-option">
+                  <label data-i18n="settings.dataManagement.storageLocation"
+                    >Data Storage Location</label
+                  >
+                  <div class="input-action">
+                    <input type="text" id="data-storage-path" readonly />
+                    <button
+                      class="btn btn-outline"
+                      id="browse-data-path"
+                      data-i18n="settings.dataManagement.browse"
+                    >
+                      Browse
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Receipt Settings Tab -->
+          <div class="tab-content" id="receipt-tab">
+            <div class="receipt-layout">
+              <!-- Receipt Settings Section -->
+              <div class="receipt-settings-panel">
+                <!-- Company Info Card -->
+                <div class="receipt-card">
+                  <div class="receipt-card-header">
+                    <div class="receipt-card-icon">🏢</div>
+                    <h4 data-i18n="settings.receipt.companyInfoSection">
+                      Company Information
+                    </h4>
+                  </div>
+                  <div class="receipt-card-content">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label
+                          for="company-name"
+                          data-i18n="settings.receipt.companyName"
+                          >Company Name</label
+                        >
+                        <input
+                          type="text"
+                          id="company-name"
+                          data-i18n-placeholder="settings.receipt.companyName"
+                          placeholder="Your Company"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label
+                          for="company-tagline"
+                          data-i18n="settings.receipt.companyTagline"
+                          >Company Tagline</label
+                        >
+                        <input
+                          type="text"
+                          id="company-tagline"
+                          data-i18n-placeholder="settings.receipt.companyTagline"
+                          placeholder="Retail Solutions"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label
+                        for="company-logo"
+                        data-i18n="settings.receipt.logo"
+                        >Company Logo</label
+                      >
+                      <div class="logo-controls-compact">
+                        <div class="logo-preview" id="logo-preview">
+                          <div
+                            class="default-logo-text"
+                            data-i18n="settings.receipt.noLogo"
+                          >
+                            No logo uploaded
+                          </div>
+                        </div>
+                        <div class="logo-actions">
+                          <input
                             type="file"
                             id="logo-file"
                             accept="image/png, image/jpeg, image/jpg, image/svg+xml"
                             style="display: none"
-                    />
-                    <button class="btn btn-outline" id="browse-logo" data-i18n="settings.dataManagement.browse">
-                      Browse
-                    </button>
-                    <button class="btn btn-outline" id="remove-logo" data-i18n="common.delete">
-                      Remove
-                    </button>
+                          />
+                          <button
+                            class="btn btn-sm btn-outline"
+                            id="browse-logo"
+                            data-i18n="settings.dataManagement.browse"
+                          >
+                            Browse
+                          </button>
+                          <button
+                            class="btn btn-sm btn-outline"
+                            id="remove-logo"
+                            data-i18n="common.delete"
+                          >
+                            Remove
+                          </button>
+                          <div
+                            class="logo-help-text"
+                            data-i18n="settings.receipt.logoHelp"
+                          >
+                            Recommended: 180×60px<br />Max: 500KB (PNG, JPG,
+                            SVG)
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label
+                        for="company-address"
+                        data-i18n="settings.receipt.address"
+                        >Address</label
+                      >
+                      <textarea
+                        id="company-address"
+                        rows="2"
+                        data-i18n-placeholder="settings.receipt.address"
+                        placeholder="Company Address"
+                      ></textarea>
+                    </div>
                   </div>
-                  <div class="logo-help-text" data-i18n="settings.receipt.logoHelp">
-                    Recommended: 180×60px<br />Max: 500KB (PNG, JPG, SVG)
+                </div>
+
+                <!-- Contact Info Card -->
+                <div class="receipt-card">
+                  <div class="receipt-card-header">
+                    <div class="receipt-card-icon">📞</div>
+                    <h4 data-i18n="settings.receipt.contactInfoSection">
+                      Contact Information
+                    </h4>
+                  </div>
+                  <div class="receipt-card-content">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label
+                          for="company-phone"
+                          data-i18n="settings.receipt.phone"
+                          >Phone Number</label
+                        >
+                        <input
+                          type="text"
+                          id="company-phone"
+                          data-i18n-placeholder="settings.receipt.phone"
+                          placeholder="(555) 123-4567"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label
+                          for="company-email"
+                          data-i18n="settings.receipt.email"
+                          >Email</label
+                        >
+                        <input
+                          type="email"
+                          id="company-email"
+                          data-i18n-placeholder="settings.receipt.email"
+                          placeholder="info@yourcompany.com"
+                        />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label
+                        for="company-website"
+                        data-i18n="settings.receipt.website"
+                        >Website</label
+                      >
+                      <input
+                        type="text"
+                        id="company-website"
+                        data-i18n-placeholder="settings.receipt.website"
+                        placeholder="www.yourcompany.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Receipt Content Card -->
+                <div class="receipt-card">
+                  <div class="receipt-card-header">
+                    <div class="receipt-card-icon">🧾</div>
+                    <h4 data-i18n="settings.receipt.contentSection">
+                      Receipt Content
+                    </h4>
+                  </div>
+                  <div class="receipt-card-content">
+                    <div class="form-group">
+                      <label
+                        for="receipt-footer"
+                        data-i18n="settings.receipt.footer"
+                        >Receipt Footer</label
+                      >
+                      <textarea
+                        id="receipt-footer"
+                        rows="2"
+                        data-i18n-placeholder="settings.receipt.footer"
+                        placeholder="Thank you for your business!"
+                      ></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label
+                        for="return-policy"
+                        data-i18n="settings.receipt.returnPolicy"
+                        >Return Policy</label
+                      >
+                      <textarea
+                        id="return-policy"
+                        rows="2"
+                        data-i18n-placeholder="settings.receipt.returnPolicy"
+                        placeholder="Items can be returned within 30 days with receipt."
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Receipt Style Card -->
+                <div class="receipt-card">
+                  <div class="receipt-card-header">
+                    <div class="receipt-card-icon">🎭</div>
+                    <h4 data-i18n="settings.receipt.styleSection">
+                      Receipt Style & Printing
+                    </h4>
+                  </div>
+                  <div class="receipt-card-content">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label
+                          for="receipt-theme"
+                          data-i18n="settings.receipt.themeColor"
+                          >Receipt Theme Color</label
+                        >
+                        <input
+                          type="color"
+                          id="receipt-theme"
+                          value="#3d5a80"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label data-i18n="settings.receipt.autoPrint"
+                          >Auto-print Receipt</label
+                        >
+                        <div class="toggle-wrapper">
+                          <label class="toggle">
+                            <input type="checkbox" id="auto-print" />
+                            <span class="toggle-slider"></span>
+                          </label>
+                          <span
+                            data-i18n="settings.receipt.autoPrintDescription"
+                            >Print receipt after each sale</span
+                          >
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="settings-option">
-              <label for="return-policy" data-i18n="settings.receipt.returnPolicy">Return Policy</label>
-              <textarea
-                      id="return-policy"
-                      rows="2"
-                      data-i18n-placeholder="settings.receipt.returnPolicy"
-                      placeholder="Items can be returned within 30 days with receipt."
-              ></textarea>
-            </div>
-
-            <div class="settings-option">
-              <label for="receipt-theme" data-i18n="settings.receipt.themeColor">Receipt Theme Color</label>
-              <input type="color" id="receipt-theme" value="#3d5a80" />
-            </div>
-
-            <div class="settings-option">
-              <label data-i18n="settings.receipt.autoPrint">Auto-print Receipt</label>
-              <div class="toggle-wrapper">
-                <label class="toggle">
-                  <input type="checkbox" id="auto-print" />
-                  <span class="toggle-slider"></span>
-                </label>
-                <span data-i18n="settings.receipt.autoPrintDescription">Print receipt after each sale</span>
+              <!-- Live Receipt Preview -->
+              <div class="receipt-preview-panel">
+                <div class="receipt-preview-header">
+                  <h3 data-i18n="settings.receipt.livePreview">Live Preview</h3>
+                  <button
+                    class="btn btn-sm btn-outline"
+                    id="update-preview"
+                    data-i18n="settings.receipt.updatePreview"
+                  >
+                    Update Preview
+                  </button>
+                </div>
+                <div class="receipt-preview-wrapper">
+                  <div id="receipt-preview-container"></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Save Settings Button -->
-      <div class="settings-actions">
-        <button class="btn btn-outline" id="reset-settings" data-i18n="settings.reset">
-          Reset to Defaults
-        </button>
-        <button class="btn btn-primary" id="save-settings" data-i18n="settings.save">
-          Save Settings
-        </button>
-      </div>
-
-      <div class="receipt-preview-section">
-        <div class="receipt-preview-header">
-          <h3 data-i18n="settings.receipt.preview">Receipt Preview</h3>
-          <button class="btn btn-outline" id="update-preview" data-i18n="settings.receipt.updatePreview">
-            Update Preview
-          </button>
-        </div>
-        <div class="receipt-preview-wrapper">
-          <div id="receipt-preview-container"></div>
+          <!-- Save Settings Button -->
+          <div class="settings-actions">
+            <button
+              class="btn btn-outline"
+              id="reset-settings"
+              data-i18n="settings.reset"
+            >
+              Reset to Defaults
+            </button>
+            <button
+              class="btn btn-primary"
+              id="save-settings"
+              data-i18n="settings.save"
+            >
+              Save Settings
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Add i18n script first so it's available to other scripts -->
-<script src="../locales/i18n.js"></script>
-<script src="../services/login-sync-dialog.js"></script>
-<script src="../scripts/activity-logger.js"></script>
-<script src="../scripts/layout.js"></script>
-<script src="../scripts/settings.js"></script>
-</body>
+    <!-- Add i18n script first so it's available to other scripts -->
+    <script src="../locales/i18n.js"></script>
+    <script src="../services/login-sync-dialog.js"></script>
+    <script src="../scripts/activity-logger.js"></script>
+    <script src="../scripts/layout.js"></script>
+    <script src="../scripts/settings.js"></script>
+  </body>
 </html>

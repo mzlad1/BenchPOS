@@ -5,6 +5,13 @@ let cartDiscount = {
   amount: 0, // calculated amount
 };
 
+// Format currency based on user settings
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount).toFixed(2)}`;
+}
+
 // Add discount button to the invoice summary
 function initDiscountFeature() {
   // Get the invoice summary element
@@ -28,7 +35,7 @@ function initDiscountFeature() {
   // discountRow.className = "summary-row";
   // discountRow.innerHTML = `
   //   <span>Discount:</span>
-  //   <span id="discount-value">$0.00</span>
+  //   <span id="discount-value">${formatCurrency(0)}</span>
   // `;
 
   // Insert before the total row
@@ -85,7 +92,9 @@ function showDiscountModal() {
 
   try {
     // Calculate current subtotal to use for suggestions
-    const currentSubtotal = parseFloat(subtotalEl.textContent.replace("$", ""));
+    const currentSubtotal = parseFloat(
+      subtotalEl.textContent.replace(/[^0-9.-]+/g, "")
+    );
 
     // Create modal for applying discounts
     const discountModal = document.createElement("div");
@@ -131,7 +140,9 @@ function showDiscountModal() {
                     <input type="radio" name="cart-discount-type" value="fixed" ${
                       currentType === "fixed" ? "checked" : ""
                     }>
-                    Fixed Amount ($)
+                    Fixed Amount (${
+                      localStorage.getItem("currency") === "ILS" ? "₪" : "$"
+                    })
                   </label>
                 </div>
               </div>
@@ -145,7 +156,7 @@ function showDiscountModal() {
                 )}" ${
       currentType === "fixed" ? `max="${currentSubtotal.toFixed(2)}"` : ""
     }>
-                <small class="hint">Enter percentage or dollar amount</small>
+                <small class="hint">Enter percentage or amount</small>
                 
                 <!-- Percentage suggestions -->
                 <div id="percentage-suggestions" class="suggestion-buttons" ${
@@ -165,19 +176,27 @@ function showDiscountModal() {
                   currentType === "fixed" ? "" : 'style="display: none;"'
                 }>
                   <span>Quick select: </span>
-                  <button type="button" class="btn suggestion-btn" data-value="5">$5</button>
-                  <button type="button" class="btn suggestion-btn" data-value="10">$10</button>
-                  <button type="button" class="btn suggestion-btn" data-value="20">$20</button>
-                  <button type="button" class="btn suggestion-btn" data-value="50">$50</button>
+                  <button type="button" class="btn suggestion-btn" data-value="5">${
+                    localStorage.getItem("currency") === "ILS" ? "₪" : "$"
+                  }5</button>
+                  <button type="button" class="btn suggestion-btn" data-value="10">${
+                    localStorage.getItem("currency") === "ILS" ? "₪" : "$"
+                  }10</button>
+                  <button type="button" class="btn suggestion-btn" data-value="20">${
+                    localStorage.getItem("currency") === "ILS" ? "₪" : "$"
+                  }20</button>
+                  <button type="button" class="btn suggestion-btn" data-value="50">${
+                    localStorage.getItem("currency") === "ILS" ? "₪" : "$"
+                  }50</button>
                   <button type="button" class="btn suggestion-btn" data-value="${(
                     currentSubtotal * 0.1
-                  ).toFixed(2)}">10% ($${(currentSubtotal * 0.1).toFixed(
-      2
+                  ).toFixed(2)}">10% (${formatCurrency(
+      currentSubtotal * 0.1
     )})</button>
                   <button type="button" class="btn suggestion-btn" data-value="${(
                     currentSubtotal * 0.2
-                  ).toFixed(2)}">20% ($${(currentSubtotal * 0.2).toFixed(
-      2
+                  ).toFixed(2)}">20% (${formatCurrency(
+      currentSubtotal * 0.2
     )})</button>
                 </div>
               </div>
@@ -325,8 +344,8 @@ function showDiscountModal() {
           // For fixed discount, make sure it's not greater than subtotal
           if (selectedType === "fixed" && discountValue > currentSubtotal) {
             alert(
-              `Discount amount cannot exceed the subtotal ($${currentSubtotal.toFixed(
-                2
+              `Discount amount cannot exceed the subtotal (${formatCurrency(
+                currentSubtotal
               )})`
             );
             return;
@@ -449,6 +468,9 @@ function showMultiItemDiscountModal(itemIndices) {
     const modalContent = document.createElement("div");
     modalContent.className = "modal-content";
 
+    const currencySymbol =
+      localStorage.getItem("currency") === "ILS" ? "₪" : "$";
+
     modalContent.innerHTML = `
       <div class="modal-header">
         <h2>Apply Discount to ${selectedCartItems.length} Items</h2>
@@ -457,7 +479,7 @@ function showMultiItemDiscountModal(itemIndices) {
       <div class="modal-body">
         <div class="item-info">
           <p><strong>Selected Items:</strong> ${selectedCartItems.length}</p>
-          <p><strong>Total Price:</strong> $${totalPrice.toFixed(2)}</p>
+          <p><strong>Total Price:</strong> ${formatCurrency(totalPrice)}</p>
         </div>
         <form id="multi-item-discount-form">
           <div class="form-group">
@@ -479,7 +501,7 @@ function showMultiItemDiscountModal(itemIndices) {
                 <input type="radio" name="multi-item-discount-type" value="fixed" ${
                   initialDiscountType === "fixed" ? "checked" : ""
                 }>
-                Fixed Amount ($) per item
+                Fixed Amount (${currencySymbol}) per item
               </label>
             </div>
           </div>
@@ -491,13 +513,15 @@ function showMultiItemDiscountModal(itemIndices) {
             <input type="number" id="multi-item-discount-value" min="0" step="0.01" value="${initialDiscountValue.toFixed(
               2
             )}">
-            <small class="hint">Enter percentage or dollar amount per item</small>
+            <small class="hint">Enter percentage or amount per item</small>
             
             <!-- Discount preview -->
             <div id="multi-discount-preview" class="discount-preview" ${
               initialDiscountType === "none" ? 'style="display: none;"' : ""
             }>
-              <span>Estimated total savings: <strong id="savings-display">$0.00</strong></span>
+              <span>Estimated total savings: <strong id="savings-display">${formatCurrency(
+                0
+              )}</strong></span>
             </div>
             
             <!-- Percentage suggestions -->
@@ -520,9 +544,9 @@ function showMultiItemDiscountModal(itemIndices) {
               initialDiscountType === "fixed" ? "" : 'style="display: none;"'
             }>
               <span>Quick select: </span>
-              <button type="button" class="btn suggestion-btn" data-value="1">$1</button>
-              <button type="button" class="btn suggestion-btn" data-value="2">$2</button>
-              <button type="button" class="btn suggestion-btn" data-value="5">$5</button>
+              <button type="button" class="btn suggestion-btn" data-value="1">${currencySymbol}1</button>
+              <button type="button" class="btn suggestion-btn" data-value="2">${currencySymbol}2</button>
+              <button type="button" class="btn suggestion-btn" data-value="5">${currencySymbol}5</button>
             </div>
           </div>
           
@@ -645,7 +669,7 @@ function showMultiItemDiscountModal(itemIndices) {
       });
 
       if (savingsDisplay) {
-        savingsDisplay.textContent = `$${totalSavings.toFixed(2)}`;
+        savingsDisplay.textContent = formatCurrency(totalSavings);
       }
     }
 
@@ -802,6 +826,9 @@ function showItemDiscountModal(itemIndex) {
     const modalContent = document.createElement("div");
     modalContent.className = "modal-content";
 
+    const currencySymbol =
+      localStorage.getItem("currency") === "ILS" ? "₪" : "$";
+
     modalContent.innerHTML = `
       <div class="modal-header">
         <h2>Item Discount: ${item.name}</h2>
@@ -809,9 +836,9 @@ function showItemDiscountModal(itemIndex) {
       </div>
       <div class="modal-body">
         <div class="item-info">
-          <p><strong>Price:</strong> $${Math.abs(item.price).toFixed(2)} × ${
-      item.quantity
-    } = $${itemTotalPrice.toFixed(2)}</p>
+          <p><strong>Price:</strong> ${formatCurrency(
+            Math.abs(item.price)
+          )} × ${item.quantity} = ${formatCurrency(itemTotalPrice)}</p>
         </div>
         <form id="item-discount-form">
           <div class="form-group">
@@ -833,7 +860,7 @@ function showItemDiscountModal(itemIndex) {
                 <input type="radio" name="item-discount-type" value="fixed" ${
                   currentType === "fixed" ? "checked" : ""
                 }>
-                Fixed Amount ($)
+                Fixed Amount (${currencySymbol})
               </label>
             </div>
           </div>
@@ -847,15 +874,15 @@ function showItemDiscountModal(itemIndex) {
             )}" ${
       currentType === "fixed" ? `max="${Math.abs(item.price).toFixed(2)}"` : ""
     }>
-            <small class="hint">Enter percentage or dollar amount</small>
+            <small class="hint">Enter percentage or amount</small>
             
             <!-- Discount preview -->
             <div id="discount-preview" class="discount-preview" ${
               currentType === "none" ? 'style="display: none;"' : ""
             }>
-              <span>New price after discount: <strong id="new-price-display">$${Math.abs(
-                item.price
-              ).toFixed(2)}</strong></span>
+              <span>New price after discount: <strong id="new-price-display">${formatCurrency(
+                Math.abs(item.price)
+              )}</strong></span>
             </div>
             
             <!-- Percentage suggestions -->
@@ -877,23 +904,23 @@ function showItemDiscountModal(itemIndex) {
               currentType === "fixed" ? "" : 'style="display: none;"'
             }>
               <span>Quick select: </span>
-              <button type="button" class="btn suggestion-btn" data-value="1">$1</button>
-              <button type="button" class="btn suggestion-btn" data-value="2">$2</button>
-              <button type="button" class="btn suggestion-btn" data-value="5">$5</button>
+              <button type="button" class="btn suggestion-btn" data-value="1">${currencySymbol}1</button>
+              <button type="button" class="btn suggestion-btn" data-value="2">${currencySymbol}2</button>
+              <button type="button" class="btn suggestion-btn" data-value="5">${currencySymbol}5</button>
               <button type="button" class="btn suggestion-btn" data-value="${(
                 Math.abs(item.price) * 0.1
-              ).toFixed(2)}">10% ($${(Math.abs(item.price) * 0.1).toFixed(
-      2
+              ).toFixed(2)}">10% (${formatCurrency(
+      Math.abs(item.price) * 0.1
     )})</button>
               <button type="button" class="btn suggestion-btn" data-value="${(
                 Math.abs(item.price) * 0.25
-              ).toFixed(2)}">25% ($${(Math.abs(item.price) * 0.25).toFixed(
-      2
+              ).toFixed(2)}">25% (${formatCurrency(
+      Math.abs(item.price) * 0.25
     )})</button>
               <button type="button" class="btn suggestion-btn" data-value="${Math.abs(
                 item.price
-              ).toFixed(2)}">Full price ($${Math.abs(item.price).toFixed(
-      2
+              ).toFixed(2)}">Full price (${formatCurrency(
+      Math.abs(item.price)
     )})</button>
             </div>
           </div>
@@ -1015,7 +1042,6 @@ function showItemDiscountModal(itemIndex) {
       }
 
       const newPrice = itemPrice - discountAmount;
-      newPriceDisplay.textContent = `$${newPrice.toFixed(2)}`;
 
       // Highlight as free if fully discounted
       if (newPrice <= 0) {
@@ -1023,6 +1049,7 @@ function showItemDiscountModal(itemIndex) {
         newPriceDisplay.textContent = "FREE";
       } else {
         newPriceDisplay.classList.remove("free-item");
+        newPriceDisplay.textContent = formatCurrency(newPrice);
       }
     }
 
@@ -1089,9 +1116,9 @@ function showItemDiscountModal(itemIndex) {
             discountValue > Math.abs(item.price)
           ) {
             alert(
-              `Fixed discount cannot exceed item price ($${Math.abs(
-                item.price
-              ).toFixed(2)})`
+              `Fixed discount cannot exceed item price (${formatCurrency(
+                Math.abs(item.price)
+              )})`
             );
             return;
           }
@@ -1303,13 +1330,13 @@ function updateRenderCartForDiscounts() {
         const discountedPrice = displayPrice - discountAmount;
 
         discountInfo = `
-          <div class="discounted-price">$${discountedPrice.toFixed(2)}</div>
-          <div class="original-price">$${displayPrice.toFixed(2)}</div>
+          <div class="discounted-price">${formatCurrency(discountedPrice)}</div>
+          <div class="original-price">${formatCurrency(displayPrice)}</div>
         `;
 
         displayTotal = discountedPrice * item.quantity;
       } else {
-        discountInfo = `$${displayPrice.toFixed(2)}`;
+        discountInfo = formatCurrency(displayPrice);
       }
 
       // If this is a refund, show negative values
@@ -1334,7 +1361,7 @@ function updateRenderCartForDiscounts() {
           <span class="quantity">${item.quantity}</span>
           <button class="btn quantity-btn" data-action="increase" data-index="${index}">+</button>
         </td>
-        <td>$${Math.abs(displayTotal).toFixed(2)}</td>
+        <td>${formatCurrency(Math.abs(displayTotal))}</td>
         <td>
           <button class="btn remove-btn" data-index="${index}">Remove</button>
         </td>
@@ -1512,12 +1539,11 @@ function updateUpdateTotalsForDiscounts() {
     const total = finalSubtotal + tax;
 
     // Update display
-    subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-    document.getElementById(
-      "discount-value"
-    ).textContent = `$${discountAmount.toFixed(2)}`;
-    taxEl.textContent = `$${tax.toFixed(2)}`;
-    totalEl.textContent = `$${total.toFixed(2)}`;
+    subtotalEl.textContent = formatCurrency(subtotal);
+    document.getElementById("discount-value").textContent =
+      formatCurrency(discountAmount);
+    taxEl.textContent = formatCurrency(tax);
+    totalEl.textContent = formatCurrency(total);
   };
 }
 
@@ -1551,12 +1577,16 @@ function updateCompleteSaleForDiscounts() {
         };
       });
 
-      const subtotal = parseFloat(subtotalEl.textContent.replace("$", ""));
-      const discount = parseFloat(
-        document.getElementById("discount-value").textContent.replace("$", "")
+      const subtotal = parseFloat(
+        subtotalEl.textContent.replace(/[^0-9.-]+/g, "")
       );
-      const tax = parseFloat(taxEl.textContent.replace("$", ""));
-      const total = parseFloat(totalEl.textContent.replace("$", ""));
+      const discount = parseFloat(
+        document
+          .getElementById("discount-value")
+          .textContent.replace(/[^0-9.-]+/g, "")
+      );
+      const tax = parseFloat(taxEl.textContent.replace(/[^0-9.-]+/g, ""));
+      const total = parseFloat(totalEl.textContent.replace(/[^0-9.-]+/g, ""));
 
       const invoiceData = {
         items: processedItems,
@@ -1591,6 +1621,8 @@ function updateCompleteSaleForDiscounts() {
 
 // Updated receipt HTML generation to include discounts
 function generateReceiptHtmlWithDiscount(invoice) {
+  const currencySymbol = localStorage.getItem("currency") === "ILS" ? "₪" : "$";
+
   let itemsHtml = "";
 
   invoice.items.forEach((item) => {
@@ -1606,10 +1638,10 @@ function generateReceiptHtmlWithDiscount(invoice) {
           <td>${item.name}</td>
           <td>${quantity}</td>
           <td>
-            <div>$${finalPrice.toFixed(2)}</div>
-            <div><small><s>$${originalPrice.toFixed(2)}</s></small></div>
+            <div>${formatCurrency(finalPrice)}</div>
+            <div><small><s>${formatCurrency(originalPrice)}</s></small></div>
           </td>
-          <td>$${lineTotal.toFixed(2)}</td>
+          <td>${formatCurrency(lineTotal)}</td>
         </tr>
       `;
     } else {
@@ -1617,8 +1649,8 @@ function generateReceiptHtmlWithDiscount(invoice) {
         <tr>
           <td>${item.name}</td>
           <td>${quantity}</td>
-          <td>$${originalPrice.toFixed(2)}</td>
-          <td>$${lineTotal.toFixed(2)}</td>
+          <td>${formatCurrency(originalPrice)}</td>
+          <td>${formatCurrency(lineTotal)}</td>
         </tr>
       `;
     }
@@ -1633,7 +1665,7 @@ function generateReceiptHtmlWithDiscount(invoice) {
     discountRow = `
       <tr>
         <td colspan="3">Discount</td>
-        <td>-$${invoice.discount.toFixed(2)}</td>
+        <td>-${formatCurrency(invoice.discount)}</td>
       </tr>
     `;
   }
@@ -1667,16 +1699,16 @@ function generateReceiptHtmlWithDiscount(invoice) {
       <tfoot>
         <tr>
           <td colspan="3">Subtotal</td>
-          <td>$${invoice.subtotal.toFixed(2)}</td>
+          <td>${formatCurrency(invoice.subtotal)}</td>
         </tr>
         ${discountRow}
         <tr>
           <td colspan="3">Tax (0)</td>
-          <td>$${invoice.tax.toFixed(2)}</td>
+          <td>${formatCurrency(invoice.tax)}</td>
         </tr>
         <tr class="total-row">
           <td colspan="3">Total</td>
-          <td>$${invoice.total.toFixed(2)}</td>
+          <td>${formatCurrency(invoice.total)}</td>
         </tr>
       </tfoot>
     </table>

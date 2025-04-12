@@ -275,8 +275,8 @@
       "daily": "Daily",
       "weekly": "Weekly",
       "monthly": "Monthly",
-      "revenue": "Revenue ($)",
-      "profit": "Profit ($)",
+      "revenue": "Revenue ",
+      "profit": "Profit ",
       "placeholder": "Sales data will be visualized here"
     },
     "salesReport": {
@@ -369,6 +369,10 @@
     "saveError": "Error saving settings",
     "resetError": "Error resetting settings",
     "confirmReset": "Are you sure you want to reset all settings to default values?",
+    "tabs": {
+      "general": "General",
+      "receipt": "Receipt Settings"
+    },
     "appearance": {
       "title": "Appearance",
       "theme": "Theme",
@@ -414,6 +418,7 @@
       "autoPrint": "Auto-print Receipt",
       "autoPrintDescription": "Print receipt after each sale",
       "preview": "Receipt Preview",
+      "livePreview": "Live Preview",
       "updatePreview": "Update Preview",
       "number": "Receipt #",
       "date": "Date",
@@ -435,7 +440,11 @@
       "poweredBy": "Powered by",
       "tel": "Tel",
       "email": "Email",
-      "previewError": "Could not generate receipt preview"
+      "previewError": "Could not generate receipt preview",
+      "companyInfoSection": "Company Information",
+      "contactInfoSection": "Contact Information",
+      "contentSection": "Receipt Content",
+      "styleSection": "Receipt Style & Printing"
     }
   },
   "notifications": {
@@ -498,8 +507,8 @@
       "name": "Product Name",
       "sku": "SKU",
       "category": "Category",
-      "price": "Selling Price ($)",
-      "cost": "Purchase Cost ($)",
+      "price": "Selling Price ",
+      "cost": "Purchase Cost ",
       "stock": "Stock Quantity",
       "cancel": "Cancel",
       "save": "Save Product"

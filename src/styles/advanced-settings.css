@@ -978,3 +978,289 @@ textarea:focus ~ label {
   width: 300%;
   height: 300%;
 }
+/* Add this to your advanced-settings.css file */
+
+/* Tabs Navigation */
+.settings-tabs {
+  display: flex;
+  background-color: var(--base-100);
+  margin-bottom: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 5px var(--shadow-color);
+  overflow: hidden;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: var(--space-4);
+  background: none;
+  border: none;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  font-size: var(--text-base);
+}
+
+.tab-btn:after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background-color: var(--primary);
+  transition: width 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--primary);
+}
+
+.tab-btn.active {
+  color: var(--text-primary);
+}
+
+.tab-btn.active:after {
+  width: 100%;
+}
+
+/* Tab Content */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Receipt Layout */
+.receipt-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-6);
+}
+
+/* Receipt Settings Panel */
+.receipt-settings-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+/* Receipt Cards */
+.receipt-card {
+  background-color: var(--base-100);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px var(--shadow-color);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  height: fit-content;
+}
+
+.receipt-card:hover {
+  box-shadow: 0 4px 12px var(--shadow-color);
+  transform: translateY(-2px);
+}
+
+.receipt-card-header {
+  background-color: var(--base-200);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.receipt-card-icon {
+  font-size: 1.2rem;
+}
+
+.receipt-card-header h4 {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.receipt-card-content {
+  padding: var(--space-4);
+}
+
+/* Form Layout */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: var(--text-sm);
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group textarea {
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--base-200);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light);
+  outline: none;
+}
+
+/* Logo Controls - Compact */
+.logo-controls-compact {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.logo-preview {
+  width: 100px;
+  height: 60px;
+  flex-shrink: 0;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.logo-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.logo-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Small Buttons */
+.btn-sm {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  min-height: auto;
+}
+
+/* Receipt Preview Panel */
+.receipt-preview-panel {
+  position: sticky;
+  top: var(--space-4);
+}
+
+.receipt-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.receipt-preview-header h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.receipt-preview-wrapper {
+  background-color: var(--base-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: inset 0 2px 5px var(--shadow-color);
+  overflow: auto;
+  max-height: 600px;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1100px) {
+  .receipt-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .receipt-preview-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .receipt-settings-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark Mode Styles */
+.dark-mode .receipt-card {
+  background-color: var(--base-100-dark);
+}
+
+.dark-mode .receipt-card-header {
+  background-color: var(--base-200-dark);
+}
+
+.dark-mode .receipt-preview-wrapper {
+  background-color: var(--base-200-dark);
+}
+
+.dark-mode .tab-btn {
+  color: var(--text-secondary-dark);
+}
+
+.dark-mode .tab-btn.active {
+  color: var(--text-primary-dark);
+}
+
+/* Help maintain consistent styling */
+.logo-help-text {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  line-height: 1.2;
+}
+
+/* Make preview container scrollable when needed */
+#receipt-preview-container {
+  overflow: auto;
+  max-height: 550px;
+}

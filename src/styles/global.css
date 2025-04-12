@@ -1592,7 +1592,6 @@ body[class*="dark"] .sync-actions .btn:focus {
 }
 /* Add these CSS rules to your global.css or create a new file called rtl.css */
 
-
 /*.rtl-layout .header-actions {*/
 /*  flex-direction: row-reverse;*/
 /*}*/
@@ -1795,8 +1794,6 @@ body[class*="dark"] .sync-actions .btn:focus {
 /*  flex-direction: row-reverse;*/
 /*}*/
 
-
-
 /*.rtl-layout .report-actions {*/
 /*  flex-direction: row-reverse;*/
 /*}*/
@@ -1808,8 +1805,8 @@ body[class*="dark"] .sync-actions .btn:focus {
 }
 
 /* Ensure numeric columns remain properly aligned */
-.rtl-layout table.report-table th:nth-child(n+4),
-.rtl-layout table.report-table td:nth-child(n+4) {
+.rtl-layout table.report-table th:nth-child(n + 4),
+.rtl-layout table.report-table td:nth-child(n + 4) {
   text-align: left;
 }
 
@@ -1874,9 +1871,8 @@ body[class*="dark"] .sync-actions .btn:focus {
 .rtl-layout .centered {
   text-align: center !important;
 }
-.rtl-layout th{
-    text-align: right !important;
-
+.rtl-layout th {
+  text-align: right !important;
 }
 html[dir="rtl"] .form-group label {
   text-align: right;

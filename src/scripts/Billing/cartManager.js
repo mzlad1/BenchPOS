@@ -71,7 +71,7 @@ function renderCart() {
     if (item.discount) {
       // Discount calculations here...
     } else {
-      discountInfo = `$${displayPrice.toFixed(2)}`;
+      discountInfo = `${formatCurrency(displayPrice)}`;
     }
 
     const isRefund = item.price < 0;
@@ -92,7 +92,7 @@ function renderCart() {
         <span class="quantity">${item.quantity}</span>
         <button class="btn quantity-btn" data-action="increase" data-index="${index}">+</button>
       </td>
-      <td>$${Math.abs(displayTotal).toFixed(2)}</td>
+      <td>${formatCurrency(Math.abs(displayTotal))}</td>
       <td>
         <button class="btn remove-btn" data-index="${index}">Remove</button>
       </td>
@@ -269,4 +269,10 @@ function clearCart() {
   updateTotals();
   customerNameEl.value = "";
   document.getElementById("complete-sale").textContent = "Complete Sale";
+}
+// Format currency based on user settings
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount).toFixed(2)}`;
 }

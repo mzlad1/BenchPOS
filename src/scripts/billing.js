@@ -1594,7 +1594,7 @@
 //             <input type="text" id="misc-name" placeholder="Item description" required>
 //           </div>
 //           <div class="form-group">
-//             <label for="misc-price">Price ($)</label>
+//             <label for="misc-price">Price </label>
 //             <input type="number" id="misc-price" step="0.01" min="0" value="0.00" required>
 //           </div>
 //           <div class="form-actions">
@@ -2275,7 +2275,7 @@
 //                     <input type="radio" name="cart-discount-type" value="fixed" ${
 //                       currentType === "fixed" ? "checked" : ""
 //                     }>
-//                     Fixed Amount ($)
+//                     Fixed Amount
 //                   </label>
 //                 </div>
 //               </div>
@@ -2623,7 +2623,7 @@
 //                 <input type="radio" name="multi-item-discount-type" value="fixed" ${
 //                   initialDiscountType === "fixed" ? "checked" : ""
 //                 }>
-//                 Fixed Amount ($) per item
+//                 Fixed Amount  per item
 //               </label>
 //             </div>
 //           </div>
@@ -2977,7 +2977,7 @@
 //                 <input type="radio" name="item-discount-type" value="fixed" ${
 //                   currentType === "fixed" ? "checked" : ""
 //                 }>
-//                 Fixed Amount ($)
+//                 Fixed Amount
 //               </label>
 //             </div>
 //           </div>

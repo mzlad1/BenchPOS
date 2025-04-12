@@ -665,7 +665,7 @@ function generateInvoiceTableRows(invoices) {
         <td>${date}</td>
         <td>${invoice.customer || "Guest"}</td>
         <td>${itemCount}</td>
-        <td>$${Math.abs(invoice.total).toFixed(2)}${
+        <td>${formatCurrency(Math.abs(invoice.total))}${
         isRefund ? " (Refund)" : ""
       }</td>
         <td>
@@ -734,7 +734,12 @@ function attachViewButtonListeners() {
     });
   });
 }
-
+// Format currency based on user settings
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount).toFixed(2)}`;
+}
 // Show notification message
 function showNotification(message, isError = false) {
   let notification = document.getElementById("notification");

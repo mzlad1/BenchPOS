@@ -63,7 +63,12 @@ async function completeSale() {
     alert("Failed to complete sale. Please try again.");
   }
 }
-
+// Format currency based on user settings
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount).toFixed(2)}`;
+}
 // Add a toast notification function if it doesn't exist yet
 function showToastNotification(message, isError = false, duration = 3000) {
   let notification = document.getElementById("toast-notification");
@@ -113,8 +118,8 @@ function generateReceiptHtml(invoice) {
     <tr>
       <td>${item.name}</td>
       <td>${item.quantity}</td>
-      <td>$${item.price.toFixed(2)}</td>
-      <td>$${(item.price * item.quantity).toFixed(2)}</td>
+      <td>${formatCurrency(item.price)}</td>
+      <td>${formatCurrency(item.price * item.quantity)}</td>
     </tr>
   `
     )
@@ -148,15 +153,15 @@ function generateReceiptHtml(invoice) {
       <tfoot>
         <tr>
           <td colspan="3">Subtotal</td>
-          <td>$${invoice.subtotal.toFixed(2)}</td>
+          <td>${formatCurrency(invoice.subtotal)}</td>
         </tr>
         <tr>
           <td colspan="3">Tax (0)</td>
-          <td>$${invoice.tax.toFixed(2)}</td>
+          <td>${formatCurrency(invoice.tax)}</td>
         </tr>
         <tr class="total-row">
           <td colspan="3">Total</td>
-          <td>$${invoice.total.toFixed(2)}</td>
+          <td>${formatCurrency(invoice.total)}</td>
         </tr>
       </tfoot>
     </table>

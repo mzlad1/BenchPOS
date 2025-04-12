@@ -67,10 +67,10 @@ function generateProfessionalReceipt(invoice) {
           <td>${item.name}</td>
           <td class="text-center">${quantity}</td>
           <td class="text-right">
-            <div>$${finalPrice.toFixed(2)}</div>
-            <div class="strikethrough">$${originalPrice.toFixed(2)}</div>
+            <div>${formatCurrency(finalPrice)}</div>
+            <div class="strikethrough">${formatCurrency(originalPrice)}</div>
           </td>
-          <td class="text-right">$${lineTotal.toFixed(2)}</td>
+          <td class="text-right">${formatCurrency(lineTotal)}</td>
         </tr>
       `;
     } else {
@@ -78,8 +78,8 @@ function generateProfessionalReceipt(invoice) {
         <tr>
           <td>${item.name}</td>
           <td class="text-center">${quantity}</td>
-          <td class="text-right">$${originalPrice.toFixed(2)}</td>
-          <td class="text-right">$${lineTotal.toFixed(2)}</td>
+          <td class="text-right">${formatCurrency(originalPrice)}</td>
+          <td class="text-right">${formatCurrency(lineTotal)}</td>
         </tr>
       `;
     }
@@ -95,23 +95,21 @@ function generateProfessionalReceipt(invoice) {
     discountRow = `
       <tr class="receipt-summary-row">
         <td colspan="3" class="text-right">Discount:</td>
-        <td class="text-right discount-value">-$${invoice.discount.toFixed(
-          2
+        <td class="text-right discount-value">-${formatCurrency(
+          invoice.discount
         )}</td>
       </tr>
     `;
   }
 
   // Get the currency setting if available
-  const currencySymbol =
-    localStorage.getItem("currency") === "EUR"
-      ? "€"
-      : localStorage.getItem("currency") === "GBP"
-      ? "£"
-      : localStorage.getItem("currency") === "INR"
-      ? "₹"
-      : "$";
-
+  const currencySymbol = localStorage.getItem("currency") === "ILS" ? "₪" : "$";
+  // Format currency based on user settings
+  function formatCurrency(amount) {
+    const currency = localStorage.getItem("currency") || "USD";
+    const symbol = currency === "ILS" ? "₪" : "$";
+    return `${symbol}${parseFloat(amount).toFixed(2)}`;
+  }
   // Build the complete receipt HTML
   return `
     <div class="professional-receipt ${transactionClass}">
