@@ -104,7 +104,13 @@ async function forceApplyTranslations() {
 
         el.textContent = translated;
       });
-
+      document.head.insertAdjacentHTML('beforeend', `
+  <style id="activity-limiter">
+    #activity-list .activity-item:nth-child(n+6) {
+      display: none !important;
+    }
+  </style>
+`);
       // Update placeholders
       document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
