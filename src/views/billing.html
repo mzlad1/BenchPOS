@@ -26,11 +26,11 @@
 
         <main>
           <div class="container">
-            <header>
+            <!-- <header>
               <div class="header-right">
                 <span id="current-date"></span>
               </div>
-            </header>
+            </header> -->
 
             <div class="billing-container">
               <div class="product-selection">
@@ -96,19 +96,19 @@
                   <div class="invoice-summary">
                     <div class="summary-row">
                       <span>Subtotal:</span>
-                      <span id="subtotal">$0.00</span>
+                      <span id="subtotal">0.00</span>
                     </div>
                     <div class="summary-row">
                       <span>Discount:</span>
-                      <span id="discount-value">$0.00</span>
+                      <span id="discount-value">0.00</span>
                     </div>
                     <div class="summary-row">
                       <span>Tax (0):</span>
-                      <span id="tax">$0.00</span>
+                      <span id="tax">0.00</span>
                     </div>
                     <div class="summary-row total">
                       <span>Total:</span>
-                      <span id="total">$0.00</span>
+                      <span id="total">0.00</span>
                     </div>
                   </div>
 
@@ -294,6 +294,8 @@
     <script src="../scripts/Billing/discountManager.js"></script>
     <script src="../scripts/Billing/keyboardController.js"></script>
     <script src="../scripts/Billing/invoiceNavigator.js"></script>
+    <!-- <script src="../scripts/Billing/compact-mode.js"></script> -->
+    <script src="../scripts/Billing/screen-fit.js"></script>
     <script src="../scripts/Billing/ui-fixes.js"></script>
     <script src="../scripts/professional-receipt.js"></script>
     <script>
@@ -304,12 +306,12 @@
           window.LayoutManager.init("billing");
         }
 
-        // Set the current date
-        const today = new Date();
-        const currentDateEl = document.getElementById("current-date");
-        if (currentDateEl) {
-          currentDateEl.textContent = formatDate(today);
-        }
+        // // Set the current date
+        // const today = new Date();
+        // const currentDateEl = document.getElementById("current-date");
+        // if (currentDateEl) {
+        //   currentDateEl.textContent = formatDate(today);
+        // }
 
         function formatDate(date) {
           if (!(date instanceof Date) || isNaN(date)) {

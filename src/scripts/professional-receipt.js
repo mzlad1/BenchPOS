@@ -165,10 +165,11 @@ function generateProfessionalReceipt(invoice) {
           </tr>
           ${discountRow}
           <tr class="receipt-summary-row">
-            <td colspan="3" class="text-right">Tax (${(
-              (invoice.tax / invoice.subtotal) *
-              100
-            ).toFixed(1)}%):</td>
+            <td colspan="3" class="text-right">Tax (${
+              invoice.subtotal > 0
+                ? ((invoice.tax / invoice.subtotal) * 100).toFixed(1)
+                : "0"
+            }%):</td>
             <td class="text-right">${currencySymbol}${invoice.tax.toFixed(
     2
   )}</td>
@@ -247,7 +248,32 @@ function adjustColorBrightness(hex, percent) {
   // Convert back to hex
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
+// Add this at the top of your professional-receipt.js file
+function parseCurrencyValue(text) {
+  if (!text || typeof text !== "string") return 0;
 
+  // First handle if it's already a number
+  if (!isNaN(parseFloat(text))) {
+    return parseFloat(text);
+  }
+
+  try {
+    // Convert text to string and trim it
+    const trimmed = text.toString().trim();
+
+    // Remove all currency symbols and non-numeric characters except for decimal point and minus
+    const numericString = trimmed.replace(/[^\d.-]/g, "");
+
+    // Parse as float
+    const value = parseFloat(numericString);
+
+    // Check if we got a valid number, otherwise return 0
+    return !isNaN(value) ? value : 0;
+  } catch (error) {
+    console.error("Error parsing currency value:", error, "for text:", text);
+    return 0; // Return 0 as fallback on error
+  }
+}
 // Function to update the receipt styles based on settings
 function updateReceiptStyles() {
   // Get theme color from localStorage
@@ -558,12 +584,12 @@ function updateCompleteSaleForProfessionalReceipt() {
         };
       });
 
-      const subtotal = parseFloat(subtotalEl.textContent.replace("$", ""));
-      const discount = parseFloat(
-        document.getElementById("discount-value").textContent.replace("$", "")
+      const subtotal = parseCurrencyValue(subtotalEl.textContent);
+      const discount = parseCurrencyValue(
+        document.getElementById("discount-value").textContent
       );
-      const tax = parseFloat(taxEl.textContent.replace("$", ""));
-      const total = parseFloat(totalEl.textContent.replace("$", ""));
+      const tax = parseCurrencyValue(taxEl.textContent);
+      const total = parseCurrencyValue(totalEl.textContent);
 
       const invoiceData = {
         items: processedItems,
@@ -615,34 +641,40 @@ function updateCompleteSaleForProfessionalReceipt() {
 }
 
 // Add a toast notification function
+/**
+ * Shows a toast notification that properly disappears after the specified duration
+ * @param {string} message - The message to display
+ * @param {boolean} isError - Whether this is an error message (red) or success (green)
+ * @param {number} duration - How long to show the notification in milliseconds
+ */
 function showToastNotification(message, isError = false, duration = 3000) {
-  let notification = document.getElementById("toast-notification");
-
-  if (!notification) {
-    notification = document.createElement("div");
-    notification.id = "toast-notification";
-    notification.style.position = "fixed";
-    notification.style.bottom = "20px";
-    notification.style.right = "20px";
-    notification.style.padding = "16px 24px";
-    notification.style.borderRadius = "4px";
-    notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
-    notification.style.zIndex = "10000";
-    notification.style.transition = "opacity 0.3s, transform 0.3s";
-    notification.style.opacity = "0";
-    notification.style.transform = "translateY(20px)";
-    notification.style.fontSize = "14px";
-    document.body.appendChild(notification);
+  // Remove any existing notifications first
+  const existingNotification = document.getElementById("toast-notification");
+  if (existingNotification) {
+    document.body.removeChild(existingNotification);
   }
 
-  // Set color based on message type
+  // Create new notification
+  const notification = document.createElement("div");
+  notification.id = "toast-notification";
+  notification.style.position = "fixed";
+  notification.style.bottom = "20px";
+  notification.style.right = "20px";
+  notification.style.padding = "16px 24px";
+  notification.style.borderRadius = "4px";
+  notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+  notification.style.zIndex = "10000";
+  notification.style.transition = "opacity 0.3s, transform 0.3s";
+  notification.style.opacity = "0";
+  notification.style.transform = "translateY(20px)";
+  notification.style.fontSize = "14px";
   notification.style.backgroundColor = isError ? "#F44336" : "#4CAF50";
   notification.style.color = "white";
-
-  // Update content
   notification.textContent = message;
 
-  // Show with animation
+  document.body.appendChild(notification);
+
+  // Show with animation (after a tiny delay to ensure DOM update)
   setTimeout(() => {
     notification.style.opacity = "1";
     notification.style.transform = "translateY(0)";
@@ -652,6 +684,13 @@ function showToastNotification(message, isError = false, duration = 3000) {
   setTimeout(() => {
     notification.style.opacity = "0";
     notification.style.transform = "translateY(20px)";
+
+    // Wait for transition to complete, then remove from DOM
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300); // Wait for transition (300ms matches the CSS transition time)
   }, duration);
 }
 

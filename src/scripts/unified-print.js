@@ -1,11 +1,8 @@
 /**
  * UNIFIED PRINTING SYSTEM
- *
  * This script provides a single consolidated printing solution that:
  * 1. When viewing a new cart: completes the sale and then prints the receipt
  * 2. When viewing an old invoice: just prints the receipt
- *
- * Place this script AFTER all other scripts in your HTML file.
  */
 
 (function () {
@@ -20,6 +17,10 @@
     try {
       console.log("Unified print function called");
 
+      // Get cart items either from window.cart or by scanning the DOM
+      let cartItems = getCartItems();
+      console.log("Detected cart items:", cartItems);
+
       // Debug the current state
       console.log("Current state:", {
         isViewingInvoice: window.isViewingInvoice,
@@ -29,78 +30,99 @@
           typeof window.allInvoices !== "undefined"
             ? window.allInvoices.length
             : 0,
-        hasCart: typeof window.cart !== "undefined",
-        cartLength: typeof window.cart !== "undefined" ? window.cart.length : 0,
+        hasCart: cartItems.length > 0,
+        cartLength: cartItems.length,
         receipt: document.getElementById("receipt-container")
           ? document.getElementById("receipt-container").innerHTML.length > 0
           : false,
       });
 
-      // Case 0: Check if there's a VALID receipt in the container first
-      const receiptContainer = document.getElementById("receipt-container");
-      if (receiptContainer && receiptContainer.innerHTML.trim() !== "") {
-        // Check if the receipt container has actual content, not just placeholders
-        const content = receiptContainer.innerHTML.trim();
-        const isPlaceholderOnly =
-          content.includes("Receipt content will be generated here") ||
-          content.length < 100; // Too small to be a real receipt
+      // Case 1: If we have cart items and not viewing an invoice, process the sale
+      if (cartItems.length > 0 && window.isViewingInvoice !== true) {
+        console.log("Detected active cart with items - processing sale");
 
-        if (!isPlaceholderOnly) {
-          console.log("Found valid receipt in container - printing directly");
-          const receiptHtml = receiptContainer.innerHTML;
-          const styles =
-            typeof professionalReceiptStyles !== "undefined"
-              ? professionalReceiptStyles
-              : "";
-          printReceiptDirectly({ receiptHtml, isDirect: true });
-          showToastNotification("Printing receipt...");
-          return;
-        } else {
-          console.log("Found placeholder or empty receipt - ignoring");
+        // Clear any existing receipt content
+        const receiptContainer = document.getElementById("receipt-container");
+        if (receiptContainer) {
+          receiptContainer.innerHTML = "";
         }
-      }
 
-      // Try to access cart from global variables or from DOM
-      let cart = window.cart;
+        // Try to use the Complete Sale button
+        const completeSaleBtn = document.getElementById("complete-sale");
 
-      // First method: Check window.cart
-      if (!cart || !Array.isArray(cart) || cart.length === 0) {
-        console.log("Window.cart not available or empty, trying DOM detection");
+        if (completeSaleBtn && !completeSaleBtn.disabled) {
+          console.log("Clicking Complete Sale button");
+          completeSaleBtn.click();
+          showToastNotification("Processing sale...");
 
-        // Second method: Try to get cart items from the DOM as fallback
-        const cartItemsEl = document.getElementById("cart-items");
-        if (
-          cartItemsEl &&
-          cartItemsEl.children.length > 0 &&
-          !cartItemsEl.querySelector(".empty-cart")
-        ) {
-          console.log(
-            "Cart found from DOM:",
-            cartItemsEl.children.length,
-            "items"
-          );
-          cart = { length: cartItemsEl.children.length, fromDOM: true };
+          // Wait for receipt generation
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+
+          // Check if receipt was generated
+          if (receiptContainer) {
+            const content = receiptContainer.innerHTML.trim();
+            if (
+              content.length > 100 &&
+              !content.includes("Receipt content will be generated here")
+            ) {
+              printReceiptDirectly({ receiptHtml: content, isDirect: true });
+              showToastNotification("Sale completed and receipt printed");
+              return;
+            } else {
+              // Generate manual receipt
+              const receipt = generateManualReceipt(cartItems);
+              if (receipt) {
+                printReceiptDirectly({ receiptHtml: receipt, isDirect: true });
+                showToastNotification("Sale completed and receipt printed");
+                return;
+              }
+            }
+          }
+        } else if (typeof window.completeSale === "function") {
+          console.log("Using completeSale function directly");
+          try {
+            await window.completeSale();
+            showToastNotification("Processing sale...");
+
+            // Wait for receipt generation
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+
+            const receiptContainer =
+              document.getElementById("receipt-container");
+            if (receiptContainer) {
+              const content = receiptContainer.innerHTML.trim();
+              if (content.length > 100) {
+                printReceiptDirectly({ receiptHtml: content, isDirect: true });
+                showToastNotification("Sale completed and receipt printed");
+                return;
+              } else {
+                // Generate manual receipt
+                const receipt = generateManualReceipt(cartItems);
+                if (receipt) {
+                  printReceiptDirectly({
+                    receiptHtml: receipt,
+                    isDirect: true,
+                  });
+                  showToastNotification("Sale completed and receipt printed");
+                  return;
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Error completing sale:", error);
+          }
         } else {
-          console.log("Trying to find cart items through table rows");
-
-          // Third method: Look for table rows in the cart
-          const cartRows = document.querySelectorAll(
-            "#cart-table tbody tr:not(.empty-cart)"
-          );
-          if (cartRows && cartRows.length > 0) {
-            console.log(
-              "Cart found from table rows:",
-              cartRows.length,
-              "items"
-            );
-            cart = { length: cartRows.length, fromDOM: true };
+          // No button or function, create a manual receipt directly
+          const receipt = generateManualReceipt(cartItems);
+          if (receipt) {
+            printReceiptDirectly({ receiptHtml: receipt, isDirect: true });
+            showToastNotification("Receipt printed");
+            return;
           }
         }
-      } else {
-        console.log("Found window.cart with", cart.length, "items");
       }
 
-      // Case 1: Viewing an old invoice - just print it
+      // Case 2: Viewing an old invoice - just print it
       if (
         window.isViewingInvoice === true &&
         typeof window.currentInvoiceIndex === "number" &&
@@ -111,160 +133,38 @@
       ) {
         console.log("Printing existing invoice:", window.currentInvoiceIndex);
         const invoiceData = window.allInvoices[window.currentInvoiceIndex];
-        console.log("Invoice being printed:", invoiceData.id);
-
-        // Generate and print receipt
         printReceiptDirectly(invoiceData);
         showToastNotification("Printing invoice #" + invoiceData.id);
         return;
       }
 
-      // Case 2: New cart - complete sale first, then print
-      if (cart && cart.length > 0) {
-        console.log("Cart detected with", cart.length, "items");
+      // Case 3: Check if there's a valid receipt in the container
+      const receiptContainer = document.getElementById("receipt-container");
+      if (receiptContainer && receiptContainer.innerHTML.trim() !== "") {
+        const content = receiptContainer.innerHTML.trim();
+        const isPlaceholderOnly =
+          content.includes("Receipt content will be generated here") ||
+          content.length < 100;
 
-        // Always try to use the complete sale button for maximum reliability
-        const completeSaleBtn = document.getElementById("complete-sale");
-
-        // Check if button is available and not disabled
-        if (completeSaleBtn && !completeSaleBtn.disabled) {
-          console.log("Found active Complete Sale button - clicking it");
-
-          // Click the button to complete the sale
-          completeSaleBtn.click();
-
-          // Show notification immediately
-          showToastNotification("Processing sale...");
-
-          // Longer wait for receipt modal to appear and be populated
-          setTimeout(() => {
-            // Check for receipt in modal
-            const receiptContainer =
-              document.getElementById("receipt-container");
-            if (receiptContainer) {
-              const content = receiptContainer.innerHTML.trim();
-              const isValidReceipt =
-                content.length > 100 &&
-                !content.includes("Receipt content will be generated here");
-
-              if (isValidReceipt) {
-                console.log("Found valid receipt after sale completion");
-                printReceiptDirectly({ receiptHtml: content, isDirect: true });
-                showToastNotification("Sale completed and receipt printed.");
-              } else {
-                console.log("Receipt not found or invalid after waiting");
-
-                // Try fallback method using completeSale function directly
-                if (typeof window.completeSale === "function") {
-                  console.log(
-                    "Trying fallback with direct completeSale function"
-                  );
-
-                  setTimeout(async () => {
-                    try {
-                      await window.completeSale();
-
-                      // Check again for receipt
-                      setTimeout(() => {
-                        const receiptContainer =
-                          document.getElementById("receipt-container");
-                        if (receiptContainer) {
-                          const content = receiptContainer.innerHTML.trim();
-                          if (
-                            content.length > 100 &&
-                            !content.includes(
-                              "Receipt content will be generated here"
-                            )
-                          ) {
-                            printReceiptDirectly({
-                              receiptHtml: content,
-                              isDirect: true,
-                            });
-                            showToastNotification(
-                              "Sale completed and receipt printed."
-                            );
-                          } else {
-                            showToastNotification(
-                              "Sale completed. Could not find receipt to print.",
-                              true
-                            );
-                          }
-                        }
-                      }, 500);
-                    } catch (error) {
-                      console.error("Error in fallback completeSale:", error);
-                      showToastNotification(
-                        "Error completing sale: " + error.message,
-                        true
-                      );
-                    }
-                  }, 100);
-                } else {
-                  showToastNotification(
-                    "Sale may have completed. Receipt not available to print.",
-                    true
-                  );
-                }
-              }
-            } else {
-              showToastNotification(
-                "Receipt container not found after sale.",
-                true
-              );
-            }
-          }, 800); // Increased timeout for receipt generation
+        if (!isPlaceholderOnly) {
+          console.log("Found valid receipt in container - printing directly");
+          printReceiptDirectly({ receiptHtml: content, isDirect: true });
+          showToastNotification("Printing receipt...");
+          return;
         }
-        // Try using the direct function as fallback
-        else if (typeof window.completeSale === "function") {
-          console.log(
-            "Complete sale button not available, using function directly"
-          );
-
-          try {
-            // Call the completeSale function
-            await window.completeSale();
-            showToastNotification("Processing sale...");
-
-            // Check for receipt
-            setTimeout(() => {
-              const receiptContainer =
-                document.getElementById("receipt-container");
-              if (receiptContainer) {
-                const content = receiptContainer.innerHTML.trim();
-                if (
-                  content.length > 100 &&
-                  !content.includes("Receipt content will be generated here")
-                ) {
-                  printReceiptDirectly({
-                    receiptHtml: content,
-                    isDirect: true,
-                  });
-                  showToastNotification("Sale completed and receipt printed.");
-                } else {
-                  showToastNotification(
-                    "Sale completed. Receipt not available to print.",
-                    true
-                  );
-                }
-              }
-            }, 800);
-          } catch (error) {
-            console.error("Error calling completeSale function:", error);
-            showToastNotification(
-              "Error completing sale: " + error.message,
-              true
-            );
-          }
-        } else {
-          showToastNotification(
-            "Cannot complete sale: no method available",
-            true
-          );
-        }
-        return;
       }
 
-      // Case 3: Empty cart or other state - show message
+      // If we still have cart items but didn't find a receipt, generate one manually
+      if (cartItems.length > 0) {
+        const receipt = generateManualReceipt(cartItems);
+        if (receipt) {
+          printReceiptDirectly({ receiptHtml: receipt, isDirect: true });
+          showToastNotification("Receipt printed");
+          return;
+        }
+      }
+
+      // Case 4: Nothing to print
       showToastNotification(
         "No items to print. Add items to cart first.",
         true
@@ -274,6 +174,220 @@
       showToastNotification("Error printing receipt: " + error.message, true);
     }
   };
+
+  // NEW FUNCTION: Get cart items from various sources
+  function getCartItems() {
+    // Try to get from window.cart first
+    if (window.cart && Array.isArray(window.cart) && window.cart.length > 0) {
+      return window.cart;
+    }
+
+    console.log("window.cart not available, scanning DOM for cart items");
+
+    // Scan the DOM for cart items
+    const items = [];
+    const rows = document.querySelectorAll("#cart-items tr:not(.empty-cart)");
+
+    if (rows && rows.length > 0) {
+      rows.forEach((row, index) => {
+        // Skip any rows that are messages or informational
+        if (
+          row.classList.contains("edit-mode-message-row") ||
+          row.classList.contains("view-mode-info-row")
+        ) {
+          return;
+        }
+
+        try {
+          // Extract item data from the row cells
+          const nameCell = row.cells[1]; // Name should be in the second column
+          const priceCell = row.cells[2]; // Price should be in the third column
+          const qtyCell = row.cells[3]; // Quantity should be in the fourth column
+
+          if (nameCell && priceCell) {
+            const name = nameCell.textContent.trim();
+            // Remove any currency symbols and parse as float
+            const price = parseFloat(
+              priceCell.textContent.replace(/[^\d.-]/g, "")
+            );
+            const quantity = qtyCell ? parseInt(qtyCell.textContent) || 1 : 1;
+
+            items.push({
+              id: "dom-item-" + index,
+              name: name,
+              price: price,
+              quantity: quantity,
+              total: price * quantity,
+            });
+          }
+        } catch (error) {
+          console.error("Error parsing cart row:", error);
+        }
+      });
+    }
+
+    // If we didn't find items by rows, try looking for specific price elements
+    if (items.length === 0) {
+      const subtotalElement = document.getElementById("subtotal");
+      const totalElement = document.getElementById("total");
+
+      if (subtotalElement && totalElement) {
+        const subtotal = parseFloat(
+          subtotalElement.textContent.replace(/[^\d.-]/g, "")
+        );
+        const total = parseFloat(
+          totalElement.textContent.replace(/[^\d.-]/g, "")
+        );
+
+        if (!isNaN(total) && total > 0) {
+          // We at least know there's a total, create a generic item
+          items.push({
+            id: "cart-total-item",
+            name: "Cart Item",
+            price: total,
+            quantity: 1,
+            total: total,
+          });
+        }
+      }
+    }
+
+    return items;
+  }
+
+  // Function to generate a manual receipt when normal generation fails
+  function generateManualReceipt(cartItems) {
+    try {
+      console.log("Generating manual receipt for", cartItems.length, "items");
+
+      if (!cartItems || cartItems.length === 0) {
+        return null;
+      }
+
+      // Calculate totals
+      let subtotal = 0;
+      cartItems.forEach((item) => {
+        subtotal += item.price * item.quantity;
+      });
+
+      // Get data from UI elements if possible
+      const subtotalEl = document.getElementById("subtotal");
+      const taxEl = document.getElementById("tax");
+      const totalEl = document.getElementById("total");
+      const customerNameEl = document.getElementById("customer-name");
+
+      // Use values from DOM if available, otherwise calculate
+      const calculatedSubtotal = subtotalEl
+        ? parseFloat(subtotalEl.textContent.replace(/[^\d.-]/g, ""))
+        : subtotal;
+      const tax = taxEl
+        ? parseFloat(taxEl.textContent.replace(/[^\d.-]/g, ""))
+        : 0;
+      const calculatedTotal = totalEl
+        ? parseFloat(totalEl.textContent.replace(/[^\d.-]/g, ""))
+        : calculatedSubtotal + tax;
+
+      const invoiceData = {
+        id: "INV-" + Date.now(),
+        items: cartItems,
+        customer: customerNameEl
+          ? customerNameEl.value || "Guest Customer"
+          : "Guest Customer",
+        subtotal: calculatedSubtotal,
+        tax: tax,
+        total: calculatedTotal,
+        date: new Date().toISOString(),
+      };
+
+      // Try to use available receipt generators
+      if (typeof generateProfessionalReceipt === "function") {
+        return generateProfessionalReceipt(invoiceData);
+      } else if (typeof generateReceiptHtml === "function") {
+        return generateReceiptHtml(invoiceData);
+      } else {
+        // Create basic receipt as fallback
+        return generateBasicReceipt(invoiceData);
+      }
+    } catch (error) {
+      console.error("Error generating manual receipt:", error);
+      return null;
+    }
+  }
+  const currencySymbol = localStorage.getItem("currency") === "ILS" ? "₪" : "$";
+
+  // Basic receipt generator for last resort fallback
+  function generateBasicReceipt(invoice) {
+    try {
+      const itemsHtml = invoice.items
+        .map(
+          (item) => `
+        <tr>
+          <td>${item.name}</td>
+          <td style="text-align:center">${item.quantity}</td>
+          <td style="text-align:right">$${parseFloat(item.price).toFixed(
+            2
+          )}</td>
+          <td style="text-align:right">$${(
+            parseFloat(item.price) * item.quantity
+          ).toFixed(2)}</td>
+        </tr>
+      `
+        )
+        .join("");
+
+      return `
+        <div style="font-family: Arial, sans-serif; max-width: 300px; padding: 10px;">
+          <div style="text-align: center; margin-bottom: 15px;">
+            <h2 style="margin: 0;">MZLAD Billing System</h2>
+            <p style="margin: 5px 0;">Receipt #${invoice.id}</p>
+            <p style="margin: 5px 0;">${new Date(
+              invoice.date
+            ).toLocaleString()}</p>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <p><strong>Customer:</strong> ${invoice.customer}</p>
+          </div>
+          
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid #ddd;">
+              <th style="text-align: left;">Item</th>
+              <th style="text-align: center;">Qty</th>
+              <th style="text-align: right;">Price</th>
+              <th style="text-align: right;">Total</th>
+            </tr>
+            ${itemsHtml}
+            <tr style="border-top: 1px solid #ddd;">
+              <td colspan="3" style="text-align: right; padding-top: 10px;">Subtotal:</td>
+              <td style="text-align: right; padding-top: 10px;">${currencySymbol}${invoice.subtotal.toFixed(
+        2
+      )}</td>
+            </tr>
+            <tr>
+              <td colspan="3" style="text-align: right;">Tax:</td>
+              <td style="text-align: right;">${currencySymbol}${invoice.tax.toFixed(
+        2
+      )}</td>
+            </tr>
+            <tr style="font-weight: bold;">
+              <td colspan="3" style="text-align: right;">Total:</td>
+              <td style="text-align: right;">${currencySymbol}${invoice.total.toFixed(
+        2
+      )}</td>
+            </tr>
+          </table>
+          
+          <div style="text-align: center; margin-top: 20px;">
+            <p>Thank you for your purchase!</p>
+            <p style="font-size: 0.8em;">Powered by MZLAD Billing System</p>
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      console.error("Error in basic receipt generation:", error);
+      return "<div>Receipt generation failed</div>";
+    }
+  }
 
   // Helper function to print receipt
   function printReceiptDirectly(invoiceData) {
@@ -301,10 +415,6 @@
         // Generate receipt HTML
         if (typeof generateProfessionalReceipt === "function") {
           receiptHtml = generateProfessionalReceipt(invoiceData);
-        } else if (typeof generateReceiptHtmlWithDiscount === "function") {
-          receiptHtml = generateReceiptHtmlWithDiscount(invoiceData);
-        } else if (typeof generateReceiptHtmlWithDiscount === "function") {
-          receiptHtml = generateReceiptHtmlWithDiscount(invoiceData);
         } else if (typeof generateReceiptHtml === "function") {
           receiptHtml = generateReceiptHtml(invoiceData);
         } else {
@@ -335,7 +445,7 @@
       const frameDoc =
         printFrame.contentDocument || printFrame.contentWindow.document;
 
-      // Write print-ready HTML to the iframe, directly including the logo data
+      // Write print-ready HTML to the iframe
       frameDoc.open();
       frameDoc.write(`
       <!DOCTYPE html>
@@ -401,34 +511,40 @@
   }
 
   // Helper function to show toast notifications
+  /**
+   * Shows a toast notification that properly disappears after the specified duration
+   * @param {string} message - The message to display
+   * @param {boolean} isError - Whether this is an error message (red) or success (green)
+   * @param {number} duration - How long to show the notification in milliseconds
+   */
   function showToastNotification(message, isError = false, duration = 3000) {
-    let notification = document.getElementById("toast-notification");
-
-    if (!notification) {
-      notification = document.createElement("div");
-      notification.id = "toast-notification";
-      notification.style.position = "fixed";
-      notification.style.bottom = "20px";
-      notification.style.right = "20px";
-      notification.style.padding = "16px 24px";
-      notification.style.borderRadius = "4px";
-      notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
-      notification.style.zIndex = "10000";
-      notification.style.transition = "opacity 0.3s, transform 0.3s";
-      notification.style.opacity = "0";
-      notification.style.transform = "translateY(20px)";
-      notification.style.fontSize = "14px";
-      document.body.appendChild(notification);
+    // Remove any existing notifications first
+    const existingNotification = document.getElementById("toast-notification");
+    if (existingNotification) {
+      document.body.removeChild(existingNotification);
     }
 
-    // Set color based on message type
+    // Create new notification
+    const notification = document.createElement("div");
+    notification.id = "toast-notification";
+    notification.style.position = "fixed";
+    notification.style.bottom = "20px";
+    notification.style.right = "20px";
+    notification.style.padding = "16px 24px";
+    notification.style.borderRadius = "4px";
+    notification.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+    notification.style.zIndex = "10000";
+    notification.style.transition = "opacity 0.3s, transform 0.3s";
+    notification.style.opacity = "0";
+    notification.style.transform = "translateY(20px)";
+    notification.style.fontSize = "14px";
     notification.style.backgroundColor = isError ? "#F44336" : "#4CAF50";
     notification.style.color = "white";
-
-    // Update content
     notification.textContent = message;
 
-    // Show with animation
+    document.body.appendChild(notification);
+
+    // Show with animation (after a tiny delay to ensure DOM update)
     setTimeout(() => {
       notification.style.opacity = "1";
       notification.style.transform = "translateY(0)";
@@ -438,6 +554,13 @@
     setTimeout(() => {
       notification.style.opacity = "0";
       notification.style.transform = "translateY(20px)";
+
+      // Wait for transition to complete, then remove from DOM
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300); // Wait for transition (300ms matches the CSS transition time)
     }, duration);
   }
 

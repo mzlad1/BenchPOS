@@ -766,7 +766,7 @@ body {
   background-color: var(--card-bg);
   border-radius: var(--rounded-xl);
   box-shadow: var(--shadow-lg);
-  overflow: hidden;
+  /* overflow: hidden; */
   border: none;
   display: flex;
   flex-direction: column;
@@ -875,9 +875,8 @@ body {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
   background-color: var(--card-bg-alt);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   border-radius: var(--rounded-lg);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition);
@@ -1212,7 +1211,7 @@ body {
 }
 
 /* Make the cart responsive */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .cart-items {
     height: 250px !important;
   }
@@ -1231,7 +1230,7 @@ body {
   #cart-table td:last-child {
     padding-right: 0.75rem;
   }
-}
+} */
 
 /* === Selected Row & Item Controls === */
 
@@ -1723,7 +1722,7 @@ body {
 .payment-actions {
   display: flex;
   gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
+  /* margin-top: var(--spacing-lg); */
   position: relative;
 }
 
@@ -2019,6 +2018,8 @@ body {
   margin-bottom: var(--spacing-lg);
   box-shadow: var(--shadow);
   display: flex;
+  flex-direction: column;
+  justify-content: center;
   gap: var(--spacing-md);
   position: relative;
   overflow: hidden;
@@ -2830,7 +2831,7 @@ body {
 }
 
 /* === Responsive Adjustments === */
-@media (min-width: 1024px) {
+/* @media (min-width: 1024px) {
   .billing-container {
     display: flex;
     gap: var(--spacing-lg);
@@ -2875,7 +2876,7 @@ body {
   .cart-items {
     max-height: 300px;
   }
-}
+} */
 
 /* === View Mode Styles === */
 .edit-mode-message-row td {
@@ -3005,4 +3006,890 @@ body {
 .page-indicator {
   font-weight: 600;
   color: var(--text-dark);
+}
+/* === Responsive Adjustments === */
+/* These enhanced media queries provide better responsiveness across all device sizes */
+
+/* Large Screens (Desktops and larger) */
+@media (min-width: 1200px) {
+  .billing-container {
+    display: flex;
+    gap: var(--spacing-xl);
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+
+  .product-selection {
+    flex: 1.2; /* Give product selection slightly more width */
+    height: auto;
+  }
+
+  .invoice-panel {
+    flex: 1;
+    height: auto;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+/* Medium to Large Screens (Small desktops and laptops) */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .billing-container {
+    display: flex;
+    gap: var(--spacing-lg);
+  }
+
+  .product-selection {
+    flex: 1;
+    height: auto;
+  }
+
+  .invoice-panel {
+    flex: 1;
+    height: auto;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .product-item {
+    min-height: 200px;
+  }
+
+  /* Adjust font sizes for slightly smaller screens */
+  .product-name {
+    font-size: 1rem;
+  }
+
+  .product-price {
+    font-size: 1.3rem;
+  }
+
+  /* Handling sidebar expansion on medium screens */
+  body.sidebar-expanded .billing-container {
+    gap: var(--spacing-md);
+  }
+
+  body.sidebar-expanded .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1rem;
+  }
+
+  body.sidebar-expanded .product-item {
+    min-height: 180px;
+    padding: var(--spacing-sm);
+  }
+}
+
+/* Tablets and smaller laptops */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .billing-container {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+
+  .product-selection,
+  .invoice-panel {
+    width: 100%;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    max-height: 450px;
+  }
+
+  /* Make product cards more compact */
+  .product-item {
+    min-height: 180px;
+    padding: var(--spacing-md);
+  }
+
+  /* Adjust the invoice table layout */
+  #cart-table th:first-child {
+    width: 30px;
+  }
+
+  #cart-table th:nth-child(2) {
+    width: 30%;
+  }
+
+  /* Keep the cart visible without too much scrolling */
+  .cart-items {
+    height: 280px !important;
+  }
+
+  /* Adjust spacing */
+  .invoice-details {
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .customer-info {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  /* Optimize summary section */
+  .summary-row {
+    padding: 0.875rem 1.25rem;
+  }
+
+  .summary-row.total {
+    padding: 1.25rem;
+  }
+
+  /* Better buttons on tablets */
+  #complete-sale,
+  #clear-invoice {
+    padding: 0.875rem 1.25rem;
+  }
+
+  /* Handling sidebar expansion on tablet screens */
+  body.sidebar-expanded .main-content {
+    margin-left: 250px; /* Adjust based on your sidebar width */
+    width: calc(100% - 250px);
+  }
+
+  body.sidebar-expanded .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+  }
+
+  /* Layout adjustments for invoice navigation */
+  body.sidebar-expanded .invoice-nav {
+    flex-wrap: wrap;
+    padding: var(--spacing-sm);
+  }
+
+  body.sidebar-expanded .invoice-nav button {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  /* Barcode entry adjustments when sidebar is expanded */
+  body.sidebar-expanded .barcode-form {
+    padding: var(--spacing-sm);
+  }
+
+  body.sidebar-expanded #barcode-input {
+    font-size: 0.95rem;
+  }
+}
+
+/* Mobile Landscape and Small Tablets */
+@media (min-width: 576px) and (max-width: 767px) {
+  .billing-container {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm);
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+    max-height: 400px;
+    padding: var(--spacing-md);
+  }
+
+  .product-item {
+    min-height: 160px;
+    padding: var(--spacing-sm);
+  }
+
+  .product-name {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 1; /* Show only one line */
+  }
+
+  .product-price {
+    font-size: 1.2rem;
+    margin: 0.15rem 0 0.3rem;
+  }
+
+  .product-stock {
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .add-to-cart {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  /* Better spacing for cart table */
+  #cart-table th,
+  #cart-table td {
+    padding: 0.6rem 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  #cart-table th:first-child,
+  #cart-table td:first-child {
+    padding-left: 0.5rem;
+    width: 25px;
+  }
+
+  #cart-table th:last-child,
+  #cart-table td:last-child {
+    padding-right: 0.5rem;
+  }
+
+  .cart-items {
+    height: 250px !important;
+  }
+
+  /* Optimize invoice info */
+  .invoice-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  /* Adapt customer info to smaller space */
+  .customer-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .customer-info label {
+    min-width: auto;
+  }
+
+  /* Stack payment buttons */
+  .payment-actions {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  /* Invoice navigation */
+  .invoice-nav {
+    flex-wrap: wrap;
+  }
+
+  .invoice-nav button {
+    min-width: 45%;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Modal adjustments for small screens */
+  .modal-content {
+    width: 95%;
+    padding: 10px;
+  }
+
+  .modal-header,
+  .modal-footer {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .modal-body {
+    padding: var(--spacing-md);
+  }
+
+  .modal-footer {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .modal-footer button {
+    flex: 1;
+    min-width: 120px;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 575px) {
+  .container {
+    padding: 0;
+  }
+
+  .billing-container {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs);
+  }
+
+  .product-selection h2,
+  .invoice-panel h2 {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 1.1rem;
+  }
+
+  .search-bar {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .search-bar input {
+    padding: 0.6rem 1rem 0.6rem 2.25rem;
+    font-size: 0.9rem;
+  }
+
+  .search-bar::before {
+    left: calc(var(--spacing-md) + 0.75rem);
+  }
+
+  /* Make products grid more compact */
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+    padding: var(--spacing-sm);
+    max-height: 350px;
+  }
+
+  .product-item {
+    min-height: 150px;
+    padding: var(--spacing-sm);
+  }
+
+  .product-name {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+    -webkit-line-clamp: 1;
+  }
+
+  .product-price {
+    font-size: 1.1rem;
+    margin: 0.1rem 0 0.2rem;
+  }
+
+  .product-stock {
+    font-size: 0.75rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .add-to-cart {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  /* Optimize barcode entry for mobile */
+  .barcode-form {
+    margin: var(--spacing-sm);
+    padding: var(--spacing-sm);
+  }
+
+  .barcode-form h3 {
+    font-size: 1rem;
+  }
+
+  .barcode-input-container {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  #barcode-input {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+
+  #barcode-submit {
+    width: 100%;
+    min-width: auto;
+  }
+
+  /* Invoice panel adjustments */
+  .invoice-details {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-xs);
+  }
+
+  .invoice-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .customer-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: var(--spacing-sm);
+  }
+
+  .customer-info label {
+    min-width: auto;
+  }
+
+  .customer-info input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+  }
+
+  /* Make cart view usable on small screens */
+  .cart-items {
+    height: 220px !important;
+    border-radius: var(--rounded-lg);
+  }
+
+  #cart-table {
+    font-size: 0.8rem;
+  }
+
+  #cart-table th {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.7rem;
+  }
+
+  #cart-table td {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.8rem;
+  }
+
+  #cart-table th:first-child,
+  #cart-table td:first-child {
+    padding-left: 0.4rem;
+    width: 20px;
+  }
+
+  #cart-table th:last-child,
+  #cart-table td:last-child {
+    padding-right: 0.4rem;
+  }
+
+  /* Adjust column widths for smaller screens */
+  #cart-table th:nth-child(2) {
+    width: 35%;
+  }
+
+  #cart-table th:nth-child(3),
+  #cart-table th:nth-child(4),
+  #cart-table th:nth-child(5) {
+    width: 15%;
+  }
+
+  /* Hide some content when space is very limited */
+  #cart-table td:nth-child(2) {
+    max-width: 80px;
+  }
+
+  /* Quantity controls */
+  .quantity {
+    min-width: 25px;
+    height: 25px;
+    margin: 0 var(--spacing-2xs);
+    font-size: 0.8rem;
+  }
+
+  .quantity-btn {
+    width: 25px;
+    height: 25px;
+    font-size: 0.9rem;
+  }
+
+  /* Remove button */
+  .remove-btn {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .remove-btn::before {
+    font-size: 0.8rem;
+    margin-right: 0.15rem;
+  }
+
+  /* Summary section */
+  .invoice-summary {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .summary-row {
+    padding: 0.75rem 1rem;
+  }
+
+  .summary-row span:first-child {
+    font-size: 0.9rem;
+  }
+
+  .summary-row span:last-child {
+    font-size: 0.9rem;
+  }
+
+  .summary-row.total {
+    padding: 1rem;
+  }
+
+  .summary-row.total span {
+    font-size: 1.1rem;
+  }
+
+  /* Payment buttons */
+  .payment-actions {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+  }
+
+  #clear-invoice,
+  #complete-sale {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Optimize navigation */
+  .invoice-nav {
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .invoice-nav button {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+    flex: 1 0 calc(50% - var(--spacing-sm) / 2);
+    min-height: 38px;
+  }
+
+  /* Modal adjustments */
+  .modal {
+    padding: var(--spacing-sm);
+  }
+
+  .modal-content {
+    width: 100%;
+    padding: 8px;
+    max-height: 95vh;
+  }
+
+  .modal-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .modal-body {
+    padding: var(--spacing-md);
+    max-height: calc(80vh - 110px);
+  }
+
+  .modal-footer {
+    padding: var(--spacing-sm) var(--spacing-md);
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .modal-footer button {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Adjust form elements in modals */
+  .modal .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .modal .form-group input,
+  .modal .form-group select,
+  .modal .form-group textarea {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  /* Receipt modal adjustments */
+  .receipt {
+    padding: var(--spacing-sm);
+    font-size: 0.8rem;
+  }
+
+  /* Toast notifications */
+  #toast-notification {
+    bottom: 10px;
+    right: 10px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    max-width: 280px;
+  }
+}
+
+/* Ultra Small Screens */
+@media (max-width: 375px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .product-item {
+    min-height: 140px;
+    padding: var(--spacing-xs);
+  }
+
+  .product-name {
+    font-size: 0.8rem;
+  }
+
+  .product-price {
+    font-size: 1rem;
+  }
+
+  /* Further compress the cart table */
+  #cart-table th {
+    padding: 0.4rem 0.2rem;
+    font-size: 0.65rem;
+  }
+
+  #cart-table td {
+    padding: 0.4rem 0.2rem;
+    font-size: 0.75rem;
+  }
+
+  /* Keep only essential information visible */
+  #cart-table th:first-child,
+  #cart-table td:first-child {
+    display: none; /* Hide checkbox column on ultra small screens */
+  }
+
+  /* Make buttons more tappable */
+  .add-to-cart,
+  #barcode-submit,
+  #clear-invoice,
+  #complete-sale {
+    padding: 0.7rem 0.5rem;
+    min-height: 44px; /* Ensure minimum touch target size */
+  }
+}
+
+/* Print styles - optimize for receipt printing */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt,
+  .receipt * {
+    visibility: visible;
+  }
+
+  .receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+    border: none;
+  }
+
+  .modal,
+  .modal-header,
+  .modal-footer {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .modal-header,
+  .modal-footer,
+  .close {
+    display: none;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 600px) and (orientation: landscape) {
+  .billing-container {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-md);
+    padding: var(--spacing-xs);
+    max-height: calc(100vh - 100px);
+    overflow: hidden;
+  }
+
+  .product-selection {
+    flex: 1;
+    max-height: calc(100vh - 120px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .invoice-panel {
+    flex: 1;
+    max-height: calc(100vh - 120px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .products-grid {
+    max-height: calc(100vh - 200px);
+  }
+
+  .cart-items {
+    max-height: 200px !important;
+    height: 200px !important;
+  }
+
+  /* Reduce all vertical spacing */
+  .invoice-details {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-xs);
+  }
+
+  .product-selection h2,
+  .invoice-panel h2 {
+    padding: var(--spacing-xs) var(--spacing-md);
+  }
+
+  /* Optimize for horizontal space */
+  #cart-table th,
+  #cart-table td {
+    padding: 0.4rem;
+  }
+
+  .payment-actions {
+    margin-top: var(--spacing-sm);
+    flex-direction: row;
+  }
+}
+/* Compact mode toggle button */
+#compact-mode-toggle {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  z-index: 1000;
+  background-color: var(--card-bg);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: var(--rounded-lg);
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: all 0.2s ease;
+}
+
+#compact-mode-toggle:hover {
+  background-color: var(--primary-ghost);
+  transform: translateY(-2px);
+}
+
+#compact-mode-toggle::before {
+  content: "🔍";
+  font-size: 1rem;
+}
+
+/* Scale control for manual adjustment */
+.scale-control {
+  position: fixed;
+  bottom: 15px;
+  right: 160px;
+  z-index: 1000;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--rounded-lg);
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: var(--shadow);
+  display: none; /* Hidden by default, shown when compact mode is active */
+}
+
+.scale-control button {
+  width: 28px;
+  height: 28px;
+  background-color: var(--card-bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--rounded);
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.scale-control button:hover {
+  background-color: var(--primary-ghost);
+  color: var(--primary);
+}
+
+.scale-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* Compact mode styles */
+body.compact-mode {
+  overflow: hidden !important; /* Prevent scrolling in compact mode */
+}
+
+body.compact-mode .main-content {
+  overflow: hidden !important;
+  height: 100vh;
+  max-height: 100vh;
+  transform-origin: top center;
+}
+
+body.compact-mode #content-container {
+  transform-origin: top center;
+  transition: transform 0.3s ease;
+}
+
+body.compact-mode .scale-control {
+  display: flex;
+}
+
+/* Scale factors for different screen sizes */
+body.compact-mode.scale-90 #content-container {
+  transform: scale(0.9);
+}
+
+body.compact-mode.scale-80 #content-container {
+  transform: scale(0.8);
+}
+
+body.compact-mode.scale-70 #content-container {
+  transform: scale(0.7);
+}
+
+body.compact-mode.scale-60 #content-container {
+  transform: scale(0.6);
+}
+
+body.compact-mode.scale-50 #content-container {
+  transform: scale(0.5);
+}
+
+/* Adjust container heights in compact mode */
+body.compact-mode .billing-container {
+  max-height: calc(100vh / var(--scale-factor, 1));
+  padding: calc(var(--spacing-md) / var(--scale-factor, 1));
+  gap: calc(var(--spacing-md) / var(--scale-factor, 1));
+}
+
+body.compact-mode .product-selection,
+body.compact-mode .invoice-panel {
+  max-height: calc(100vh / var(--scale-factor, 1) - 50px);
+}
+
+body.compact-mode .products-grid {
+  max-height: calc((100vh / var(--scale-factor, 1)) - 150px);
+}
+
+body.compact-mode .cart-items {
+  height: calc(200px / var(--scale-factor, 1)) !important;
+  max-height: calc((100vh / var(--scale-factor, 1)) - 380px) !important;
+}
+
+/* Custom scaling for different elements */
+body.compact-mode .product-item {
+  min-height: unset;
+  height: auto;
 }

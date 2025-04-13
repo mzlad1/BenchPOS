@@ -31,57 +31,57 @@ function initInvoiceNavigation() {
     searchBar.parentNode.insertBefore(navBar, searchBar);
 
     // Add styles for better spacing
-    const styleElement = document.createElement("style");
-    styleElement.textContent = `
-      .invoice-nav {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 15px;
-        margin-top: 10px;
-      }
-      
-      .nav-icon {
-        font-size: 0.8em;
-      }
-      
-      .shortcut-indicator {
-        font-size: 0.8em;
-        opacity: 0.7;
-        font-weight: normal;
-      }
-      
-      .product-selection h2 {
-        margin-bottom: 10px;
-      }
-      
-      /* Make the buttons take equal width */
-      .invoice-nav button {
-        flex: 1;
-        white-space: nowrap;
-        font-size: 0.9rem;
-        text-align: center;
-        justify-content: center;
-      }
-      
-      /* Keep the buttons visible on smaller screens */
-      @media (max-width: 768px) {
-        .invoice-nav {
-          flex-wrap: wrap;
-        }
-        
-        .invoice-nav button {
-          flex: 1 1 auto;
-          padding: 8px 10px;
-          font-size: 0.85rem;
-        }
-        
-        .shortcut-indicator {
-          display: none; /* Hide shortcuts on mobile */
-        }
-      }
-    `;
-    document.head.appendChild(styleElement);
+    // const styleElement = document.createElement("style");
+    // styleElement.textContent = `
+    //   .invoice-nav {
+    //     display: flex;
+    //     justify-content: space-between;
+    //     gap: 10px;
+    //     margin-bottom: 15px;
+    //     margin-top: 10px;
+    //   }
+
+    //   .nav-icon {
+    //     font-size: 0.8em;
+    //   }
+
+    //   .shortcut-indicator {
+    //     font-size: 0.8em;
+    //     opacity: 0.7;
+    //     font-weight: normal;
+    //   }
+
+    //   .product-selection h2 {
+    //     margin-bottom: 10px;
+    //   }
+
+    //   /* Make the buttons take equal width */
+    //   .invoice-nav button {
+    //     flex: 1;
+    //     white-space: nowrap;
+    //     font-size: 0.9rem;
+    //     text-align: center;
+    //     justify-content: center;
+    //   }
+
+    //   /* Keep the buttons visible on smaller screens */
+    //   @media (max-width: 768px) {
+    //     .invoice-nav {
+    //       flex-wrap: wrap;
+    //     }
+
+    //     .invoice-nav button {
+    //       flex: 1 1 auto;
+    //       padding: 8px 10px;
+    //       font-size: 0.85rem;
+    //     }
+
+    //     .shortcut-indicator {
+    //       display: none; /* Hide shortcuts on mobile */
+    //     }
+    //   }
+    // `;
+    // document.head.appendChild(styleElement);
   } else {
     // Fallback to original position if search bar not found
     const billingContainer = document.querySelector(".billing-container");
@@ -896,12 +896,12 @@ function showNotification(message, isError = false) {
 function addInvoiceNavigationStyles() {
   const styleElement = document.createElement("style");
   styleElement.textContent = `
-    .invoice-nav {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
+    // .invoice-nav {
+    //   display: flex;
+    //   justify-content: center;
+    //   gap: 10px;
+    //   margin-bottom: 20px;
+    // }
     
     .nav-icon {
       font-size: 0.8em;

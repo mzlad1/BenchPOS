@@ -3,7 +3,7 @@ let products = [];
 let cart = [];
 const TAX_RATE = 0;
 let currentPage = 1;
-const productsPerPage = 4; // Adjust this number based on your UI
+const productsPerPage = 2; // Adjust this number based on your UI
 
 // DOM Elements
 const productsListEl = document.getElementById("products-list");
@@ -43,8 +43,8 @@ async function initPage() {
   const today = new Date();
   invoiceDateEl.textContent = formatDate(today);
 
-  document.getElementById("current-date").textContent =
-    today.toLocaleDateString();
+  // document.getElementById("current-date").textContent =
+  //   today.toLocaleDateString();
   // Update connection status
   updateConnectionStatus();
 

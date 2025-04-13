@@ -502,7 +502,8 @@ function resetSettings() {
     }
 
     // If language changed, update i18n
-    if (window.i18n && window.i18n.getCurrentLanguage() !== "en") {
+    const currentLanguage = localStorage.getItem("language") || "en";
+    if (window.i18n && currentLanguage !== "en") {
       window.i18n.changeLanguage("en", true);
     }
 

@@ -36,19 +36,19 @@ function forceCartScrolling() {
     }
     
     /* Set explicit height for the invoice details to prevent page overflow */
-    .invoice-details {
-      display: flex !important;
-      flex-direction: column !important;
-      height: auto !important;
-    }
+    // .invoice-details {
+    //   display: flex !important;
+    //   flex-direction: column !important;
+    //   height: auto !important;
+    // }
     
     /* Make sure invoice panel has proper constraints */
-    .invoice-panel {
-      display: flex !important;
-      flex-direction: column !important;
-      height: auto !important;
-      overflow: visible !important;
-    }
+    // .invoice-panel {
+    //   display: flex !important;
+    //   flex-direction: column !important;
+    //   height: auto !important;
+    //   overflow: visible !important;
+    // }
     
     /* Ensure the scrollbar is visible and functioning */
     .cart-items::-webkit-scrollbar {
