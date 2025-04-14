@@ -8,7 +8,7 @@ let cartDiscount = {
 // Format currency based on user settings
 function formatCurrency(amount) {
   const currency = localStorage.getItem("currency") || "USD";
-  const symbol = currency === "ILS" ? "₪" : "$";
+  const symbol = window.t(`billing.currency.${currency.toLowerCase()}`);
   return `${symbol}${parseFloat(amount).toFixed(2)}`;
 }
 
@@ -45,8 +45,8 @@ function initDiscountFeature() {
   const discountButtonRow = document.createElement("div");
   discountButtonRow.className = "summary-row discount-actions";
   discountButtonRow.innerHTML = `
-    <button id="add-discount-btn" class="btn secondary-btn">Add Discount</button>
-  `;
+  <button id="add-discount-btn" class="btn secondary-btn">${window.t("billing.discount.button")}</button>
+`;
 
   // Insert after the discount row
   invoiceSummary.insertBefore(discountButtonRow, totalRow);
@@ -113,56 +113,48 @@ function showDiscountModal() {
 
     modalContent.innerHTML = `
       <div class="modal-header">
-        <h2>Apply Discount</h2>
-        <span class="close">&times;</span>
+          <h2>${window.t("billing.discount.title")}</h2>
+            <span class="close">&times;</span>
       </div>
       <div class="modal-body">
         <div class="discount-options">
           <div class="discount-section">
-            <h3>Cart Discount</h3>
+            <h3>${window.t("billing.discount.cartDiscount")}</h3>
             <form id="cart-discount-form">
               <div class="form-group">
-                <label>Discount Type</label>
+                <label>${window.t("billing.discount.type")}</label>
                 <div class="radio-group">
-                  <label>
-                    <input type="radio" name="cart-discount-type" value="none" ${
-                      currentType === "none" ? "checked" : ""
-                    }>
-                    No Discount
-                  </label>
-                  <label>
-                    <input type="radio" name="cart-discount-type" value="percentage" ${
-                      currentType === "percentage" ? "checked" : ""
-                    }>
-                    Percentage (%)
-                  </label>
-                  <label>
-                    <input type="radio" name="cart-discount-type" value="fixed" ${
-                      currentType === "fixed" ? "checked" : ""
-                    }>
-                    Fixed Amount (${
-                      localStorage.getItem("currency") === "ILS" ? "₪" : "$"
-                    })
-                  </label>
-                </div>
+                <label>
+                  <input type="radio" name="cart-discount-type" value="none" ${currentType === "none" ? "checked" : ""}>
+                  ${window.t("billing.discount.types.none")}
+                </label>
+                <label>
+                  <input type="radio" name="cart-discount-type" value="percentage" ${currentType === "percentage" ? "checked" : ""}>
+                  ${window.t("billing.discount.types.percentage")}
+                </label>
+                <label>
+                  <input type="radio" name="cart-discount-type" value="fixed" ${currentType === "fixed" ? "checked" : ""}>
+                  ${window.t("billing.discount.types.fixed")} (${window.t(`billing.currency.${localStorage.getItem("currency")?.toLowerCase() || "usd"}`)})
+                </label>
+              </div>
               </div>
               
-              <div class="form-group" id="cart-discount-value-group" ${
+              <div class="form-group" id="cart-discount-value-group"  ${
                 currentType === "none" ? 'style="display: none;"' : ""
               }>
-                <label for="cart-discount-value">Discount Value</label>
+                <label for="cart-discount-value">${window.t("billing.discount.value")}</label>
                 <input type="number" id="cart-discount-value" min="0" step="0.01" value="${currentValue.toFixed(
                   2
                 )}" ${
       currentType === "fixed" ? `max="${currentSubtotal.toFixed(2)}"` : ""
     }>
-                <small class="hint">Enter percentage or amount</small>
+            <small class="hint">${window.t("billing.discount.hint")}</small>
                 
                 <!-- Percentage suggestions -->
                 <div id="percentage-suggestions" class="suggestion-buttons" ${
                   currentType === "percentage" ? "" : 'style="display: none;"'
                 }>
-                  <span>Quick select: </span>
+                <span>${window.t("billing.discount.quickSelect")}</span>
                   <button type="button" class="btn suggestion-btn" data-value="5">5%</button>
                   <button type="button" class="btn suggestion-btn" data-value="10">10%</button>
                   <button type="button" class="btn suggestion-btn" data-value="15">15%</button>
@@ -175,7 +167,7 @@ function showDiscountModal() {
                 <div id="fixed-suggestions" class="suggestion-buttons" ${
                   currentType === "fixed" ? "" : 'style="display: none;"'
                 }>
-                  <span>Quick select: </span>
+                    <span>${window.t("billing.discount.quickSelect")}</span>
                   <button type="button" class="btn suggestion-btn" data-value="5">${
                     localStorage.getItem("currency") === "ILS" ? "₪" : "$"
                   }5</button>
@@ -204,27 +196,27 @@ function showDiscountModal() {
           </div>
           
           <div class="discount-section">
-            <h3>Item Discount</h3>
+           <h3>${window.t("billing.discount.itemDiscountSection")}</h3>
             ${
               hasMultipleSelected
-                ? `<p>You have <strong>${selectedItemsCount}</strong> items selected. Apply discount to all selected items.</p>`
-                : `<p>Select an item in the cart first, then apply discount to that item.</p>`
+                  ? window.t("billing.discount.selectedItemsMessage", { count: `<strong>${selectedItemsCount}</strong>` })
+                  : window.t("billing.discount.selectItemFirst")
             }
             <button id="apply-item-discount" class="btn secondary-btn" ${
               hasMultipleSelected || selectedCartIndex >= 0 ? "" : "disabled"
             }>
-              Apply to ${
+               ${
                 hasMultipleSelected
-                  ? `${selectedItemsCount} Selected Items`
-                  : "Selected Item"
+                    ? window.t("billing.discount.applyToSelectedItems", { count: selectedItemsCount })
+                    : window.t("billing.discount.applyToSelectedItem")
               }
             </button>
           </div>
         </div>
         
         <div class="form-actions">
-          <button type="button" class="btn secondary-btn" id="remove-all-discounts">Remove All Discounts</button>
-          <button type="button" class="btn primary-btn" id="apply-cart-discount">Apply Discount</button>
+  <button type="button" class="btn secondary-btn" id="remove-all-discounts">${window.t("billing.discount.removeAllDiscounts")}</button>
+  <button type="button" class="btn primary-btn" id="apply-cart-discount">${window.t("billing.discount.applyCartDiscount")}</button>
         </div>
       </div>
     `;
@@ -509,7 +501,7 @@ function showMultiItemDiscountModal(itemIndices) {
           <div class="form-group" id="multi-item-discount-value-group" ${
             initialDiscountType === "none" ? 'style="display: none;"' : ""
           }>
-            <label for="multi-item-discount-value">Discount Value</label>
+            <label for="multi-item-discount-value" data-i18n="billing.discount.value">Discount Value</label>
             <input type="number" id="multi-item-discount-value" min="0" step="0.01" value="${initialDiscountValue.toFixed(
               2
             )}">
@@ -868,7 +860,7 @@ function showItemDiscountModal(itemIndex) {
           <div class="form-group" id="item-discount-value-group" ${
             currentType === "none" ? 'style="display: none;"' : ""
           }>
-            <label for="item-discount-value">Discount Value</label>
+            <label for="item-discount-value" data-i18n="billing.discount.value">Discount Value</label>
             <input type="number" id="item-discount-value" min="0" step="0.01" value="${currentValue.toFixed(
               2
             )}" ${
@@ -1663,26 +1655,26 @@ function generateReceiptHtmlWithDiscount(invoice) {
   let discountRow = "";
   if (invoice.discount > 0) {
     discountRow = `
-      <tr>
-        <td colspan="3">Discount</td>
-        <td>-${formatCurrency(invoice.discount)}</td>
-      </tr>
-    `;
+    <tr>
+      <td colspan="3">${window.t("billing.receipt.discount")}</td>
+      <td>-${formatCurrency(invoice.discount)}</td>
+    </tr>
+  `;
   }
 
   return `
-    <div class="receipt-header">
-      <h2>MZLAD Billing System</h2>
-      <p>123 Main Street, Anytown, USA</p>
-      <p>Tel: (555) 123-4567</p>
-      <h3>${transactionType}</h3>
-    </div>
+  <div class="receipt-header">
+    <h2>${window.t("billing.receipt.header")}</h2>
+    <p>${window.t("billing.receipt.address")}</p>
+    <p>${window.t("billing.receipt.phone")}</p>
+    <h3>${window.t(`billing.receipt.transactionType.${invoice.isRefund ? "refund" : "sale"}`)}</h3>
+  </div>
     
     <div class="receipt-info">
-      <p><strong>Receipt #:</strong> ${invoice.id}</p>
-      <p><strong>Date:</strong> ${new Date(invoice.date).toLocaleString()}</p>
-      <p><strong>Customer:</strong> ${invoice.customer}</p>
-    </div>
+    <p><strong>${window.t("billing.receipt.receiptNumber")}</strong> ${invoice.id}</p>
+    <p><strong>${window.t("billing.receipt.date")}</strong> ${new Date(invoice.date).toLocaleString()}</p>
+    <p><strong>${window.t("billing.receipt.customer")}</strong> ${invoice.customer}</p>
+  </div>
     
     <table class="receipt-items">
       <thead>
@@ -1713,8 +1705,8 @@ function generateReceiptHtmlWithDiscount(invoice) {
       </tfoot>
     </table>
     
-    <div class="receipt-footer">
-      <p>Thank you for your purchase!</p>
-    </div>
+   <div class="receipt-footer">
+    <p>${window.t("billing.receipt.thankYou")}</p>
+  </div>
   `;
 }

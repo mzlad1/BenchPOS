@@ -1,154 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+          http-equiv="Content-Security-Policy"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;"
+  />
 
-    <link rel="stylesheet" href="../styles/global.css" />
-    <link rel="stylesheet" href="../styles/billing.css" />
-    <link rel="stylesheet" href="../styles/dark-mode.css" />
+  <link rel="stylesheet" href="../styles/global.css" />
+  <link rel="stylesheet" href="../styles/billing.css" />
+  <link rel="stylesheet" href="../styles/dark-mode.css" />
 
-    <title>New Sale - MZLAD Billing System</title>
-  </head>
-  <body class="light-mode">
-    <div class="app-container">
-      <!-- Sidebar Container (will be populated by layout.js) -->
-      <div id="sidebar-container"></div>
+  <title data-i18n="billing.pageTitle">New Sale - MZLAD Billing System</title>
+</head>
+<body class="light-mode">
+<div class="app-container">
+  <!-- Sidebar Container (will be populated by layout.js) -->
+  <div id="sidebar-container"></div>
 
-      <!-- Main Content -->
-      <div class="main-content">
-        <!-- Header Container (will be populated by layout.js) -->
-        <div id="header-container"></div>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header Container (will be populated by layout.js) -->
+    <div id="header-container"></div>
 
-        <main>
-          <div class="container">
-            <!-- <header>
-              <div class="header-right">
-                <span id="current-date"></span>
-              </div>
-            </header> -->
+    <main>
+      <div class="container">
+        <div class="billing-container">
+          <div class="product-selection">
+            <h2 data-i18n="billing.products">Products</h2>
 
-            <div class="billing-container">
-              <div class="product-selection">
-                <h2>Products</h2>
-
-                <div class="search-bar">
-                  <input
-                    type="text"
-                    id="product-search"
-                    placeholder="Search products..."
-                  />
-                </div>
-
-                <div id="products-list" class="products-grid">
-                  <!-- Products will be loaded here dynamically -->
-                  <div class="loading">Loading products...</div>
-                </div>
-              </div>
-
-              <div class="invoice-panel">
-                <h2>Current Invoice</h2>
-                <div class="invoice-details">
-                  <div class="invoice-header">
-                    <div class="invoice-id">
-                      <label>Invoice #:</label>
-                      <span id="invoice-id">Auto-generated</span>
-                    </div>
-                    <div class="invoice-date">
-                      <label>Date:</label>
-                      <span id="invoice-date"></span>
-                    </div>
-                  </div>
-
-                  <div class="customer-info">
-                    <label for="customer-name">Customer:</label>
-                    <input
+            <div class="search-bar">
+              <input
                       type="text"
-                      id="customer-name"
-                      placeholder="Customer name (optional)"
-                    />
-                  </div>
+                      id="product-search"
+                      data-i18n-placeholder="inventory.controls.search"
+              />
+            </div>
 
-                  <div class="cart-items">
-                    <table id="cart-table">
-                      <thead>
-                        <tr>
-                          <th>Item</th>
-                          <th>Price</th>
-                          <th>Qty</th>
-                          <th>Total</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody id="cart-items">
-                        <!-- Cart items will be added here -->
-                        <tr class="empty-cart">
-                          <td colspan="6">No items added yet</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+            <div id="products-list" class="products-grid">
+              <!-- Products will be loaded here dynamically -->
+              <div class="loading" data-i18n="inventory.table.loading">Loading products...</div>
+            </div>
+          </div>
 
-                  <div class="invoice-summary">
-                    <div class="summary-row">
-                      <span>Subtotal:</span>
-                      <span id="subtotal">0.00</span>
-                    </div>
-                    <div class="summary-row">
-                      <span>Discount:</span>
-                      <span id="discount-value">0.00</span>
-                    </div>
-                    <div class="summary-row">
-                      <span>Tax (0):</span>
-                      <span id="tax">0.00</span>
-                    </div>
-                    <div class="summary-row total">
-                      <span>Total:</span>
-                      <span id="total">0.00</span>
-                    </div>
-                  </div>
-
-                  <div class="payment-actions">
-                    <button id="clear-invoice" class="btn secondary-btn">
-                      Clear
-                    </button>
-                    <button id="complete-sale" class="btn primary-btn" disabled>
-                      Complete Sale
-                    </button>
-                  </div>
+          <div class="invoice-panel">
+            <h2 data-i18n="billing.currentInvoice">Current Invoice</h2>
+            <div class="invoice-details">
+              <div class="invoice-header">
+                <div class="invoice-id">
+                  <label data-i18n="billing.invoiceNumber">Invoice #:</label>
+                  <span id="invoice-id" data-i18n="billing.autoGenerated">Auto-generated</span>
                 </div>
+                <div class="invoice-date">
+                  <label data-i18n="reports.salesReport.columns.date">Date:</label>
+                  <span id="invoice-date"></span>
+                </div>
+              </div>
+
+              <div class="customer-info">
+                <label for="customer-name" data-i18n="settings.receipt.customer">Customer:</label>
+                <input
+                        type="text"
+                        id="customer-name"
+                        data-i18n-placeholder="billing.customerNamePlaceholder"
+                />
+              </div>
+
+              <div class="cart-items">
+                <table id="cart-table">
+                  <thead>
+                  <tr>
+                    <th data-i18n="settings.receipt.item">Item</th>
+                    <th data-i18n="settings.receipt.price">Price</th>
+                    <th data-i18n="settings.receipt.qty">Qty</th>
+                    <th data-i18n="settings.receipt.total">Total</th>
+                    <th data-i18n="userManager.table.actions">Action</th>
+                  </tr>
+                  </thead>
+                  <tbody id="cart-items">
+                  <!-- Cart items will be added here -->
+                  <tr class="empty-cart">
+                    <td colspan="6" data-i18n="billing.noItemsAdded">No items added yet</td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="invoice-summary">
+                <div class="summary-row">
+                  <span data-i18n="settings.receipt.subtotal">Subtotal:</span>
+                  <span id="subtotal">0.00</span>
+                </div>
+                <div class="summary-row">
+                  <span data-i18n="settings.receipt.discount">Discount:</span>
+                  <span id="discount-value">0.00</span>
+                </div>
+                <div class="summary-row">
+                  <span data-i18n="settings.receipt.tax">Tax (0):</span>
+                  <span id="tax">0.00</span>
+                </div>
+                <div class="summary-row total">
+                  <span data-i18n="settings.receipt.totalCaps">Total:</span>
+                  <span id="total">0.00</span>
+                </div>
+              </div>
+
+              <div class="payment-actions">
+                <button id="clear-invoice" class="btn secondary-btn" data-i18n="common.reset">
+                  Clear
+                </button>
+                <button id="complete-sale" class="btn primary-btn" disabled data-i18n="billing.completeSale">
+                  Complete Sale
+                </button>
               </div>
             </div>
           </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </main>
+  </div>
+</div>
 
-    <!-- Receipt Modal -->
-    <div id="receipt-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Receipt</h2>
-          <span class="close">&times;</span>
-        </div>
-        <div id="receipt-container" class="receipt">
-          <!-- Receipt content will be generated here -->
-        </div>
-        <div class="modal-footer">
-          <button id="print-receipt" class="btn primary-btn">
-            Print Receipt <span class="shortcut-indicator">(F8)</span>
-          </button>
-          <button id="email-receipt" class="btn secondary-btn">
-            Email Receipt
-          </button>
-          <button id="new-sale" class="btn">New Sale</button>
-        </div>
-      </div>
+<!-- Receipt Modal -->
+<div id="receipt-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 data-i18n="common.receipt">Receipt</h2>
+      <span class="close" data-i18n="billing.modal.close">&times;</span>
     </div>
+    <div id="receipt-container" class="receipt">
+      <!-- Receipt content will be generated here -->
+    </div>
+    <div class="modal-footer">
+      <button id="print-receipt" class="btn primary-btn" data-i18n="billing.modal.printReceipt">
+        Print Receipt <span class="shortcut-indicator">(F8)</span>
+      </button>
+      <button id="email-receipt" class="btn secondary-btn" data-i18n="billing.modal.emailReceipt">
+        Email Receipt
+      </button>
+      <button id="new-sale" class="btn" data-i18n="billing.modal.newSale">New Sale</button>
+    </div>
+  </div>
+</div>
 
     <script>
       // Add this as a separate script to fix the scrolling issue
@@ -285,6 +279,7 @@
     </script>
 
     <!-- Load Scripts -->
+    <script src="../locales/i18n.js"></script>
     <script src="../scripts/layout.js"></script>
     <script src="../scripts/Billing/core.js"></script>
     <script src="../scripts/Billing/productManager.js"></script>
@@ -300,12 +295,22 @@
     <script src="../scripts/professional-receipt.js"></script>
     <script>
       // Initialize page with correct layout
-      document.addEventListener("DOMContentLoaded", function () {
+      document.addEventListener("DOMContentLoaded", async function () {
         // Initialize layout manager first
         if (window.LayoutManager) {
           window.LayoutManager.init("billing");
         }
-
+        if (window.i18n) {
+          try {
+            console.log("Starting i18n initialization");
+            await window.i18n.init();
+            console.log("i18n initialized successfully");
+          } catch (error) {
+            console.error("Failed to initialize i18n:", error);
+          }
+        } else {
+          console.error("i18n object not found on window");
+        }
         // // Set the current date
         // const today = new Date();
         // const currentDateEl = document.getElementById("current-date");

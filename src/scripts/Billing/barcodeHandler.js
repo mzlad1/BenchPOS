@@ -4,10 +4,10 @@ function initBarcodeFeature() {
   const barcodeForm = document.createElement("div");
   barcodeForm.className = "barcode-form";
   barcodeForm.innerHTML = `
-    <h3>Barcode Entry <span class="shortcut-indicator">(B)</span></h3>
+    <h3>${window.t("billing.barcode.title")} <span class="shortcut-indicator">(B)</span></h3>
     <div class="barcode-input-container">
-      <input type="text" id="barcode-input" placeholder="Scan or type barcode..." autofocus>
-      <button type="button" id="barcode-submit" class="btn primary-btn">Add Item</button>
+      <input type="text" id="barcode-input" placeholder="${window.t("billing.barcode.placeholder")}" autofocus>
+      <button type="button" id="barcode-submit" class="btn primary-btn">${window.t("billing.barcode.addItem")}</button>
     </div>
     <div id="barcode-status"></div>
   `;
@@ -184,7 +184,7 @@ function setupGlobalBarcodeCapture(barcodeInput) {
   // Create notification element
   const captureNotification = document.createElement("div");
   captureNotification.className = "barcode-capture";
-  captureNotification.textContent = "Scanning barcode...";
+  captureNotification.textContent = window.t("billing.barcode.scanning");
   captureNotification.style.display = "none";
   document.body.appendChild(captureNotification);
 
@@ -332,14 +332,13 @@ function processBarcodeInput() {
 
   // CHECK FOR VIEW-ONLY MODE - Add this at the beginning of the function
   if (isViewingInvoice && !isEditingInvoice) {
-    barcodeStatus.textContent =
-      "Please click 'Edit' first before making changes";
+    barcodeStatus.textContent = window.t("billing.barcode.editFirst");
     barcodeStatus.style.color = "red";
     return; // Exit the function, don't process barcode
   }
 
   if (!barcode) {
-    barcodeStatus.textContent = "Please enter a barcode";
+    barcodeStatus.textContent = window.t("billing.barcode.enterBarcode");
     barcodeStatus.style.color = "red";
     return;
   }
@@ -353,14 +352,12 @@ function processBarcodeInput() {
     // Check if product is in stock
     if (exactMatch.stock <= 0) {
       // Show error for out of stock
-      barcodeStatus.textContent = `Error: "${exactMatch.name}" is out of stock`;
+      barcodeStatus.textContent = window.t("billing.barcode.outOfStock", { name: exactMatch.name });
       barcodeStatus.style.color = "red";
 
       // Show toast notification
-      showToastNotification(
-        `Sorry, "${exactMatch.name}" is out of stock.`,
-        true
-      );
+      showToastNotification(window.t("billing.barcode.sorryOutOfStock", { name: exactMatch.name }), true);
+
       return;
     }
 
@@ -370,14 +367,11 @@ function processBarcodeInput() {
 
     if (currentQuantity + 1 > exactMatch.stock) {
       // Show error for exceeding stock
-      barcodeStatus.textContent = `Error: Only ${exactMatch.stock} units of "${exactMatch.name}" available.`;
+      barcodeStatus.textContent = window.t("billing.barcode.limitedStock", { stock: exactMatch.stock, name: exactMatch.name });
       barcodeStatus.style.color = "red";
 
       // Show toast notification
-      showToastNotification(
-        `Can't add more. Only ${exactMatch.stock} units of "${exactMatch.name}" available.`,
-        true
-      );
+      showToastNotification(window.t("billing.barcode.cantAddMore", { stock: exactMatch.stock, name: exactMatch.name }), true);
       return;
     }
 
@@ -394,7 +388,7 @@ function processBarcodeInput() {
     addToCart(exactMatch);
 
     // Success message
-    barcodeStatus.textContent = `Added: ${exactMatch.name}`;
+    barcodeStatus.textContent = window.t("billing.barcode.added", { name: exactMatch.name });
     barcodeStatus.style.color = "green";
 
     // Clear input for next scan
@@ -413,14 +407,12 @@ function processBarcodeInput() {
       // Check if in stock
       if (firstMatch.stock <= 0) {
         // Show error for out of stock
-        barcodeStatus.textContent = `Error: "${firstMatch.name}" is out of stock`;
+        barcodeStatus.textContent = window.t("billing.barcode.outOfStock", { name: exactMatch.name });
         barcodeStatus.style.color = "red";
 
         // Show toast notification
-        showToastNotification(
-          `Sorry, "${firstMatch.name}" is out of stock.`,
-          true
-        );
+        showToastNotification(window.t("billing.barcode.sorryOutOfStock", { name: exactMatch.name }), true);
+
         return;
       }
 
@@ -430,14 +422,12 @@ function processBarcodeInput() {
 
       if (currentQuantity + 1 > firstMatch.stock) {
         // Show error for exceeding stock
-        barcodeStatus.textContent = `Error: Only ${firstMatch.stock} units of "${firstMatch.name}" available.`;
+        barcodeStatus.textContent = window.t("billing.barcode.limitedStock", { stock: exactMatch.stock, name: exactMatch.name });
         barcodeStatus.style.color = "red";
 
         // Show toast notification
-        showToastNotification(
-          `Can't add more. Only ${firstMatch.stock} units of "${firstMatch.name}" available.`,
-          true
-        );
+        showToastNotification(window.t("billing.barcode.cantAddMore", { stock: exactMatch.stock, name: exactMatch.name }), true);
+
         return;
       }
 
@@ -454,7 +444,7 @@ function processBarcodeInput() {
       addToCart(firstMatch);
 
       // Success message with additional info for partial match
-      barcodeStatus.textContent = `Added: ${firstMatch.name} (best match for barcode)`;
+      barcodeStatus.textContent = window.t("billing.barcode.addedBestMatch", { name: firstMatch.name });
       barcodeStatus.style.color = "green";
 
       // Display matching products in case user wants to see alternatives
@@ -464,7 +454,7 @@ function processBarcodeInput() {
       barcodeInput.value = "";
     } else {
       // No matches found
-      barcodeStatus.textContent = "No product found with this barcode";
+      barcodeStatus.textContent = window.t("billing.barcode.noProductFound");
       barcodeStatus.style.color = "red";
 
       // Show all products

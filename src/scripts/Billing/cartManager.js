@@ -5,10 +5,8 @@ let selectedItems = []; // Array to track selected item indices
 function addToCart(product) {
   // CHECK FOR VIEW-ONLY MODE - Add this at the beginning of the function
   if (isViewingInvoice && !isEditingInvoice) {
-    showToastNotification(
-      "Please click 'Edit' first before making changes.",
-      true
-    );
+    showToastNotification(window.t("billing.cart.editFirst"), true);
+
     return; // Exit the function, don't add to cart
   }
 
@@ -22,17 +20,16 @@ function addToCart(product) {
   // Check if product has any stock
   if (product.stock <= 0) {
     // Show notification that product is out of stock
-    showToastNotification(`Sorry, "${product.name}" is out of stock.`, true);
+    showToastNotification(window.t("billing.cart.outOfStock", { name: product.name }), true);
     return; // Exit the function, don't add to cart
   }
 
   // Check if adding one more would exceed available stock
   if (currentQuantityInCart + 1 > product.stock) {
     // Show notification about stock limit
-    showToastNotification(
-      `Can't add more. Only ${product.stock} units of "${product.name}" available.`,
-      true
-    );
+    showToastNotification(window.t("billing.cart.limitedStock", { stock: product.stock, name: product.name }), true);
+
+
     return; // Exit the function, don't increase quantity
   }
 
@@ -59,8 +56,7 @@ function addToCart(product) {
 // Render cart items - properly handling edit vs view mode
 function renderCart() {
   if (cart.length === 0) {
-    cartItemsEl.innerHTML =
-      '<tr class="empty-cart"><td colspan="6">No items added yet</td></tr>';
+    cartItemsEl.innerHTML = `<tr class="empty-cart"><td colspan="6">${window.t("billing.cart.noItems")}</td></tr>`;
     completeSaleBtn.disabled = true;
     return;
   }
@@ -73,10 +69,10 @@ function renderCart() {
     const infoRow = document.createElement("tr");
     infoRow.className = "view-mode-info-row";
     infoRow.innerHTML = `
-      <td colspan="6" style="text-align: center; padding: 10px; background-color: #f8f8f8; color: #333; font-weight: bold;">
-        Please click "Edit" to modify this invoice
-      </td>
-    `;
+  <td colspan="6" style="text-align: center; padding: 10px; background-color: #f8f8f8; color: #333; font-weight: bold;">
+    ${window.t("billing.cart.editPrompt")}
+  </td>
+`;
     cartItemsEl.appendChild(infoRow);
   }
 
@@ -118,25 +114,31 @@ function renderCart() {
 
     // Add checkbox column and refund indicator
     cartItemRow.innerHTML = `
-      <td>
-        <input type="checkbox" class="item-select" data-index="${index}" ${
-      selectedItems.includes(index) ? "checked" : ""
+  <td>
+    <input type="checkbox" class="item-select" data-index="${index}" ${
+        selectedItems.includes(index) ? "checked" : ""
     } ${isDisabled}>
-      </td>
-      <td>${item.name}${isRefund ? " (Refund)" : ""}${
-      item.isMiscellaneous ? " (Misc)" : ""
+  </td>
+  <td>${item.name}${isRefund ? " " + window.t("billing.cart.refund") : ""}${
+        item.isMiscellaneous ? " " + window.t("billing.cart.misc") : ""
     }</td>
-      <td>${discountInfo}</td>
-      <td>
-        <button class="btn quantity-btn" data-action="decrease" data-index="${index}" ${isDisabled} style="${disabledStyle}">-</button>
-        <span class="quantity">${item.quantity}</span>
-        <button class="btn quantity-btn" data-action="increase" data-index="${index}" ${isDisabled} style="${disabledStyle}">+</button>
-      </td>
-      <td>${formatCurrency(Math.abs(displayTotal))}</td>
-      <td>
-        <button class="btn remove-btn" data-index="${index}" ${isDisabled} style="${disabledStyle}">Remove</button>
-      </td>
-    `;
+  <td>${discountInfo}</td>
+  <td>
+    <button class="btn quantity-btn" data-action="decrease" data-index="${index}" ${isDisabled} style="${disabledStyle}">
+      ${window.t("billing.cart.decrease")}
+    </button>
+    <span class="quantity">${item.quantity}</span>
+    <button class="btn quantity-btn" data-action="increase" data-index="${index}" ${isDisabled} style="${disabledStyle}">
+      ${window.t("billing.cart.increase")}
+    </button>
+  </td>
+  <td>${formatCurrency(Math.abs(displayTotal))}</td>
+  <td>
+    <button class="btn remove-btn" data-index="${index}" ${isDisabled} style="${disabledStyle}">
+      ${window.t("billing.cart.remove")}
+    </button>
+  </td>
+`;
 
     cartItemsEl.appendChild(cartItemRow);
   });
@@ -214,10 +216,9 @@ function handleQuantityChange(event) {
     // Check if we have enough stock before increasing
     if (product && cartItem.quantity + 1 > product.stock) {
       // Show notification about stock limit
-      showToastNotification(
-        `Can't add more. Only ${product.stock} units of "${cartItem.name}" available.`,
-        true
-      );
+      showToastNotification(window.t("billing.cart.limitedStock", { stock: product.stock, name: product.name }), true);
+
+
       return; // Exit without changing quantity
     }
 
@@ -347,6 +348,8 @@ function clearCart() {
 // Format currency based on user settings
 function formatCurrency(amount) {
   const currency = localStorage.getItem("currency") || "USD";
-  const symbol = currency === "ILS" ? "₪" : "$";
+  const symbol = currency === "ILS" ?
+      window.t("billing.currency.ils") :
+      window.t("billing.currency.usd");
   return `${symbol}${parseFloat(amount).toFixed(2)}`;
 }
