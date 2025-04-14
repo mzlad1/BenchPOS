@@ -13,9 +13,9 @@ async function loadProducts() {
     products = await window.api.getProducts();
     renderProducts(products);
   } catch (error) {
-    console.error("Error loading products:", error);
+    console.error(t('products.errors.loading'), error);
     productsListEl.innerHTML =
-      '<div class="error">Failed to load products. Please try again.</div>';
+        `<div class="error">${t('products.errors.failedToLoad')}</div>`;
   }
 }
 
@@ -30,7 +30,7 @@ function fixProductCards() {
     if (!button) return; // Skip if no button found
 
     const otherElements = Array.from(productItem.children).filter(
-      (el) => el !== button
+        (el) => el !== button
     );
 
     // Create a details container
@@ -72,12 +72,14 @@ function fixProductCards() {
     observer.observe(productsListEl, { childList: true, subtree: true });
   }
 }
+
 // Format currency based on user settings
 function formatCurrency(amount) {
   const currency = localStorage.getItem("currency") || "USD";
   const symbol = currency === "ILS" ? "₪" : "$";
   return `${symbol}${parseFloat(amount).toFixed(2)}`;
 }
+
 // Render products to the products grid
 function renderProducts(productsToRender) {
   if (!productsListEl) return;
@@ -85,7 +87,7 @@ function renderProducts(productsToRender) {
 
   if (productsToRender.length === 0) {
     productsListEl.innerHTML =
-      '<div class="no-products">No products found</div>';
+        `<div class="no-products">${t('products.noProductsFound')}</div>`;
     return;
   }
 
@@ -99,8 +101,8 @@ function renderProducts(productsToRender) {
   // Calculate start and end indices for the current page
   const startIndex = (currentPage - 1) * productsPerPage;
   const endIndex = Math.min(
-    startIndex + productsPerPage,
-    productsToRender.length
+      startIndex + productsPerPage,
+      productsToRender.length
   );
 
   // Only render products for the current page
@@ -113,10 +115,10 @@ function renderProducts(productsToRender) {
     productEl.innerHTML = `
       <div class="product-name">${product.name}</div>
       <div class="product-price">${formatCurrency(product.price)}</div>
-      <div class="product-stock">In stock: ${product.stock}</div>
+      <div class="product-stock">${t('products.inStock')}: ${product.stock}</div>
       <button class="btn add-to-cart" data-id="${
         product.id
-      }">Add to Cart</button>
+    }">${t('products.addToCart')}</button>
     `;
 
     productEl.querySelector(".add-to-cart").addEventListener("click", () => {
@@ -145,10 +147,10 @@ function createPaginationControls(totalProducts, totalPages) {
   // Add product count information
   const productCountEl = document.createElement("div");
   productCountEl.className = "product-count";
-  productCountEl.textContent = `Showing ${Math.min(
-    productsPerPage,
-    totalProducts
-  )} of ${totalProducts} products`;
+  productCountEl.textContent = t('pagination.showing', {
+    shown: Math.min(productsPerPage, totalProducts),
+    total: totalProducts
+  });
   paginationEl.appendChild(productCountEl);
 
   // Create page controls
@@ -158,7 +160,7 @@ function createPaginationControls(totalProducts, totalPages) {
   // Previous button
   const prevBtn = document.createElement("button");
   prevBtn.className = "btn page-btn prev-btn";
-  prevBtn.textContent = "← Previous";
+  prevBtn.textContent = t('pagination.previous');
   prevBtn.disabled = currentPage === 1;
   prevBtn.addEventListener("click", () => {
     if (currentPage > 1) {
@@ -171,13 +173,16 @@ function createPaginationControls(totalProducts, totalPages) {
   // Page indicator
   const pageIndicator = document.createElement("span");
   pageIndicator.className = "page-indicator";
-  pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+  pageIndicator.textContent = t('pagination.pageOf', {
+    current: currentPage,
+    total: totalPages
+  });
   pageControlsEl.appendChild(pageIndicator);
 
   // Next button
   const nextBtn = document.createElement("button");
   nextBtn.className = "btn page-btn next-btn";
-  nextBtn.textContent = "Next →";
+  nextBtn.textContent = t('pagination.next');
   nextBtn.disabled = currentPage === totalPages;
   nextBtn.addEventListener("click", () => {
     if (currentPage < totalPages) {
@@ -192,11 +197,12 @@ function createPaginationControls(totalProducts, totalPages) {
   // Insert pagination controls after the products list
   if (productsListEl && productsListEl.parentNode) {
     productsListEl.parentNode.insertBefore(
-      paginationEl,
-      productsListEl.nextSibling
+        paginationEl,
+        productsListEl.nextSibling
     );
   }
 }
+
 function showToastNotification(message, isError = false, duration = 3000) {
   let notification = document.getElementById("toast-notification");
 
@@ -236,6 +242,7 @@ function showToastNotification(message, isError = false, duration = 3000) {
     notification.style.transform = "translateY(20px)";
   }, duration);
 }
+
 // Filter products based on search input
 function filterProducts() {
   const searchTerm = productSearchEl.value.toLowerCase();
@@ -247,10 +254,10 @@ function filterProducts() {
   }
 
   const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm) ||
-      (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
-      (product.category && product.category.toLowerCase().includes(searchTerm))
+      (product) =>
+          product.name.toLowerCase().includes(searchTerm) ||
+          (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
+          (product.category && product.category.toLowerCase().includes(searchTerm))
   );
 
   renderProducts(filteredProducts);
@@ -450,7 +457,7 @@ function fixProductCardHeight() {
   `;
   document.head.appendChild(styleElement);
 
-  console.log("Applied product card height fix");
+  console.log(t('products.fixCardHeightApplied'));
 }
 
 function fixProductPageSpacing() {
@@ -511,5 +518,5 @@ function fixProductPageSpacing() {
   `;
   document.head.appendChild(styleElement);
 
-  console.log("Applied product page spacing fix");
+  console.log(t('products.fixPageSpacingApplied'));
 }

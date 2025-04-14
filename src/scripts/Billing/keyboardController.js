@@ -5,118 +5,118 @@ let selectedCartIndex = -1;
 function fixKeyboardShortcuts() {
   // Create a global listener that comes before other handlers
   document.addEventListener(
-    "keydown",
-    function (event) {
-      // Map of function keys to their handler functions
-      const functionKeyHandlers = {
-        F1: function () {
-          addMiscellaneousItem();
-        },
-        F2: function () {
-          processReturn();
-        },
-        F3: function () {
-          if (!document.getElementById("complete-sale").disabled) {
-            completeSale();
-          }
-        },
-        F4: function () {
-          // Add this new handler
-          showDiscountModal();
-        },
-        F5: function () {
-          removeSelectedItem();
-        },
-        F6: function () {
-          showProductDetails();
-        },
-        F7: function () {
-          clearCart();
-        },
-        F8: function () {
-          if (receiptModal.style.display === "block") {
-            printReceipt();
-          }
-        },
-        F9: function () {
-          increaseQuantity();
-        },
-        F10: function () {
-          decreaseQuantity();
-        },
-        F11: function () {
-          showPreviousInvoice();
-        },
-        F12: function () {
-          showNextInvoice();
-        },
-      };
+      "keydown",
+      function (event) {
+        // Map of function keys to their handler functions
+        const functionKeyHandlers = {
+          F1: function () {
+            addMiscellaneousItem();
+          },
+          F2: function () {
+            processReturn();
+          },
+          F3: function () {
+            if (!document.getElementById("complete-sale").disabled) {
+              completeSale();
+            }
+          },
+          F4: function () {
+            // Add this new handler
+            showDiscountModal();
+          },
+          F5: function () {
+            removeSelectedItem();
+          },
+          F6: function () {
+            showProductDetails();
+          },
+          F7: function () {
+            clearCart();
+          },
+          F8: function () {
+            if (receiptModal.style.display === "block") {
+              printReceipt();
+            }
+          },
+          F9: function () {
+            increaseQuantity();
+          },
+          F10: function () {
+            decreaseQuantity();
+          },
+          F11: function () {
+            showPreviousInvoice();
+          },
+          F12: function () {
+            showNextInvoice();
+          },
+        };
 
-      // Special handling for non-function keys
-      const specialKeyHandlers = {
-        Delete: function () {
-          clearCart();
-        },
-        "/": function () {
-          document.getElementById("product-search").focus();
-        },
-        b: function () {
-          if (!event.ctrlKey && !event.altKey && !event.shiftKey) {
-            const barcodeInput = document.getElementById("barcode-input");
-            if (barcodeInput) barcodeInput.focus();
-          }
-        },
-      };
+        // Special handling for non-function keys
+        const specialKeyHandlers = {
+          Delete: function () {
+            clearCart();
+          },
+          "/": function () {
+            document.getElementById("product-search").focus();
+          },
+          b: function () {
+            if (!event.ctrlKey && !event.altKey && !event.shiftKey) {
+              const barcodeInput = document.getElementById("barcode-input");
+              if (barcodeInput) barcodeInput.focus();
+            }
+          },
+        };
 
-      // Check if it's a function key or special key we handle
-      const handler =
-        functionKeyHandlers[event.key] ||
-        specialKeyHandlers[event.key.toLowerCase()];
+        // Check if it's a function key or special key we handle
+        const handler =
+            functionKeyHandlers[event.key] ||
+            specialKeyHandlers[event.key.toLowerCase()];
 
-      if (handler) {
-        // Skip text inputs except for function keys
-        if (
-          event.key.startsWith("F") ||
-          !(
-            event.target.tagName === "INPUT" ||
-            event.target.tagName === "TEXTAREA"
-          )
-        ) {
-          // Check for view mode restrictions
-          if (isViewingInvoice && !isEditingInvoice) {
-            // ONLY allow these specific shortcuts in view mode
-            if (
-              event.key === "F11" ||
-              event.key === "F12" ||
-              event.key === "F6" ||
-              event.key === "F8" ||
-              event.key === "/" ||
-              event.key.toLowerCase() === "b"
-            ) {
+        if (handler) {
+          // Skip text inputs except for function keys
+          if (
+              event.key.startsWith("F") ||
+              !(
+                  event.target.tagName === "INPUT" ||
+                  event.target.tagName === "TEXTAREA"
+              )
+          ) {
+            // Check for view mode restrictions
+            if (isViewingInvoice && !isEditingInvoice) {
+              // ONLY allow these specific shortcuts in view mode
+              if (
+                  event.key === "F11" ||
+                  event.key === "F12" ||
+                  event.key === "F6" ||
+                  event.key === "F8" ||
+                  event.key === "/" ||
+                  event.key.toLowerCase() === "b"
+              ) {
+                event.preventDefault();
+                handler();
+              } else {
+                // Block all other shortcuts in view mode
+                event.preventDefault();
+                alert(t('billing.cart.editFirst'));
+              }
+            } else {
+              // Not in view mode or in edit mode - all shortcuts work
               event.preventDefault();
               handler();
-            } else {
-              // Block all other shortcuts in view mode
-              event.preventDefault();
-              alert("Please click 'Edit' first before making changes.");
             }
-          } else {
-            // Not in view mode or in edit mode - all shortcuts work
-            event.preventDefault();
-            handler();
           }
         }
-      }
-    },
-    true
+      },
+      true
   ); // Use capturing phase to ensure this runs first
 
-  console.log("Keyboard shortcuts fixed");
+  console.log(t('shortcuts.fixed'));
 }
 
 // Initialize keyboard shortcuts
 function initKeyboardShortcuts() {
-  console.log("Initializing keyboard shortcuts");
+  console.log(t('shortcuts.initializing'));
   document.addEventListener("keydown", handleKeyboardShortcut);
 
   // Add help button for shortcuts
@@ -124,11 +124,10 @@ function initKeyboardShortcuts() {
   const helpButton = document.createElement("button");
   helpButton.id = "shortcuts-help-btn";
   helpButton.className = "btn secondary-btn";
-  helpButton.textContent = "Shortcuts (?)";
+  helpButton.textContent = t('shortcuts.helpButton');
   helpButton.addEventListener("click", showShortcutsHelp);
   actionsContainer.appendChild(helpButton);
 
-  // Add selection highlighting to cart items
   // Add selection highlighting to cart items
   cartItemsEl.addEventListener("click", function (event) {
     const row = event.target.closest("tr");
@@ -146,7 +145,7 @@ function initKeyboardShortcuts() {
     if (row.parentNode) {
       selectedCartIndex = Array.from(row.parentNode.children).indexOf(row);
     } else {
-      console.warn("Row parent not found, cannot determine index");
+      console.warn(t('shortcuts.rowParentNotFound'));
       selectedCartIndex = -1;
     }
   });
@@ -156,8 +155,6 @@ function initKeyboardShortcuts() {
   addShortcutIndicator("clear-invoice", "F7");
 }
 
-// Handle keyboard shortcuts
-// Handle keyboard shortcuts
 // Handle keyboard shortcuts
 function handleKeyboardShortcut(event) {
   // Special case for F11 and F12 (invoice navigation) - these always work
@@ -176,7 +173,7 @@ function handleKeyboardShortcut(event) {
     return;
   }
 
-  console.log("Key pressed:", event.key, event.code);
+  console.log(t('shortcuts.keyPressed'), event.key, event.code);
 
   // Check if viewing (but not editing) an invoice - block action shortcuts
   if (isViewingInvoice && !isEditingInvoice) {
@@ -201,7 +198,7 @@ function handleKeyboardShortcut(event) {
         event.preventDefault();
         // Stop event propagation to prevent other handlers from running
         event.stopImmediatePropagation();
-        alert("Please click 'Edit' first before making changes.");
+        alert(t('billing.cart.editFirst'));
         return false; // Explicitly return false to prevent default
     }
 
@@ -289,6 +286,7 @@ function addShortcutIndicator(buttonId, shortcut) {
     button.appendChild(shortcutSpan);
   }
 }
+
 function showToastNotification(message, isError = false, duration = 3000) {
   let notification = document.getElementById("toast-notification");
 
@@ -328,7 +326,7 @@ function showToastNotification(message, isError = false, duration = 3000) {
     notification.style.transform = "translateY(20px)";
   }, duration);
 }
-// Show shortcuts help modal
+
 // Show shortcuts help modal
 function showShortcutsHelp() {
   // Create modal if it doesn't exist
@@ -345,7 +343,7 @@ function showShortcutsHelp() {
     const modalHeader = document.createElement("div");
     modalHeader.className = "modal-header";
     modalHeader.innerHTML = `
-      <h2>Keyboard Shortcuts</h2>
+      <h2>${t('shortcuts.title')}</h2>
       <span class="close">&times;</span>
     `;
 
@@ -353,22 +351,22 @@ function showShortcutsHelp() {
     modalBody.className = "modal-body";
     modalBody.innerHTML = `
       <table class="shortcuts-table">
-        <tr><th>Key</th><th>Action</th></tr>
-        <tr><td>F1</td><td>Add miscellaneous item</td></tr>
-        <tr><td>F2</td><td>Process return/refund</td></tr>
-        <tr><td>F3</td><td>Complete sale</td></tr>
-        <tr><td>F5</td><td>Remove selected item</td></tr>
-        <tr><td>F6</td><td>Show product details</td></tr>
-        <tr><td>F7</td><td>Clear cart</td></tr>
-        <tr><td>F8</td><td>Print receipt</td></tr>
-        <tr><td>F9</td><td>Increase quantity</td></tr>
-        <tr><td>F10</td><td>Decrease quantity</td></tr>
-        <tr><td>F11</td><td>Show previous invoice</td></tr>
-        <tr><td>F12</td><td>Show next invoice</td></tr>
-        <tr><td>Delete</td><td>Clear cart</td></tr>
-        <tr><td>/</td><td>Focus search box</td></tr>
-        <tr><td>B</td><td>Focus barcode input</td></tr>
-        <tr><td>F4</td><td>Add discount</td></tr>
+        <tr><th>${t('shortcuts.key')}</th><th>${t('shortcuts.action')}</th></tr>
+        <tr><td>F1</td><td>${t('shortcuts.actions.addMisc')}</td></tr>
+        <tr><td>F2</td><td>${t('shortcuts.actions.processReturn')}</td></tr>
+        <tr><td>F3</td><td>${t('shortcuts.actions.completeSale')}</td></tr>
+        <tr><td>F5</td><td>${t('shortcuts.actions.removeItem')}</td></tr>
+        <tr><td>F6</td><td>${t('shortcuts.actions.showDetails')}</td></tr>
+        <tr><td>F7</td><td>${t('shortcuts.actions.clearCart')}</td></tr>
+        <tr><td>F8</td><td>${t('shortcuts.actions.printReceipt')}</td></tr>
+        <tr><td>F9</td><td>${t('shortcuts.actions.increaseQty')}</td></tr>
+        <tr><td>F10</td><td>${t('shortcuts.actions.decreaseQty')}</td></tr>
+        <tr><td>F11</td><td>${t('shortcuts.actions.prevInvoice')}</td></tr>
+        <tr><td>F12</td><td>${t('shortcuts.actions.nextInvoice')}</td></tr>
+        <tr><td>Delete</td><td>${t('shortcuts.actions.clearCart')}</td></tr>
+        <tr><td>/</td><td>${t('shortcuts.actions.focusSearch')}</td></tr>
+        <tr><td>B</td><td>${t('shortcuts.actions.focusBarcode')}</td></tr>
+        <tr><td>F4</td><td>${t('shortcuts.actions.addDiscount')}</td></tr>
       </table>
     `;
 
@@ -397,7 +395,7 @@ function showShortcutsHelp() {
 
 // F1: Add miscellaneous item
 function addMiscellaneousItem() {
-  console.log("Opening miscellaneous item modal");
+  console.log(t('misc.opening'));
 
   try {
     // Create a modal dialog for entering miscellaneous item
@@ -410,22 +408,22 @@ function addMiscellaneousItem() {
 
     modalContent.innerHTML = `
       <div class="modal-header">
-        <h2>Add Miscellaneous Item</h2>
+        <h2>${t('misc.title')}</h2>
         <span class="close">&times;</span>
       </div>
       <div class="modal-body">
         <form id="misc-item-form">
           <div class="form-group">
-            <label for="misc-name">Item Description</label>
-            <input type="text" id="misc-name" placeholder="Item description" required>
+            <label for="misc-name">${t('misc.description')}</label>
+            <input type="text" id="misc-name" placeholder="${t('misc.descriptionPlaceholder')}" required>
           </div>
           <div class="form-group">
-            <label for="misc-price">Price</label>
+            <label for="misc-price">${t('misc.price')}</label>
             <input type="number" id="misc-price" step="0.01" min="0" value="0.00" required>
           </div>
           <div class="form-actions">
-            <button type="button" class="btn secondary-btn" id="cancel-misc">Cancel</button>
-            <button type="submit" class="btn primary-btn">Add Item</button>
+            <button type="button" class="btn secondary-btn" id="cancel-misc">${t('common.cancel')}</button>
+            <button type="submit" class="btn primary-btn">${t('misc.addButton')}</button>
           </div>
         </form>
       </div>
@@ -447,7 +445,7 @@ function addMiscellaneousItem() {
         document.body.removeChild(miscModal);
       });
     } else {
-      console.error("Close button not found in misc modal");
+      console.error(t('misc.errors.closeButtonNotFound'));
     }
 
     const cancelBtn = miscModal.querySelector("#cancel-misc");
@@ -456,7 +454,7 @@ function addMiscellaneousItem() {
         document.body.removeChild(miscModal);
       });
     } else {
-      console.error("Cancel button not found in misc modal");
+      console.error(t('misc.errors.cancelButtonNotFound'));
     }
 
     const miscForm = miscModal.querySelector("#misc-item-form");
@@ -469,7 +467,7 @@ function addMiscellaneousItem() {
         const priceInput = miscModal.querySelector("#misc-price");
 
         if (!nameInput || !priceInput) {
-          console.error("Name or price input not found");
+          console.error(t('misc.errors.inputsNotFound'));
           return;
         }
 
@@ -479,7 +477,7 @@ function addMiscellaneousItem() {
         // Add to cart
         const miscItem = {
           id: `misc-${Date.now()}`,
-          name: `Misc: ${itemName}`,
+          name: `${t('billing.cart.misc')}: ${itemName}`,
           price: itemPrice,
           cost: 0,
           quantity: 1,
@@ -501,7 +499,7 @@ function addMiscellaneousItem() {
         nameField.focus();
       }
     } else {
-      console.error("Misc form not found");
+      console.error(t('misc.errors.formNotFound'));
     }
 
     // Close when clicking outside
@@ -511,41 +509,41 @@ function addMiscellaneousItem() {
       }
     });
   } catch (error) {
-    console.error("Error in addMiscellaneousItem:", error);
-    alert("There was an error adding a miscellaneous item. Please try again.");
+    console.error(t('misc.errors.general'), error);
+    alert(t('misc.errors.alert'));
   }
 }
 
 // F2: Process return/refund
 function processReturn() {
   if (isViewingInvoice && !isEditingInvoice) {
-    alert("Please click 'Edit' first before processing a refund.");
+    alert(t('return.editFirst'));
     return;
   }
   if (cart.length === 0) {
-    alert("Cart is empty. Add items to process a refund.");
+    alert(t('return.emptyCart'));
     return;
   }
 
   // Check if there are selected items
   if (selectedItems.length === 0 && selectedCartIndex === -1) {
-    alert("Please select items to refund by checking the boxes next to them.");
+    alert(t('return.selectItems'));
     return;
   }
 
   // Determine which items to refund
   const itemsToRefund =
-    selectedItems.length > 0
-      ? selectedItems
-      : selectedCartIndex >= 0
-      ? [selectedCartIndex]
-      : [];
+      selectedItems.length > 0
+          ? selectedItems
+          : selectedCartIndex >= 0
+              ? [selectedCartIndex]
+              : [];
 
   // Ask for confirmation
   const message =
-    itemsToRefund.length === cart.length
-      ? "Process this as a complete return/refund? This will make all prices negative."
-      : `Process a partial refund for ${itemsToRefund.length} selected item(s)?`;
+      itemsToRefund.length === cart.length
+          ? t('return.confirmFull')
+          : t('return.confirmPartial', { count: itemsToRefund.length });
 
   if (confirm(message)) {
     // Convert only selected items to refunds
@@ -563,9 +561,9 @@ function processReturn() {
 
     // Change the complete sale button text
     document.getElementById("complete-sale").textContent =
-      itemsToRefund.length === cart.length
-        ? "Complete Refund"
-        : "Complete Partial Refund";
+        itemsToRefund.length === cart.length
+            ? t('return.completeRefund')
+            : t('return.completePartialRefund');
 
     // Clear selection after processing
     selectedItems = [];
@@ -579,7 +577,7 @@ function addRefundButton() {
   const refundButton = document.createElement("button");
   refundButton.id = "refund-selected";
   refundButton.className = "btn secondary-btn";
-  refundButton.textContent = "Refund Selected";
+  refundButton.textContent = t('return.refundSelected');
   refundButton.addEventListener("click", processReturn);
 
   // Add shortcut indicator
@@ -618,7 +616,7 @@ function removeSelectedItem() {
     updateTotals();
     selectedCartIndex = -1;
   } else {
-    alert("Please select an item from the cart first");
+    alert(t('cart.selectItemFirst'));
   }
 }
 
@@ -638,52 +636,52 @@ function showProductDetails() {
 
       modalContent.innerHTML = `
         <div class="modal-header">
-          <h2>Product Details</h2>
+          <h2>${t('product.details')}</h2>
           <span class="close">&times;</span>
         </div>
         <div class="modal-body">
           <table class="details-table">
             <tr>
-              <th>Product ID:</th>
-              <td>${item.id || "N/A"}</td>
+              <th>${t('product.id')}:</th>
+              <td>${item.id || t('product.notAvailable')}</td>
             </tr>
             <tr>
-              <th>Name:</th>
-              <td>${item.name || "N/A"}</td>
+              <th>${t('product.name')}:</th>
+              <td>${item.name || t('product.notAvailable')}</td>
             </tr>
             <tr>
-              <th>Unit Price:</th>
+              <th>${t('product.unitPrice')}:</th>
               <td>${formatCurrency(Math.abs(item.price))}</td>
             </tr>
             <tr>
-              <th>Quantity:</th>
+              <th>${t('product.quantity')}:</th>
               <td>${item.quantity}</td>
             </tr>
             <tr>
-              <th>Total:</th>
+              <th>${t('product.total')}:</th>
               <td>${formatCurrency(Math.abs(item.price * item.quantity))}</td>
             </tr>
             ${
-              item.isRefund ? "<tr><th>Type:</th><td>Refund Item</td></tr>" : ""
-            }
+          item.isRefund ? `<tr><th>${t('product.type')}:</th><td>${t('product.refundItem')}</td></tr>` : ""
+      }
             ${
-              item.isMiscellaneous
-                ? "<tr><th>Type:</th><td>Miscellaneous Item</td></tr>"
-                : ""
-            }
+          item.isMiscellaneous
+              ? `<tr><th>${t('product.type')}:</th><td>${t('product.miscItem')}</td></tr>`
+              : ""
+      }
             ${
-              item.discount
-                ? `<tr><th>Discount:</th><td>${
-                    item.discount.type === "percentage"
+          item.discount
+              ? `<tr><th>${t('product.discount')}:</th><td>${
+                  item.discount.type === "percentage"
                       ? item.discount.value + "%"
                       : "$" + item.discount.amount.toFixed(2)
-                  }</td></tr>`
-                : ""
-            }
+              }</td></tr>`
+              : ""
+      }
           </table>
         </div>
         <div class="modal-footer">
-          <button id="close-details-btn" class="btn secondary-btn">Close</button>
+          <button id="close-details-btn" class="btn secondary-btn">${t('common.close')}</button>
         </div>
       `;
 
@@ -718,11 +716,11 @@ function showProductDetails() {
         }
       });
     } catch (error) {
-      console.error("Error displaying product details:", error);
-      alert("There was an error displaying product details. Please try again.");
+      console.error(t('product.errors.display'), error);
+      alert(t('product.errors.alert'));
     }
   } else {
-    alert("Please select an item from the cart first");
+    alert(t('cart.selectItemFirst'));
   }
 }
 
@@ -731,33 +729,35 @@ function increaseQuantity() {
   if (selectedCartIndex >= 0 && selectedCartIndex < cart.length) {
     cart[selectedCartIndex].quantity += 1;
     cart[selectedCartIndex].total =
-      cart[selectedCartIndex].price * cart[selectedCartIndex].quantity;
+        cart[selectedCartIndex].price * cart[selectedCartIndex].quantity;
     renderCart();
     updateTotals();
   } else {
-    alert("Please select an item from the cart first");
+    alert(t('cart.selectItemFirst'));
   }
 }
+
 // Format currency based on user settings
 function formatCurrency(amount) {
   const currency = localStorage.getItem("currency") || "USD";
   const symbol = currency === "ILS" ? "₪" : "$";
   return `${symbol}${parseFloat(amount).toFixed(2)}`;
 }
+
 // F10: Decrease quantity
 function decreaseQuantity() {
   if (selectedCartIndex >= 0 && selectedCartIndex < cart.length) {
     if (cart[selectedCartIndex].quantity > 1) {
       cart[selectedCartIndex].quantity -= 1;
       cart[selectedCartIndex].total =
-        cart[selectedCartIndex].price * cart[selectedCartIndex].quantity;
+          cart[selectedCartIndex].price * cart[selectedCartIndex].quantity;
       renderCart();
       updateTotals();
     } else {
-      alert("Quantity cannot be less than 1. Use F5 to remove the item.");
+      alert(t('cart.quantityMinError'));
     }
   } else {
-    alert("Please select an item from the cart first");
+    alert(t('cart.selectItemFirst'));
   }
 }
 

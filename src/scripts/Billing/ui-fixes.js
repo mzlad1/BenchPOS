@@ -35,21 +35,6 @@ function forceCartScrolling() {
       box-shadow: 0 1px 0 0 var(--border-color) !important;
     }
     
-    /* Set explicit height for the invoice details to prevent page overflow */
-    // .invoice-details {
-    //   display: flex !important;
-    //   flex-direction: column !important;
-    //   height: auto !important;
-    // }
-    
-    /* Make sure invoice panel has proper constraints */
-    // .invoice-panel {
-    //   display: flex !important;
-    //   flex-direction: column !important;
-    //   height: auto !important;
-    //   overflow: visible !important;
-    // }
-    
     /* Ensure the scrollbar is visible and functioning */
     .cart-items::-webkit-scrollbar {
       width: 8px !important;
@@ -112,103 +97,6 @@ function forceCartScrolling() {
   // Also handle window resize events
   window.addEventListener("resize", ensureCartScrolling);
 }
-
-// function improveProductGridLayout() {
-//   const styleElement = document.createElement("style");
-//   styleElement.textContent = `
-//     /* Make product grid display multiple items in rows */
-//     .products-grid {
-//       display: grid;
-//       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-//       gap: 15px;
-//       padding: 15px;
-//       overflow-y: auto;
-//       max-height: 65vh;
-//     }
-
-//     /* Make product cards more compact */
-//     .product-item {
-//       height: auto;
-//       min-height: 150px;
-//       max-height: 180px;
-//       padding: 10px;
-//       display: flex;
-//       flex-direction: column;
-//       justify-content: space-between;
-//     }
-
-//     /* Make product names smaller with ellipsis for overflow */
-//     .product-name {
-//       font-size: 0.95rem;
-//       margin-bottom: 5px;
-//       white-space: nowrap;
-//       overflow: hidden;
-//       text-overflow: ellipsis;
-//     }
-
-//     /* Position stock indicator and price */
-//     .product-stock {
-//       font-size: 0.75rem;
-//       margin: 2px 0;
-//     }
-
-//     .product-price {
-//       font-size: 1.1rem;
-//       margin: 5px 0;
-//     }
-
-//     /* Make button smaller */
-//     .add-to-cart {
-//       padding: 6px;
-//       font-size: 0.9rem;
-//       margin-top: auto;
-//     }
-
-//     /* Optimize pagination controls */
-//     .pagination-controls {
-//       padding: 8px;
-//       margin-top: 10px;
-//     }
-
-//     .page-btn {
-//       padding: 4px 8px;
-//       font-size: 0.85rem;
-//     }
-
-//     /* Improved product count display */
-//     .product-count {
-//       font-size: 0.85rem;
-//     }
-
-//     /* Make the product selection container use available space better */
-//     .product-selection {
-//       max-height: calc(100vh - 350px);
-//       display: flex;
-//       flex-direction: column;
-//     }
-
-//     /* Ensure the search bar doesn't take too much space */
-//     .search-bar {
-//       margin-bottom: 10px;
-//     }
-
-//     /* Make sure each page has enough space for products */
-//     @media (min-height: 768px) {
-//       .products-grid {
-//         max-height: 550px;
-//       }
-//     }
-
-//     @media (max-height: 767px) {
-//       .products-grid {
-//         max-height: 400px;
-//       }
-//     }
-//   `;
-//   document.head.appendChild(styleElement);
-//   console.log("Applied improved product grid layout");
-// }
-
 function enhanceRenderProducts() {
   // Store a reference to the original renderProducts function
   const originalRenderProducts = window.renderProducts;
