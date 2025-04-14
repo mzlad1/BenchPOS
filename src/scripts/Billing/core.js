@@ -26,14 +26,19 @@ const emailReceiptBtn = document.getElementById("email-receipt");
 const newSaleBtn = document.getElementById("new-sale");
 function formatDate(date) {
   if (!(date instanceof Date) || isNaN(date)) {
-    return "Invalid date";
+    return window.t("billing.core.invalidDate");
   }
 
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   const year = date.getFullYear();
 
-  return `${month}/${day}/${year}`;
+  // Use the template from translations for different locales
+  const format = window.t("billing.core.dateFormat");
+  return format
+      .replace("{month}", month)
+      .replace("{day}", day)
+      .replace("{year}", year);
 }
 // Initialize the page
 async function initPage() {
@@ -109,31 +114,25 @@ async function checkPermission() {
   try {
     const user = await window.api.getCurrentUser();
     if (!user) {
-      // Not logged in - redirect to login
       window.location.href = "login.html";
       return false;
     }
 
     const userNameElement = document.getElementById("current-user-name");
     if (userNameElement) {
-      userNameElement.textContent = user.name || "User";
+      userNameElement.textContent = user.name || window.t("billing.core.userGreeting");
     }
-    // Check role-based permissions
-    if (window.location.pathname.includes("billing.html")) {
-      // All roles can access billing (new sales)
-      return true;
-    } else if (window.location.pathname.includes("inventory.html")) {
-      // Only managers and admins can access inventory
+
+    if (window.location.pathname.includes("inventory.html")) {
       if (user.role === "cashier") {
-        alert("You don't have permission to access the inventory page.");
-        window.location.href = "billing.html"; // Redirect cashiers to billing
+        alert(window.t("billing.core.permissionDenied.inventory"));
+        window.location.href = "billing.html";
         return false;
       }
     } else if (window.location.pathname.includes("reports.html")) {
-      // Only admins can access reports
       if (user.role !== "admin") {
-        alert("You don't have permission to access the reports page.");
-        window.location.href = "billing.html"; // Redirect to billing
+        alert(window.t("billing.core.permissionDenied.reports"));
+        window.location.href = "billing.html";
         return false;
       }
     }
@@ -152,8 +151,7 @@ async function updateConnectionStatus() {
   const statusText = document.getElementById("connection-text");
 
   try {
-    // Use the API if available
-    let isOnline = navigator.onLine; // Default fallback
+    let isOnline = navigator.onLine;
     if (window.api && typeof window.api.getOnlineStatus === "function") {
       isOnline = await window.api.getOnlineStatus();
     }
@@ -161,17 +159,16 @@ async function updateConnectionStatus() {
     if (isOnline) {
       indicator.classList.remove("offline");
       indicator.classList.add("online");
-      statusText.textContent = "Online Mode";
+      statusText.textContent = window.t("billing.core.onlineMode");
     } else {
       indicator.classList.remove("online");
       indicator.classList.add("offline");
-      statusText.textContent = "Offline Mode";
+      statusText.textContent = window.t("billing.core.offlineMode");
     }
   } catch (error) {
     console.error("Error checking online status:", error);
-    // Fallback to offline if there's an error
     indicator.classList.remove("online");
     indicator.classList.add("offline");
-    statusText.textContent = "Offline Mode";
+    statusText.textContent = window.t("billing.core.offlineMode");
   }
 }

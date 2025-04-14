@@ -2025,3 +2025,8 @@ html.rtl .chart-container canvas,
 body.rtl-layout .chart-container canvas {
   direction: ltr; /* Charts always ltr for numerical display */
 }
+.form-actions {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
