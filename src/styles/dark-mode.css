@@ -827,3 +827,70 @@ body[class*="dark"] .cart-items {
 .dark-mode .discount-preview span {
 color: white;
 }
+
+
+
+.dark-mode .invoice-date {
+    background-color: #131a29;
+}
+.dark-mode .invoice-id {
+    background-color: #131a29;
+}
+.dark-mode .customer-info {
+    background-color: #131a29;
+}
+.dark-mode .main-content {
+    background-color: #131a29;
+}
+.dark-mode .products-grid {
+    background-color: #131a29;
+}
+.dark-mode .cart-items {
+    background-color: #131a29;
+}
+.dark-mode #previous-invoice-btn  {
+    background: #131a29;
+    color: #e2e8f0;
+}
+.dark-mode #next-invoice-btn {
+    background: #131a29;
+    color: #e2e8f0;
+}
+.dark-mode .discount-section {
+    background-color: #131a29;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+.dark-mode .discount-section label {
+    background-color: #131a29;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+
+.dark-mode #misc-item-modal label {
+    background-color: #131a29;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+
+.dark-mode .browser-header {
+
+    color: #e2e8f0;
+}
+
+.dark-mode .browser-filters label {
+    color: #e2e8f0;
+}
+.dark-mode #apply-date-filter, #reset-filters {
+    background-color: #131a29;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+.dark-mode .summary-row span{
+    color: #e2e8f0;
+}
+.dark-mode #add-discount-btn span {
+    background-color: #131a29;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}

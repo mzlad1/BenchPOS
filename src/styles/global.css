@@ -1805,10 +1805,7 @@ body[class*="dark"] .sync-actions .btn:focus {
 }
 
 /* Ensure numeric columns remain properly aligned */
-.rtl-layout table.report-table th:nth-child(n + 4),
-.rtl-layout table.report-table td:nth-child(n + 4) {
-  text-align: left;
-}
+
 
 /* Fix arrows and icons in RTL */
 .rtl-layout .select-wrapper::after {
@@ -2032,4 +2029,72 @@ body.rtl-layout .chart-container canvas {
 }
 html.rtl .shortcuts-table td{
     text-align: right;
+}
+html.rtl #invoices-table td{
+    text-align: right;
+}
+.rtl-layout table.report-table th, .rtl-layout table.report-table td {
+   text-align: right;
+    direction: rtl;
+    white-space: nowrap;
+}
+
+
+/* RTL language overrides (like Arabic) */
+html[dir="rtl"] .sync-container {
+  right: auto;
+  left: 20px;
+  transform-origin: bottom left;
+}
+
+html[dir="rtl"] .sync-indicator {
+  right: auto;
+  left: 20px;
+}
+
+/* Make sure content flows correctly in RTL mode */
+html[dir="rtl"] .sync-header,
+html[dir="rtl"] .sync-actions,
+html[dir="rtl"] .unsynced-item {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .sync-status {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .unsynced-details {
+  justify-content: flex-start;
+}
+
+html[dir="rtl"] #sync-progress-text {
+  flex-direction: row-reverse;
+}
+
+/* Animation adjustments for RTL */
+@keyframes slideInRTL {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+html[dir="rtl"] .temp-notification {
+  right: auto;
+  left: 20px;
+  border-left: none;
+  border-right: 4px solid var(--primary-color, #4361ee);
+  animation: slideInRTL 0.3s ease-out;
+}
+
+html[dir="rtl"] .temp-notification.success {
+  border-right-color: var(--success-color, #0cce6b);
+}
+
+html[dir="rtl"] .temp-notification.error {
+  border-right-color: var(--danger-color, #e5383b);
 }

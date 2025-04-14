@@ -244,7 +244,6 @@ body {
   background-color: var(--card-bg);
   transition: var(--transition);
   font-size: 0.95rem;
-  box-shadow: var(--shadow-neu-inset);
 }
 
 .search-bar input:focus {
@@ -498,7 +497,6 @@ body {
   margin: var(--spacing-lg);
   background-color: var(--card-bg);
   border-radius: var(--rounded-xl);
-  box-shadow: var(--shadow-neu-sm);
   padding: var(--spacing-lg);
   border: none;
   transition: transform var(--transition), box-shadow var(--transition-slow);
@@ -506,15 +504,8 @@ body {
   overflow: hidden;
 }
 
-/* Elegant glow effect on hover */
-.barcode-form:hover {
-  box-shadow: var(--shadow-neu), 0 0 20px rgba(var(--primary-rgb), 0.1);
-}
 
-/* Background highlight on active state */
-.barcode-form:focus-within {
-  box-shadow: var(--shadow-neu), 0 0 30px rgba(var(--primary-rgb), 0.15);
-}
+
 
 /* Decorative element */
 .barcode-form::before {
@@ -1488,19 +1479,15 @@ body {
   background-color: var(--card-bg);
   border-radius: var(--rounded-xl);
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: 1px solid ;
   margin-bottom: var(--spacing-lg);
-  box-shadow: var(--shadow-neu-sm);
   transform: translateZ(0); /* Hardware acceleration for smooth animations */
   transition: box-shadow var(--transition-slow),
     transform var(--transition-slow);
 }
 
 /* Add subtle highlight on hover */
-.invoice-summary:hover {
-  box-shadow: var(--shadow-neu), 0 5px 20px rgba(var(--primary-rgb), 0.07);
-  transform: translateY(-2px) translateZ(0);
-}
+
 
 /* Individual summary rows */
 .summary-row {
@@ -2487,7 +2474,6 @@ body {
 
 /* Modal header */
 .modal-header {
-  background: linear-gradient(to right, var(--card-bg), var(--card-bg-alt));
   padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -2706,7 +2692,6 @@ body {
 
 /* Specific discount modal styles */
 #discount-modal .discount-section {
-  background-color: var(--card-bg-alt);
   border-radius: var(--rounded);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-md);
@@ -2963,7 +2948,6 @@ body {
   border-radius: var(--rounded-lg);
   padding: var(--spacing-md);
   margin-top: var(--spacing-md);
-  box-shadow: var(--shadow-neu-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
