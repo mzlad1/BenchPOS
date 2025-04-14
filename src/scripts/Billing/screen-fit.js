@@ -6,22 +6,62 @@ document.addEventListener("DOMContentLoaded", function () {
   // Create toggle button
   const fitScreenButton = document.createElement("button");
   fitScreenButton.id = "fit-screen-toggle";
-  fitScreenButton.textContent = "Fit to Screen";
-  fitScreenButton.style.cssText = `
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    z-index: 1000;
-    background-color: #6366f1;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  `;
+  fitScreenButton.textContent = t('screenFit.fitToScreen');
+
+  // Apply initial base styles
+  fitScreenButton.style.position = "fixed";
+  fitScreenButton.style.bottom = "15px";
+  fitScreenButton.style.zIndex = "9999"; // Higher z-index to ensure visibility
+  fitScreenButton.style.backgroundColor = "#6366f1";
+  fitScreenButton.style.color = "white";
+  fitScreenButton.style.border = "none";
+  fitScreenButton.style.borderRadius = "8px";
+  fitScreenButton.style.padding = "8px 16px";
+  fitScreenButton.style.fontWeight = "600";
+  fitScreenButton.style.cursor = "pointer";
+  fitScreenButton.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+  fitScreenButton.style.fontFamily = "inherit"; // Use the site's font
+
+  // Add to body first
   document.body.appendChild(fitScreenButton);
+
+  // Debug info
+  console.log("Screen Fit button created with ID: fit-screen-toggle");
+
+  // Function to update button position based on RTL/LTR
+  function updateButtonPosition() {
+    const isRTL = document.documentElement.dir === 'rtl';
+    console.log("RTL detection:", isRTL);
+
+    if (isRTL) {
+      // For RTL (Arabic)
+      fitScreenButton.style.left = "15px";
+      fitScreenButton.style.right = "auto";
+
+      // Make more visible in RTL mode
+      fitScreenButton.style.backgroundColor = "#8c52ff"; // Different color in RTL mode
+      console.log("Button positioned on LEFT for RTL");
+    } else {
+      // For LTR (English)
+      fitScreenButton.style.right = "15px";
+      fitScreenButton.style.left = "auto";
+      console.log("Button positioned on RIGHT for LTR");
+    }
+
+    // Ensure button is visible
+    fitScreenButton.style.display = "block";
+
+    // Log button position
+    const buttonRect = fitScreenButton.getBoundingClientRect();
+    console.log("Button position:", {
+      left: buttonRect.left,
+      right: window.innerWidth - buttonRect.right,
+      visible: buttonRect.left >= 0 && buttonRect.right <= window.innerWidth
+    });
+  }
+
+  // Call position update initially
+  updateButtonPosition();
 
   // Function to optimize the screen space
   function optimizeScreenSpace(enable) {
@@ -83,16 +123,18 @@ document.addEventListener("DOMContentLoaded", function () {
         styleEl.id = "optimize-screen-styles";
         styleEl.textContent = optimizedStyles;
         document.head.appendChild(styleEl);
+        console.log("Screen fit optimization ENABLED");
       }
-      fitScreenButton.textContent = "Normal View";
-      fitScreenButton.style.backgroundColor = "#64748b";
+      fitScreenButton.textContent = t('screenFit.normalView');
+      fitScreenButton.style.backgroundColor = document.documentElement.dir === 'rtl' ? "#5d4a7e" : "#64748b";
     } else {
       // If the style element exists, remove it
       if (styleEl) {
         styleEl.remove();
+        console.log("Screen fit optimization DISABLED");
       }
-      fitScreenButton.textContent = "Fit to Screen";
-      fitScreenButton.style.backgroundColor = "#6366f1";
+      fitScreenButton.textContent = t('screenFit.fitToScreen');
+      fitScreenButton.style.backgroundColor = document.documentElement.dir === 'rtl' ? "#8c52ff" : "#6366f1";
     }
 
     // Save preference
@@ -102,17 +144,50 @@ document.addEventListener("DOMContentLoaded", function () {
   // Toggle button click handler
   let isOptimized = false;
   fitScreenButton.addEventListener("click", function () {
+    console.log("Screen fit button clicked");
     isOptimized = !isOptimized;
     optimizeScreenSpace(isOptimized);
   });
 
   // Check for saved preference
   window.addEventListener("load", function () {
+    console.log("Page fully loaded - checking preferences");
     const savedPreference = localStorage.getItem("billingOptimized");
     if (savedPreference === "true") {
       isOptimized = true;
       optimizeScreenSpace(true);
     }
+
+    // Update position again when page is fully loaded
+    updateButtonPosition();
+
+    // Make sure button is visible by forcing a reflow
+    setTimeout(() => {
+      fitScreenButton.style.opacity = "0.99";
+      setTimeout(() => fitScreenButton.style.opacity = "1", 50);
+      updateButtonPosition();
+    }, 100);
+  });
+
+  // Listen for language/direction changes
+  window.addEventListener("languageChanged", function() {
+    console.log("Language changed event detected");
+    updateButtonPosition();
+  });
+
+  // Listen to RTL/LTR changes through dir attribute
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.attributeName === "dir") {
+        console.log("DIR attribute changed:", document.documentElement.dir);
+        updateButtonPosition();
+      }
+    });
+  });
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["dir"]
   });
 
   // Automatically optimize on smaller screens
@@ -121,8 +196,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // If screen height is smaller than 768px and user hasn't set preference
     if (
-      viewportHeight < 768 &&
-      localStorage.getItem("billingOptimized") === null
+        viewportHeight < 768 &&
+        localStorage.getItem("billingOptimized") === null
     ) {
       isOptimized = true;
       optimizeScreenSpace(true);
@@ -131,4 +206,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Run screen check after a short delay
   setTimeout(checkScreenAndOptimize, 500);
+
+  // One final position check after a longer delay
+  setTimeout(updateButtonPosition, 1500);
 });

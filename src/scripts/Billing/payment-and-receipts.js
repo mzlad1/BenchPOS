@@ -3,12 +3,13 @@ function playCompletionSound() {
     const completionSound = new Audio("../Audio/completed.mp3"); // Same path format as beep sound
     completionSound.volume = 0.3;
     completionSound
-      .play()
-      .catch((e) => console.log("Could not play completion sound:", e));
+        .play()
+        .catch((e) => console.log(t('sale.sound.couldNotPlay'), e));
   } catch (e) {
-    console.error("Error playing completion sound:", e);
+    console.error(t('sale.sound.error'), e);
   }
 }
+
 // Complete sale
 // Fix for the completeSale function to update the invoices array
 async function completeSale() {
@@ -17,7 +18,7 @@ async function completeSale() {
   try {
     const invoiceData = {
       items: cart,
-      customer: customerNameEl.value || "Guest Customer",
+      customer: customerNameEl.value || t('billing.labels.guest'),
       subtotal: parseFloat(subtotalEl.textContent.replace("$", "")),
       tax: parseFloat(taxEl.textContent.replace("$", "")),
       total: parseFloat(totalEl.textContent.replace("$", "")),
@@ -52,22 +53,24 @@ async function completeSale() {
     // receiptModal.style.display = "block"; // REMOVED THIS LINE
 
     // Show a notification instead
-    showToastNotification("Sale completed successfully");
+    showToastNotification(t('sale.completedSuccess'));
     // Play the completion sound
     playCompletionSound();
     // Clear the cart
     clearCart();
   } catch (error) {
-    console.error("Error completing sale:", error);
-    alert("Failed to complete sale. Please try again.");
+    console.error(t('sale.error'), error);
+    alert(t('sale.failed'));
   }
 }
+
 // Format currency based on user settings
 function formatCurrency(amount) {
   const currency = localStorage.getItem("currency") || "USD";
   const symbol = currency === "ILS" ? "₪" : "$";
   return `${symbol}${parseFloat(amount).toFixed(2)}`;
 }
+
 // Add a toast notification function if it doesn't exist yet
 function showToastNotification(message, isError = false, duration = 3000) {
   let notification = document.getElementById("toast-notification");
@@ -112,8 +115,8 @@ function showToastNotification(message, isError = false, duration = 3000) {
 // Generate receipt HTML
 function generateReceiptHtml(invoice) {
   const itemsHtml = invoice.items
-    .map(
-      (item) => `
+      .map(
+          (item) => `
     <tr>
       <td>${item.name}</td>
       <td>${item.quantity}</td>
@@ -121,29 +124,29 @@ function generateReceiptHtml(invoice) {
       <td>${formatCurrency(item.price * item.quantity)}</td>
     </tr>
   `
-    )
-    .join("");
+      )
+      .join("");
 
   return `
     <div class="receipt-header">
-      <h2>MZLAD Billing System</h2>
-      <p>123 Main Street, Anytown, USA</p>
-      <p>Tel: (555) 123-4567</p>
+      <h2>${t('billing.receipt.header')}</h2>
+      <p>${t('billing.receipt.address')}</p>
+      <p>${t('billing.receipt.phone')}</p>
     </div>
     
     <div class="receipt-info">
-      <p><strong>Receipt #:</strong> ${invoice.id}</p>
-      <p><strong>Date:</strong> ${new Date(invoice.date).toLocaleString()}</p>
-      <p><strong>Customer:</strong> ${invoice.customer}</p>
+      <p><strong>${t('billing.receipt.receiptNumber')}</strong> ${invoice.id}</p>
+      <p><strong>${t('billing.receipt.date')}</strong> ${new Date(invoice.date).toLocaleString()}</p>
+      <p><strong>${t('billing.receipt.customer')}</strong> ${invoice.customer}</p>
     </div>
     
     <table class="receipt-items">
       <thead>
         <tr>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>Price</th>
-          <th>Total</th>
+          <th>${t('billing.receipt.item')}</th>
+          <th>${t('billing.receipt.qty')}</th>
+          <th>${t('billing.receipt.price')}</th>
+          <th>${t('billing.receipt.total')}</th>
         </tr>
       </thead>
       <tbody>
@@ -151,22 +154,22 @@ function generateReceiptHtml(invoice) {
       </tbody>
       <tfoot>
         <tr>
-          <td colspan="3">Subtotal</td>
+          <td colspan="3">${t('billing.receipt.subtotal')}</td>
           <td>${formatCurrency(invoice.subtotal)}</td>
         </tr>
         <tr>
-          <td colspan="3">Tax (0)</td>
+          <td colspan="3">${t('billing.receipt.tax')}</td>
           <td>${formatCurrency(invoice.tax)}</td>
         </tr>
         <tr class="total-row">
-          <td colspan="3">Total</td>
+          <td colspan="3">${t('billing.receipt.total')}</td>
           <td>${formatCurrency(invoice.total)}</td>
         </tr>
       </tfoot>
     </table>
     
     <div class="receipt-footer">
-      <p>Thank you for your purchase!</p>
+      <p>${t('billing.receipt.thankYou')}</p>
     </div>
   `;
 }
@@ -177,8 +180,8 @@ async function printReceipt() {
   try {
     // Check if receipt container exists
     if (!receiptContainerEl) {
-      console.error("Receipt container element not found");
-      alert("Error: Receipt container not found. Please try again.");
+      console.error(t('receipt.errors.containerNotFound'));
+      alert(t('receipt.errors.containerAlert'));
       return;
     }
 
@@ -194,14 +197,14 @@ async function printReceipt() {
         invoiceId = idMatch[1];
       }
     } catch (err) {
-      console.log("Couldn't extract invoice ID, using generated one instead");
+      console.log(t('receipt.errors.extractId'));
     }
 
     // Skip the API call and use the direct download method
     downloadReceiptAsHTML(receiptHtml, invoiceId);
   } catch (error) {
-    console.error("Error handling receipt:", error);
-    alert("There was an error preparing the receipt. Please try again.");
+    console.error(t('receipt.errors.handling'), error);
+    alert(t('receipt.errors.preparing'));
   }
 }
 
@@ -213,7 +216,7 @@ function downloadReceiptAsHTML(html, invoiceId) {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Receipt ${invoiceId}</title>
+        <title>${t('receipt.title')} ${invoiceId}</title>
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -262,7 +265,7 @@ function downloadReceiptAsHTML(html, invoiceId) {
         </div>
         <div class="no-print" style="margin-top: 30px; text-align: center;">
           <button onclick="window.print();" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            Print this receipt
+            ${t('receipt.printButton')}
           </button>
         </div>
       </body>
@@ -283,11 +286,11 @@ function downloadReceiptAsHTML(html, invoiceId) {
     document.body.removeChild(a);
 
     alert(
-      `Receipt downloaded as HTML file: receipt-${invoiceId}.html\n\nOpen the file in your browser and use your browser's print function to print it.`
+        `${t('receipt.downloadSuccess')} receipt-${invoiceId}.html\n\n${t('receipt.openInBrowser')}`
     );
   } catch (error) {
-    console.error("Error creating downloadable receipt:", error);
-    alert("Failed to create downloadable receipt. Please try again.");
+    console.error(t('receipt.errors.creating'), error);
+    alert(t('receipt.errors.downloadFailed'));
   }
 }
 
@@ -295,9 +298,7 @@ function downloadReceiptAsHTML(html, invoiceId) {
 // that offers to download the receipt instead
 function emailReceipt() {
   if (
-    confirm(
-      "Email functionality would be implemented in a real app. Would you like to download the receipt instead?"
-    )
+      confirm(t('receipt.emailNotImplemented'))
   ) {
     printReceipt();
   }

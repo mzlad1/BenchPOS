@@ -3,6 +3,181 @@
     "name": "MZLAD Billing System",
     "tagline": "Simple. Efficient. Reliable."
   },
+  "screenFit": {
+    "fitToScreen": "Fit to Screen",
+    "normalView": "Normal View"
+  },
+  "products": {
+    "errors": {
+      "loading": "Error loading products:",
+      "failedToLoad": "Failed to load products. Please try again."
+    },
+    "noProductsFound": "No products found",
+    "inStock": "In stock",
+    "addToCart": "Add to Cart",
+    "fixCardHeightApplied": "Applied product card height fix",
+    "fixPageSpacingApplied": "Applied product page spacing fix"
+  },
+  "pagination": {
+    "showing": "Showing {shown} of {total} products",
+    "previous": "← Previous",
+    "next": "Next →",
+    "pageOf": "Page {current} of {total}"
+  },
+  "sale": {
+    "sound": {
+      "couldNotPlay": "Could not play completion sound:",
+      "error": "Error playing completion sound:"
+    },
+    "completedSuccess": "Sale completed successfully",
+    "error": "Error completing sale:",
+    "failed": "Failed to complete sale. Please try again."
+  },
+  "receipt": {
+    "title": "Receipt",
+    "printButton": "Print this receipt",
+    "downloadSuccess": "Receipt downloaded as HTML file:",
+    "openInBrowser": "Open the file in your browser and use your browser's print function to print it.",
+    "emailNotImplemented": "Email functionality would be implemented in a real app. Would you like to download the receipt instead?",
+    "errors": {
+      "containerNotFound": "Receipt container element not found",
+      "containerAlert": "Error: Receipt container not found. Please try again.",
+      "extractId": "Couldn't extract invoice ID, using generated one instead",
+      "handling": "Error handling receipt:",
+      "preparing": "There was an error preparing the receipt. Please try again.",
+      "creating": "Error creating downloadable receipt:",
+      "downloadFailed": "Failed to create downloadable receipt. Please try again."
+    }
+  },
+  "shortcuts": {
+    "fixed": "Keyboard shortcuts fixed",
+    "initializing": "Initializing keyboard shortcuts",
+    "helpButton": "Shortcuts (?)",
+    "title": "Keyboard Shortcuts",
+    "key": "Key",
+    "action": "Action",
+    "keyPressed": "Key pressed:",
+    "rowParentNotFound": "Row parent not found, cannot determine index",
+    "actions": {
+      "addMisc": "Add miscellaneous item",
+      "processReturn": "Process return/refund",
+      "completeSale": "Complete sale",
+      "removeItem": "Remove selected item",
+      "showDetails": "Show product details",
+      "clearCart": "Clear cart",
+      "printReceipt": "Print receipt",
+      "increaseQty": "Increase quantity",
+      "decreaseQty": "Decrease quantity",
+      "prevInvoice": "Show previous invoice",
+      "nextInvoice": "Show next invoice",
+      "focusSearch": "Focus search box",
+      "focusBarcode": "Focus barcode input",
+      "addDiscount": "Add discount"
+    }
+  },
+  "misc": {
+    "opening": "Opening miscellaneous item modal",
+    "title": "Add Miscellaneous Item",
+    "description": "Item Description",
+    "descriptionPlaceholder": "Item description",
+    "price": "Price",
+    "addButton": "Add Item",
+    "errors": {
+      "general": "Error in addMiscellaneousItem:",
+      "alert": "There was an error adding a miscellaneous item. Please try again.",
+      "closeButtonNotFound": "Close button not found in misc modal",
+      "cancelButtonNotFound": "Cancel button not found in misc modal",
+      "inputsNotFound": "Name or price input not found",
+      "formNotFound": "Misc form not found"
+    }
+  },
+  "return": {
+    "editFirst": "Please click 'Edit' first before processing a refund.",
+    "emptyCart": "Cart is empty. Add items to process a refund.",
+    "selectItems": "Please select items to refund by checking the boxes next to them.",
+    "confirmFull": "Process this as a complete return/refund? This will make all prices negative.",
+    "confirmPartial": "Process a partial refund for {count} selected item(s)?",
+    "completeRefund": "Complete Refund",
+    "completePartialRefund": "Complete Partial Refund",
+    "refundSelected": "Refund Selected"
+  },
+  "cart": {
+    "selectItemFirst": "Please select an item from the cart first",
+    "quantityMinError": "Quantity cannot be less than 1. Use F5 to remove the item."
+  },
+  "product": {
+    "details": "Product Details",
+    "id": "Product ID",
+    "name": "Name",
+    "unitPrice": "Unit Price",
+    "quantity": "Quantity",
+    "total": "Total",
+    "type": "Type",
+    "refundItem": "Refund Item",
+    "miscItem": "Miscellaneous Item",
+    "discount": "Discount",
+    "notAvailable": "N/A",
+    "errors": {
+      "display": "Error displaying product details:",
+      "alert": "There was an error displaying product details. Please try again."
+    }
+  },
+  "invoiceNav": {
+    "buttons": {
+      "previous": "Previous",
+      "previousTitle": "Previous Invoice",
+      "next": "Next",
+      "nextTitle": "Next Invoice",
+      "browse": "Browse Invoices",
+      "browseTitle": "Browse Invoices",
+      "edit": "Edit",
+      "saveChanges": "Save Changes",
+      "newInvoice": "New Invoice",
+      "search": "Search",
+      "applyFilter": "Apply Filter",
+      "reset": "Reset",
+      "view": "View"
+    },
+    "shortcuts": {
+      "previousKey": "(F11)",
+      "nextKey": "(F12)"
+    },
+    "messages": {
+      "noInvoices": "No invoices available",
+      "viewingOldest": "You are viewing the oldest invoice",
+      "viewingNewest": "You are viewing the most recent invoice",
+      "clearCartConfirm": "Loading an invoice will clear your current cart. Continue?",
+      "viewingInvoice": "Viewing Invoice #",
+      "editModeEnabled": "Edit mode enabled - you can now modify this invoice",
+      "saveChangesConfirm": "Save changes to this invoice?",
+      "invoiceUpdated": "Invoice updated successfully",
+      "startNewConfirm": "Start a new invoice? This will clear the current view.",
+      "clickEditPrompt": "Please click \"Edit\" to make changes",
+      "noBrowseInvoices": "No invoices available to browse",
+      "noInvoicesFound": "No invoices found",
+      "invalidDate": "Invalid date",
+      "invalidDateFormat": "Invalid date format",
+      "errorLoading": "Error loading invoices:",
+      "errorSaving": "Error saving invoice changes:",
+      "loadedInvoices": "Loaded {count} invoices"
+    },
+    "labels": {
+      "from": "From",
+      "to": "To",
+      "invoiceNumber": "Invoice #",
+      "date": "Date",
+      "customer": "Customer",
+      "items": "Items",
+      "total": "Total",
+      "action": "Action",
+      "guest": "Guest",
+      "refund": "(Refund)"
+    },
+    "modal": {
+      "title": "Browse Invoices",
+      "searchPlaceholder": "Search by customer name, ID..."
+    }
+  },
   "billing": {
     "pageTitle": "New Sale - MZLAD Billing System",
     "products": "Products",

@@ -2030,3 +2030,6 @@ body.rtl-layout .chart-container canvas {
   gap: 5px;
   justify-content: center;
 }
+html.rtl .shortcuts-table td{
+    text-align: right;
+}
