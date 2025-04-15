@@ -1,5 +1,4 @@
 const { contextBridge, ipcRenderer } = require("electron");
-
 // Function to safely invoke IPC methods
 const safeIpcInvoke = async (channel, ...args) => {
   try {
@@ -54,17 +53,18 @@ contextBridge.exposeInMainWorld("api", {
     }
   },
   // Online/Offline and sync functions
-  getOnlineStatus: async () => {
-    console.log("Preload: Calling get-online-status");
-    try {
-      const status = await safeIpcInvoke("get-online-status");
-      console.log("Preload: Online status received:", status);
-      return status;
-    } catch (error) {
-      console.error("Error getting online status:", error);
-      return navigator.onLine; // Fallback to browser API
-    }
-  },
+  // getOnlineStatus: async () => {
+  //   console.log("Preload: Calling get-online-status");
+  //   try {
+  //     const status = await safeIpcInvoke("get-online-status");
+  //     console.log("Preload: Online status received:", status);
+  //     return status;
+  //   } catch (error) {
+  //     console.error("Error getting online status:", error);
+  //     return navigator.onLine; // Fallback to browser API
+  //   }
+  // },
+  getOnlineStatus: () => ipcRenderer.invoke("check-online-status"),
   syncData: async () => {
     console.log("Preload: Calling sync-data");
     try {
@@ -295,7 +295,205 @@ contextBridge.exposeInMainWorld("api", {
     console.log(`Preload: Invoking callback ${channel}`, data);
     return safeIpcInvoke(channel, data);
   },
+
+  testFirebaseAuth: async (credentials) => {
+    console.log("Preload: Testing Firebase auth directly");
+    return await safeIpcInvoke("test-firebase-auth", credentials);
+  },
+
+  showFirebaseAuthDialog: async () => {
+    return showAuthDialog();
+  },
 });
+
+// Add this after the contextBridge exposures
+
+// Inject styles for the auth dialog
+const style = document.createElement("style");
+style.textContent = `
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+  }
+  
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 5px;
+    width: 400px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  .close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .close-btn:hover {
+    color: black;
+  }
+  
+  .input-group {
+    margin-bottom: 15px;
+  }
+  
+  .input-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .btn-primary {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .btn-secondary {
+    background-color: #f1f1f1;
+    color: #333;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+`;
+document.head.appendChild(style);
+
+// Add this after the contextBridge exposures, before the console.log
+
+// Add console logs in your preload.js to debug the IPC flow
+
+// Make sure this listener is active and working
+global.requestFirebaseAuth = async () => {
+  return new Promise((resolve) => {
+    if (!mainWindow || mainWindow.isDestroyed()) {
+      console.log("No window available for auth request");
+      resolve({ success: false, message: "No window available" });
+      return;
+    }
+
+    // Generate a unique callback channel with timestamp and random value for uniqueness
+    const callbackChannel = `firebase-auth-callback-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
+    console.log(
+      "🔑 Setting up auth callback handler for channel:",
+      callbackChannel
+    );
+
+    // Set up a one-time handler with more robust error handling
+    ipcMain.handleOnce(callbackChannel, async (event, credentials) => {
+      console.log(
+        "Received auth callback response:",
+        credentials ? "has credentials" : "no credentials"
+      );
+
+      if (!credentials || !credentials.email) {
+        console.log("No valid credentials provided, auth failed");
+        resolve({ success: false, message: "No valid credentials provided" });
+        return { success: false };
+      }
+
+      try {
+        // Add a debugging log to verify the auth object is available
+        let auth;
+        try {
+          const { auth: firebaseAuth } = require("./services/firebase-core");
+          auth = firebaseAuth;
+        } catch (error) {
+          console.error("Failed to import Firebase auth:", error);
+          resolve({
+            success: false,
+            message: "Firebase auth module not available",
+          });
+          return { success: false };
+        }
+
+        if (!auth) {
+          console.error("Firebase auth object is not available!");
+          resolve({
+            success: false,
+            message: "Firebase not properly initialized",
+          });
+          return { success: false };
+        }
+
+        console.log(
+          "Attempting Firebase sign in with email:",
+          credentials.email
+        );
+
+        let signInWithEmailAndPassword;
+        try {
+          const authModule = require("firebase/auth");
+          signInWithEmailAndPassword = authModule.signInWithEmailAndPassword;
+        } catch (error) {
+          console.error("Failed to import signInWithEmailAndPassword:", error);
+          resolve({
+            success: false,
+            message: "Firebase auth method not available",
+          });
+          return { success: false };
+        }
+
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          credentials.email,
+          credentials.password
+        );
+
+        console.log("✅ Firebase auth successful:", userCredential.user.email);
+        resolve({ success: true, user: userCredential.user });
+        return { success: true };
+      } catch (error) {
+        console.error("❌ Firebase auth error:", error.code, error.message);
+        resolve({ success: false, error: error.message });
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Send the request to the renderer with timeout handling
+    console.log(
+      "📤 Sending auth request to renderer with channel:",
+      callbackChannel
+    );
+
+    // Before sending the request, ensure we're ready to receive the response
+    setTimeout(() => {
+      mainWindow.webContents.send("request-firebase-auth", callbackChannel);
+    }, 100);
+
+    // Set a shorter timeout to improve user experience (20 seconds)
+    setTimeout(() => {
+      console.log("⏰ Firebase auth request timed out after 20 seconds");
+      ipcMain.removeHandler(callbackChannel); // Clean up the handler
+      resolve({ success: false, message: "Authentication timed out" });
+    }, 20000);
+  });
+};
 
 // Log when preload script has loaded
 console.log("Preload script initialized successfully");
@@ -326,3 +524,84 @@ document.getElementById("logout-btn").addEventListener("click", handleLogout);
 // Export the logout handler if needed elsewhere
 window.handleLogout = handleLogout;
 window.i18n.init();
+
+// Helper function to show authentication dialog
+function showAuthDialog() {
+  return new Promise((resolve) => {
+    // Create a dialog to get credentials
+    const dialogHTML = `
+      <div id="auth-dialog" class="modal">
+        <div class="modal-content">
+          <span class="close-btn">&times;</span>
+          <h2>Firebase Authentication Required</h2>
+          <p>Please enter your credentials to authenticate with Firebase:</p>
+          <div class="input-group">
+            <input type="email" id="auth-email" placeholder="Email" required>
+          </div>
+          <div class="input-group">
+            <input type="password" id="auth-password" placeholder="Password" required>
+          </div>
+          <div class="button-group">
+            <button id="auth-submit" class="btn-primary">Login</button>
+            <button id="auth-cancel" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add it to the DOM
+    const container = document.createElement("div");
+    container.innerHTML = dialogHTML;
+    document.body.appendChild(container);
+
+    const dialog = document.getElementById("auth-dialog");
+    const emailInput = document.getElementById("auth-email");
+    const passwordInput = document.getElementById("auth-password");
+    const submitBtn = document.getElementById("auth-submit");
+    const cancelBtn = document.getElementById("auth-cancel");
+    const closeBtn = document.querySelector(".close-btn");
+
+    // Show the dialog
+    dialog.style.display = "block";
+
+    // Handle submission
+    function handleSubmit() {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (email && password) {
+        cleanup();
+        resolve({ email, password });
+      }
+    }
+
+    // Handle cancel
+    function handleCancel() {
+      cleanup();
+      resolve(null);
+    }
+
+    // Clean up DOM
+    function cleanup() {
+      dialog.style.display = "none";
+      document.body.removeChild(container);
+      submitBtn.removeEventListener("click", handleSubmit);
+      cancelBtn.removeEventListener("click", handleCancel);
+      closeBtn.removeEventListener("click", handleCancel);
+    }
+
+    // Add event listeners
+    submitBtn.addEventListener("click", handleSubmit);
+    cancelBtn.addEventListener("click", handleCancel);
+    closeBtn.addEventListener("click", handleCancel);
+
+    // Auto-fill remembered email if available
+    const rememberedEmail = localStorage.getItem("remembered_email");
+    if (rememberedEmail) {
+      emailInput.value = rememberedEmail;
+      passwordInput.focus();
+    } else {
+      emailInput.focus();
+    }
+  });
+}

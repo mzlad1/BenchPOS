@@ -8,7 +8,7 @@ let isOnline = false;
 let validationTimers = {};
 let isLoggingIn = false;
 
-// Initialize page when DOM is loaded
+// Wrap your code in DOMContentLoaded event to ensure elements exist
 document.addEventListener("DOMContentLoaded", () => {
   // Force logout and clean storage
   forceLogoutAndCleanStorage();
@@ -24,47 +24,78 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize form validations
   initFormValidation();
+
+  // Check remembered user
+  checkRememberedUser();
+
+  if (e.altKey && e.key === "t") {
+    testFirebaseAuthDirectly();
+  }
 });
 
 /**
  * Setup all event listeners for the page
  */
 function setupEventListeners() {
-  // Login form submission
-  document.getElementById("login-form").addEventListener("submit", handleLogin);
+  // Example of checking if an element exists before adding listeners
+  const loginButton = document.getElementById("login-button");
+  if (loginButton) {
+    loginButton.addEventListener("click", handleLogin);
+  }
 
   // Password visibility toggle
-  document
-    .getElementById("password-toggle")
-    .addEventListener("click", togglePasswordVisibility);
+  const passwordToggle = document.getElementById("password-toggle");
+  if (passwordToggle) {
+    passwordToggle.addEventListener("click", togglePasswordVisibility);
+  }
 
   // Theme switch
-  document
-    .getElementById("theme-switch")
-    .addEventListener("change", toggleTheme);
+  const themeSwitch = document.getElementById("theme-switch");
+  if (themeSwitch) {
+    themeSwitch.addEventListener("change", toggleTheme);
+  }
 
   // "Create Account" link handler
-  document.getElementById("create-account")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    showNotification("Account creation is currently disabled in this version.");
-  });
+  const createAccountLink = document.getElementById("create-account");
+  if (createAccountLink) {
+    createAccountLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      showNotification(
+        "Account creation is currently disabled in this version."
+      );
+    });
+  }
 
   // "Forgot password" link handler
-  document.getElementById("forgot-password")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    window.location.href = "../views/forgot-password.html";
-  });
+  const forgotPasswordLink = document.getElementById("forgot-password");
+  if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = "../views/forgot-password.html";
+    });
+  }
 
   // Social login buttons
   document.querySelectorAll(".social-btn").forEach((btn) => {
-    btn.addEventListener("click", handleSocialLogin);
+    if (btn) {
+      btn.addEventListener("click", handleSocialLogin);
+    }
   });
 
   // Input focus/blur effects
   document.querySelectorAll("input").forEach((input) => {
-    input.addEventListener("focus", handleInputFocus);
-    input.addEventListener("blur", handleInputBlur);
-    input.addEventListener("input", () => validateInput(input));
+    if (input) {
+      input.addEventListener("focus", handleInputFocus);
+      input.addEventListener("blur", handleInputBlur);
+      input.addEventListener("input", () => validateInput(input));
+    }
+  });
+
+  // Press Alt+F to test Firebase auth directly
+  document.addEventListener("keydown", (e) => {
+    if (e.altKey && e.key === "f") {
+      testFirebaseAuth();
+    }
   });
 }
 
@@ -429,133 +460,84 @@ function updateConnectionUI(online) {
 
 /**
  * Handle form submission for login
- * @param {Event} event - The submit event
+ * @param {Event} e - The submit event
  */
-async function handleLogin(event) {
-  event.preventDefault();
+async function handleLogin(e) {
+  e.preventDefault();
 
-  // Prevent multiple submissions
   if (isLoggingIn) return;
+  isLoggingIn = true;
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  // Show loading state
   const loginButton = document.getElementById("login-button");
-  const rememberMe = document.getElementById("remember").checked;
-
-  // Validate inputs
-  const emailValid = validateInput(document.getElementById("email"));
-  const passwordValid = validateInput(document.getElementById("password"));
-
-  if (!email || !password) {
-    showError("Please enter both email and password");
-    return;
-  }
-
-  if (!emailValid || !passwordValid) {
-    showError("Please fix the errors before logging in");
-    return;
-  }
+  const originalText = loginButton.textContent;
+  loginButton.disabled = true;
+  loginButton.textContent = "Logging in...";
 
   try {
-    isLoggingIn = true;
-    loginButton.disabled = true;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const rememberMeElem = document.getElementById("remember-me");
+    const rememberMe = rememberMeElem ? rememberMeElem.checked : false;
 
-    // Store original button content
-    const originalButtonHtml = loginButton.innerHTML;
+    console.log(`Attempting login with: ${email}, remember: ${rememberMe}`);
 
-    // Update button text
-    loginButton.innerHTML = '<span class="btn-text">Processing</span>';
-
-    // Show loader overlay
-    const loaderOverlay = document.getElementById("loader-overlay");
-    loaderOverlay.classList.add("active");
-
-    // Add loading text with dots animation
-    const loadingText = document.querySelector(".loading-text");
-    loadingText.textContent = "Authenticating";
-
-    setTimeout(() => {
-      loadingText.textContent = "Checking permissions";
-    }, 1500);
-
-    // Debugging
-    console.log("Attempting login with:", {
-      email,
-      online: isOnline,
-      rememberMe,
-    });
-
-    let result;
-    try {
-      // Pass online status to login function
-      result = await window.api.loginUser({
-        email,
-        password,
-        isOnline,
-        remember: rememberMe,
-      });
-      console.log("Login result:", result);
-    } catch (loginError) {
-      console.error("Error from loginUser:", loginError);
-      throw loginError;
+    let onlineStatus;
+    if (window.api && typeof window.api.getOnlineStatus === "function") {
+      onlineStatus = await window.api.getOnlineStatus();
+      console.log(`Online status from API: ${onlineStatus}`);
+    } else {
+      onlineStatus = navigator.onLine;
+      console.log(
+        "window.api not available, using navigator.onLine:",
+        onlineStatus
+      );
     }
 
-    // Simulate a slight delay for better UX
-    await new Promise((resolve) => setTimeout(resolve, 1800));
-
-    // Update loading text
-    loadingText.textContent = "Almost there";
-
-    // Add another small delay
-    await new Promise((resolve) => setTimeout(resolve, 700));
-
-    // Add null/undefined check before accessing properties
-    if (result && result.success) {
-      // Success - show success message in loading overlay
-      loadingText.textContent = "Success!";
-      loadingText.style.color = "var(--success-color)";
-
-      // Update the loading spinner to a checkmark
-      const spinner = document.querySelector(".spinner");
-      spinner.innerHTML =
-        '<i class="fas fa-check" style="font-size: 24px; color: var(--success-color);"></i>';
-      spinner.style.border = "none";
-      spinner.style.animation = "none";
-
-      // Redirect based on user role after a short delay
-      setTimeout(() => {
-        if (result.user && result.user.role === "admin") {
-          window.location.href = "../index.html";
-        } else if (result.user && result.user.role === "manager") {
-          window.location.href = "inventory.html";
-        } else {
-          window.location.href = "billing.html";
-        }
-      }, 1000);
-    } else {
-      // Hide loader
-      loaderOverlay.classList.remove("active");
-
-      // Reset button
-      loginButton.innerHTML = originalButtonHtml;
-
-      // Handle null or undefined result
-      if (!result) {
-        showError("Login failed - no response from server");
-      } else {
-        showError(
-          result.message || "Login failed. Please check your credentials."
-        );
+    // Try direct Firebase auth if online
+    if (onlineStatus) {
+      try {
+        console.log("Testing direct Firebase connection");
+        const testResult = await window.api.testFirebaseAuth({
+          email,
+          password,
+        });
+        console.log("Firebase direct auth result:", testResult);
+      } catch (firebaseError) {
+        console.error("Firebase test error:", firebaseError);
       }
+    }
+
+    // Actual login attempt
+    const result = await window.api.loginUser({
+      email,
+      password,
+      rememberMe,
+      online: onlineStatus,
+    });
+
+    console.log("Login result:", result);
+
+    if (result.success) {
+      if (rememberMe) {
+        localStorage.setItem("remembered_email", email);
+      }
+
+      // Set flag to show sync dialog after login
+      sessionStorage.setItem("justLoggedIn", "true");
+
+      window.location.href = "../index.html";
+    } else {
+      showError(
+        result.message || "Login failed. Please check your credentials."
+      );
     }
   } catch (error) {
     console.error("Login error:", error);
-    showError("An error occurred during login. Please try again.");
-
-    // Hide loader
-    document.getElementById("loader-overlay").classList.remove("active");
+    showError("Login error: " + (error.message || "Unknown error"));
   } finally {
     loginButton.disabled = false;
+    loginButton.textContent = originalText;
     isLoggingIn = false;
   }
 }
@@ -588,4 +570,89 @@ function showError(message) {
       errorEl.style.opacity = "1";
     }, 300);
   }, 5000);
+}
+
+/**
+ * Test Firebase authentication directly
+ */
+function testFirebaseAuthDirectly() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    showError("Please enter both email and password to test authentication");
+    return;
+  }
+
+  // Show loading state
+  const testButton = document.createElement("button");
+  testButton.id = "test-auth-button";
+  testButton.textContent = "Testing...";
+  testButton.disabled = true;
+  testButton.style.position = "fixed";
+  testButton.style.bottom = "10px";
+  testButton.style.right = "10px";
+  testButton.style.padding = "8px 16px";
+  testButton.style.backgroundColor = "#f1f1f1";
+  testButton.style.border = "none";
+  testButton.style.borderRadius = "4px";
+  testButton.style.cursor = "not-allowed";
+  document.body.appendChild(testButton);
+
+  // Attempt to test Firebase auth directly
+  window.api
+    .testFirebaseAuth({ email, password })
+    .then((result) => {
+      console.log("Direct Firebase auth test result:", result);
+      if (result.success) {
+        testButton.textContent = "Auth Test: SUCCESS";
+        testButton.style.backgroundColor = "#4CAF50";
+        testButton.style.color = "white";
+
+        // Show detailed success info
+        showNotification(
+          "Firebase auth test succeeded! User: " + result.user.email
+        );
+      } else {
+        testButton.textContent = "Auth Test: FAILED";
+        testButton.style.backgroundColor = "#F44336";
+        testButton.style.color = "white";
+
+        // Show error details
+        showError(
+          `Firebase auth error: ${result.code || "unknown"} - ${
+            result.message || "No message"
+          }`
+        );
+      }
+    })
+    .catch((error) => {
+      console.error("Error during Firebase auth test:", error);
+      testButton.textContent = "Auth Test: ERROR";
+      testButton.style.backgroundColor = "#FF9800";
+      testButton.style.color = "white";
+
+      showError("Firebase test failed: " + (error.message || "Unknown error"));
+    })
+    .finally(() => {
+      // Remove the button after 5 seconds
+      setTimeout(() => {
+        if (document.body.contains(testButton)) {
+          document.body.removeChild(testButton);
+        }
+      }, 5000);
+    });
+}
+
+/**
+ * Check remembered user
+ */
+function checkRememberedUser() {
+  const rememberedUser = localStorage.getItem("rememberedUser");
+  if (rememberedUser) {
+    const emailInput = document.getElementById("email");
+    if (emailInput) {
+      emailInput.value = rememberedUser;
+    }
+  }
 }

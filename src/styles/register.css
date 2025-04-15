@@ -2,451 +2,481 @@
 
 /* Register container with gradient background */
 .register-container {
-    padding: 2.5rem;
-    min-height: calc(100vh - 70px);
-    overflow-y: auto;
-    background: linear-gradient(135deg, var(--base-300) 0%, var(--base-200) 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.3s ease;
+  padding: 2.5rem;
+  min-height: calc(100vh - 70px);
+  overflow-y: auto;
+  background: linear-gradient(135deg, var(--base-300) 0%, var(--base-200) 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
 }
 
 /* Register form container with subtle animations */
 .register-form-container {
-    background-color: var(--base-100);
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
-    padding: 2.5rem;
-    position: relative;
-    overflow: hidden;
-    animation: slideInUp 0.5s ease-out;
-    border: 1px solid rgba(99, 102, 241, 0.1);
+  background-color: var(--base-100);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.5s ease-out;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  margin-top: auto;
 }
 
 /* Decorative element */
 .register-form-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-    z-index: 1;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  z-index: 1;
 }
 
 .register-form-container h2 {
-    margin-bottom: 2rem;
-    color: var(--text-primary);
-    font-size: 1.75rem;
-    font-weight: 700;
-    text-align: center;
-    position: relative;
-    padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-align: center;
+  position: relative;
+  padding-bottom: 1rem;
 }
 
 .register-form-container h2::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 3px;
-    background-color: var(--primary);
-    border-radius: 3px;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 3px;
+  background-color: var(--primary);
+  border-radius: 3px;
 }
-
 
 /* Form group with floating labels */
 .form-group {
-    margin-bottom: 1.75rem;
-    position: relative;
-    transition: all 0.3s ease;
+  margin-bottom: 1.75rem;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 0.6rem;
-    font-weight: 500;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    transform-origin: left;
+  display: block;
+  margin-bottom: 0.6rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  transform-origin: left;
 }
 
 .form-group input,
 .form-group select {
-    width: 100%;
-    padding: 0.85rem 1rem;
-    border: 1.5px solid var(--base-300);
-    border-radius: 8px;
-    font-size: 1rem;
-    background-color: var(--base-200);
-    color: var(--text-primary);
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid var(--base-300);
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: var(--base-200);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .form-group input:focus,
 .form-group select:focus {
-    border-color: var(--primary);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-    transform: translateY(-2px);
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  transform: translateY(-2px);
 }
 
 .form-group input::placeholder {
-    color: var(--text-tertiary);
-    opacity: 0.7;
+  color: var(--text-tertiary);
+  opacity: 0.7;
 }
 
 /* Form icons for inputs */
 .form-group {
-    position: relative;
+  position: relative;
 }
 
 .form-group::before {
-    position: absolute;
-    right: 1rem;
-    top: 2.6rem;
-    color: var(--text-tertiary);
-    opacity: 0.7;
-    transition: all 0.2s ease;
-    z-index: 2;
+  position: absolute;
+  right: 1rem;
+  top: 2.6rem;
+  color: var(--text-tertiary);
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  z-index: 2;
 }
 
 .form-group:nth-of-type(1)::before {
-    content: '👤';
+  content: "👤";
 }
 
 .form-group:nth-of-type(2)::before {
-    content: '📧';
+  content: "📧";
 }
 
 .form-group:nth-of-type(3)::before {
-    content: '🔒';
+  content: "🔒";
 }
 
 .form-group:nth-of-type(4)::before {
-    content: '🔑';
+  content: "🔑";
 }
 
 .form-group:focus-within::before {
-    color: var(--primary);
-    opacity: 1;
+  color: var(--primary);
+  opacity: 1;
 }
 
 /* Select styling */
 .form-group select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236366F1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    background-size: 16px;
-    padding-right: 2.5rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236366F1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 16px;
+  padding-right: 2.5rem;
 }
 
 /* Button styles */
 .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.85rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-    width: 100%;
-    letter-spacing: 0.03em;
-    position: relative;
-    overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+  width: 100%;
+  letter-spacing: 0.03em;
+  position: relative;
+  overflow: hidden;
 }
 
 .primary-btn {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-focus) 100%);
-    color: white;
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-focus) 100%
+  );
+  color: white;
 }
 
 .primary-btn:hover {
-    background: linear-gradient(135deg, var(--primary-focus) 0%, var(--primary) 100%);
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
-    transform: translateY(-2px);
+  background: linear-gradient(
+    135deg,
+    var(--primary-focus) 0%,
+    var(--primary) 100%
+  );
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
 }
 
 .primary-btn:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
 .primary-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
 }
 
 /* Button ripple effect */
 .primary-btn::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 5px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.5);
-    opacity: 0;
-    border-radius: 100%;
-    transform: scale(1, 1) translate(-50%);
-    transform-origin: 50% 50%;
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
 }
 
 .primary-btn:focus:not(:active)::after {
-    animation: ripple 1s ease-out;
+  animation: ripple 1s ease-out;
 }
 
 /* Error message display with animation */
 .error-message {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
-    padding: 1rem 1.25rem;
-    border-radius: 8px;
-    margin-bottom: 1.75rem;
-    font-size: 0.9rem;
-    display: none;
-    border-left: 4px solid var(--danger);
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
-    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  margin-bottom: 1.75rem;
+  font-size: 0.9rem;
+  display: none;
+  border-left: 4px solid var(--danger);
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 /* Success message */
 .error-message.success {
-    background-color: rgba(16, 185, 129, 0.1);
-    color: var(--success);
-    border-left: 4px solid var(--success);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
-    animation: slideInDown 0.5s ease;
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border-left: 4px solid var(--success);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+  animation: slideInDown 0.5s ease;
 }
 
 /* Dark mode enhanced styles */
 .dark-mode .register-container {
-    background: linear-gradient(135deg, var(--base-200) 0%, var(--base-300) 100%);
+  background: linear-gradient(135deg, var(--base-200) 0%, var(--base-300) 100%);
 }
 
 .dark-mode .register-form-container {
-    background-color: var(--base-200);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  background-color: var(--base-200);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
 .dark-mode .form-group input,
 .dark-mode .form-group select {
-    background-color: var(--base-100);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  background-color: var(--base-100);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .dark-mode .form-group input:focus,
 .dark-mode .form-group select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
 }
 
 .dark-mode .form-group input::placeholder {
-    color: var(--text-tertiary);
+  color: var(--text-tertiary);
 }
 
 .dark-mode .error-message {
-    background-color: rgba(239, 68, 68, 0.2);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background-color: rgba(239, 68, 68, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .dark-mode .error-message.success {
-    background-color: rgba(16, 185, 129, 0.2);
+  background-color: rgba(16, 185, 129, 0.2);
 }
 
 .dark-mode .connection-status {
-    background-color: var(--base-300);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  background-color: var(--base-300);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .dark-mode .btn {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .register-container {
-        padding: 1.5rem;
-    }
+  .register-container {
+    padding: 1.5rem;
+  }
 
-    .register-form-container {
-        padding: 2rem;
-        border-radius: 12px;
-    }
+  .register-form-container {
+    padding: 2rem;
+    border-radius: 12px;
+  }
 
-    .register-form-container h2 {
-        font-size: 1.5rem;
-    }
+  .register-form-container h2 {
+    font-size: 1.5rem;
+  }
 
-    .form-group input,
-    .form-group select {
-        padding: 0.75rem 0.9rem;
-    }
+  .form-group input,
+  .form-group select {
+    padding: 0.75rem 0.9rem;
+  }
 }
 
 @media (max-width: 480px) {
-    .register-container {
-        padding: 1rem;
-    }
+  .register-container {
+    padding: 1rem;
+  }
 
-    .register-form-container {
-        padding: 1.5rem;
-    }
+  .register-form-container {
+    padding: 1.5rem;
+  }
 
-    .register-form-container h2 {
-        font-size: 1.35rem;
-        margin-bottom: 1.5rem;
-    }
+  .register-form-container h2 {
+    font-size: 1.35rem;
+    margin-bottom: 1.5rem;
+  }
 
-    .form-group {
-        margin-bottom: 1.25rem;
-    }
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
 
-    .connection-status {
-        position: relative;
-        top: auto;
-        right: auto;
-        margin-bottom: 1rem;
-        justify-content: center;
-        width: fit-content;
-        margin-left: auto;
-        margin-right: auto;
-    }
+  .connection-status {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 1rem;
+    justify-content: center;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 /* Animations */
 @keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); opacity: 0.4; }
-    50% { transform: scale(2); opacity: 0; }
-    100% { transform: scale(1); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
 }
 
 @keyframes shake {
-    10%, 90% { transform: translateX(-1px); }
-    20%, 80% { transform: translateX(2px); }
-    30%, 50%, 70% { transform: translateX(-3px); }
-    40%, 60% { transform: translateX(3px); }
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-3px);
+  }
+  40%,
+  60% {
+    transform: translateX(3px);
+  }
 }
 
 @keyframes ripple {
-    0% {
-        transform: scale(0, 0);
-        opacity: 0.5;
-    }
-    20% {
-        transform: scale(25, 25);
-        opacity: 0.3;
-    }
-    100% {
-        opacity: 0;
-        transform: scale(40, 40);
-    }
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
 }
 
 /* Focus indication for accessibility */
 .form-group input:focus-visible,
 .form-group select:focus-visible,
 .btn:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 /* RTL Support for Form Icons */
 
 /* Default LTR behavior - icons on the right */
 .form-group::before {
-    position: absolute;
-    right: 1rem;
-    left: auto;
-    top: 2.6rem;
-    color: var(--text-tertiary);
-    opacity: 0.7;
-    transition: all 0.2s ease;
-    z-index: 2;
+  position: absolute;
+  right: 1rem;
+  left: auto;
+  top: 2.6rem;
+  color: var(--text-tertiary);
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  z-index: 2;
 }
 
 /* RTL behavior - icons on the left */
 html.rtl .form-group::before,
 body.rtl-layout .form-group::before {
-    right: auto;
-    left: 1rem;
+  right: auto;
+  left: 1rem;
 }
 
 /* RTL support for select dropdown arrow */
 html.rtl .form-group select,
 body.rtl-layout .form-group select {
-    background-position: left 1rem center;
-    padding-right: 1rem;
-    padding-left: 2.5rem;
+  background-position: left 1rem center;
+  padding-right: 1rem;
+  padding-left: 2.5rem;
 }
 
 /* RTL support for form padding adjustment */
 html.rtl .form-group input,
 body.rtl-layout .form-group input {
-    padding-right: 2.5rem;
-    padding-left: 1rem;
+  padding-right: 2.5rem;
+  padding-left: 1rem;
 }
 
 html.ltr .form-group input {
-    padding-right: 2.5rem;
-    padding-left: 1rem;
+  padding-right: 2.5rem;
+  padding-left: 1rem;
 }
 
 /* RTL support for labels */
 html.rtl .form-group label,
 body.rtl-layout .form-group label {
-    transform-origin: right;
+  transform-origin: right;
 }
 
 /* RTL support for error message */
 html.rtl .error-message,
 body.rtl-layout .error-message {
-    border-left: none;
-    border-right: 4px solid var(--danger);
+  border-left: none;
+  border-right: 4px solid var(--danger);
 }
 
 html.rtl .error-message.success,
 body.rtl-layout .error-message.success {
-    border-left: none;
-    border-right: 4px solid var(--success);
+  border-left: none;
+  border-right: 4px solid var(--success);
 }

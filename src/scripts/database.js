@@ -1,18 +1,6 @@
-const { initializeApp } = require("firebase/app");
-const {
-  getFirestore,
-  collection,
-  doc,
-  setDoc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  enableIndexedDbPersistence,
-} = require("firebase/firestore");
+const { db } = require("../services/firebase-core");
 const { v4: uuidv4 } = require("uuid");
+const path = require("path");
 // Determine environment path
 const envPath =
   process.env.NODE_ENV === "production"
@@ -20,29 +8,6 @@ const envPath =
     : path.join(__dirname, "..", ".env");
 
 require("dotenv").config({ path: envPath });
-
-// Your Firebase configuration
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// Enable offline persistence
-enableIndexedDbPersistence(db)
-  .then(() => {
-    console.log("Offline persistence enabled");
-  })
-  .catch((err) => {
-    console.error("Error enabling offline persistence:", err.code, err.message);
-  });
 
 // Fallback local storage using electron-store for complete offline scenarios
 const Store = require("electron-store");

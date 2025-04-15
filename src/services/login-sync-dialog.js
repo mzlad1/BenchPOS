@@ -383,3 +383,7 @@ function showReAuthDialog(email, callbackChannel) {
 
 // Export the function
 window.showReAuthDialog = showReAuthDialog;
+
+// At the end of your file, make sure these are properly exported
+window.showUnsyncedDataDialog = showUnsyncedDataDialog;
+window.initLoginSyncDialog = initLoginSyncDialog;

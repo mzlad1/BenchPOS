@@ -1,9 +1,8 @@
 // services/firebase.js
-const { initializeApp } = require("firebase/app");
+const { db, app, auth, isFirebaseConfigured } = require("./firebase-core");
 const { sendPasswordResetEmail } = require("firebase/auth");
 
 const {
-  getFirestore,
   collection,
   doc,
   setDoc,
@@ -16,13 +15,11 @@ const {
   onSnapshot,
   enableIndexedDbPersistence,
   CACHE_SIZE_UNLIMITED,
-  initializeFirestore,
 } = require("firebase/firestore");
 
-const { getAuth } = require("firebase/auth");
 const ElectronStore = require("electron-store");
 const localStore = new ElectronStore({ name: "shop-billing-local-data" });
-const { firebaseConfig, isFirebaseConfigured } = require("../config");
+const { firebaseConfig } = require("../config");
 
 // Variables for tracking status
 let isSyncing = false;
@@ -30,30 +27,42 @@ let isOnline = false;
 let lastSyncTime = null;
 let firebaseInitialized = false;
 let syncListeners = [];
-// Initialize Firebase
-let app;
-let db;
-let auth;
 
-try {
-  if (isFirebaseConfigured()) {
-    app = initializeApp(firebaseConfig);
+// Replace your current checkFirebaseConfig function with this:
 
-    // Use initializeFirestore instead of getFirestore and settings
-    db = initializeFirestore(app, {
-      cacheSizeBytes: CACHE_SIZE_UNLIMITED,
-    });
+function checkFirebaseConfig() {
+  try {
+    // Import firebase-core directly instead of trying to use getConfig()
+    const firebaseCore = require("./firebase-core");
 
-    auth = getAuth(app);
-    console.log("Firebase app initialized with custom settings");
-  } else {
-    console.warn("Firebase not properly configured, using local storage only");
+    // Access the firebaseConfig from the module if it's exposed
+    const config = firebaseCore.firebaseConfig || {};
+
+    // Alternatively check if Firebase is initialized by checking auth/db
+    const isInitialized = !!firebaseCore.auth || !!firebaseCore.db;
+
+    console.log("Firebase Config Check:");
+    console.log(`- Firebase initialized: ${isInitialized ? "Yes" : "No"}`);
+    console.log(`- API Key valid: ${config.apiKey ? "Yes" : "No"}`);
+
+    if (
+      firebaseCore.isFirebaseConfigured &&
+      typeof firebaseCore.isFirebaseConfigured === "function"
+    ) {
+      console.log(
+        `- Firebase properly configured: ${
+          firebaseCore.isFirebaseConfigured() ? "Yes" : "No"
+        }`
+      );
+    }
+
+    return isInitialized;
+  } catch (error) {
+    console.error("Firebase config error:", error);
+    return false;
   }
-} catch (error) {
-  console.error("Error initializing Firebase app:", error);
 }
 
-// Initialize Firebase with offline persistence
 // Initialize Firebase with offline persistence
 const initializeFirebase = async () => {
   try {
@@ -64,6 +73,9 @@ const initializeFirebase = async () => {
       );
       return false;
     }
+
+    // Call this during initialization
+    checkFirebaseConfig();
 
     // Check if app is initialized
     if (!app || !db || !auth) {
@@ -571,113 +583,37 @@ module.exports = {
  * @param {Object} auth - Firebase auth instance
  * @returns {Promise<boolean>} - Authentication result
  */
-const ensureFirebaseAuth = async (auth) => {
-  try {
-    // If already authenticated with Firebase, we're good
+async function ensureFirebaseAuth(auth) {
+  return new Promise(async (resolve) => {
+    // Check if we're already authenticated
     if (auth.currentUser) {
-      console.log("Firebase already authenticated");
-      return true;
+      console.log("User already authenticated with Firebase");
+      resolve(true);
+      return;
     }
 
-    console.log("Attempting to restore Firebase authentication");
+    console.log("No authenticated user, attempting to authenticate");
 
-    // Get stored credentials from secure store
-    const secureStore = require("./secureStore");
-    const credentials = secureStore.load();
-
-    if (!credentials || !credentials.email) {
-      console.log("No stored credentials found");
-      return false;
+    try {
+      // Properly using the global callback approach
+      if (global.requestFirebaseAuth) {
+        const authResult = await global.requestFirebaseAuth();
+        if (authResult && authResult.success) {
+          console.log("Firebase authentication successful via global callback");
+          resolve(true);
+        } else {
+          console.log("Firebase authentication failed via global callback");
+          resolve(false);
+        }
+      } else {
+        console.warn(
+          "No firebase auth callback registered, cannot authenticate"
+        );
+        resolve(false);
+      }
+    } catch (error) {
+      console.error("Error ensuring Firebase auth:", error);
+      resolve(false);
     }
-
-    // Get local authentication
-    const ElectronStore = require("electron-store");
-    const localStore = new ElectronStore({ name: "shop-billing-local-data" });
-    const users = localStore.get("users") || [];
-    const localUser = users.find((u) => u.email === credentials.email);
-
-    if (!localUser) {
-      console.log("Local user not found for stored credentials");
-      return false;
-    }
-
-    // Try to sign in with Firebase
-    const { signInWithEmailAndPassword } = require("firebase/auth");
-
-    // We need the plaintext password which isn't stored
-    // Instead, we'll show a reauthentication dialog to the user
-    const { BrowserWindow } = require("electron");
-    const mainWindow = BrowserWindow.getAllWindows()[0];
-
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      // Send event to renderer to show re-auth dialog
-      mainWindow.webContents.send("show-reauth-dialog", {
-        email: credentials.email,
-        callback: "firebase-auth-callback",
-      });
-
-      // Set up one-time listener for the password response
-      return new Promise((resolve) => {
-        const { ipcMain } = require("electron");
-
-        const authResponseHandler = async (
-          event,
-          { email, password, cancelled }
-        ) => {
-          // Remove the listener
-          ipcMain.removeHandler("firebase-auth-callback");
-
-          if (cancelled) {
-            console.log("Re-authentication cancelled by user");
-            resolve(false);
-            return;
-          }
-
-          try {
-            // Try to authenticate with Firebase
-            const userCredential = await signInWithEmailAndPassword(
-              auth,
-              email,
-              password
-            );
-            console.log("Re-authentication successful");
-
-            // Update secure store with new tokens
-            if (userCredential.user) {
-              secureStore.save({
-                uid: userCredential.user.uid,
-                email: userCredential.user.email,
-                displayName: credentials.displayName || localUser.name,
-                role: credentials.role || localUser.role,
-                tokens: {
-                  accessToken: userCredential.user.accessToken,
-                  refreshToken: userCredential.user.refreshToken,
-                },
-                lastLogin: new Date().toISOString(),
-              });
-            }
-
-            resolve(true);
-          } catch (error) {
-            console.error("Firebase re-authentication failed:", error);
-
-            // Notify the user about the auth failure
-            mainWindow.webContents.send("auth-error", {
-              message:
-                "Firebase authentication failed. Please try logging out and back in.",
-            });
-
-            resolve(false);
-          }
-        };
-
-        ipcMain.handle("firebase-auth-callback", authResponseHandler);
-      });
-    }
-
-    return false;
-  } catch (error) {
-    console.error("Error ensuring Firebase authentication:", error);
-    return false;
-  }
-};
+  });
+}

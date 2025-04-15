@@ -3,11 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MZLAD billing app - Premium Login</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    <!-- Completely revised CSP that's more permissive for stylesheets -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; 
+               script-src 'self'; 
+               style-src * 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; 
+               font-src 'self' https://fonts.gstatic.com data:; 
+               img-src 'self' data:;"
     />
+
+    <title>MZLAD billing app - Premium Login</title>
+    <link rel="stylesheet" href="../assets/fonts/fontawesome/css/all.min.css" />
     <link rel="stylesheet" href="../styles/login.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -123,7 +130,7 @@
                     required
                     autocomplete="email"
                   />
-                  <i class="fas fa-envelope"></i>
+                  <i class="fas fa-envelope icon-main"></i>
                   <div class="validation-indicator">
                     <i class="fas fa-check"></i>
                   </div>

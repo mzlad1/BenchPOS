@@ -4,8 +4,8 @@
   "description": "Offline-ready shop billing and inventory management system",
   "main": "src/index.js",
   "scripts": {
-    "start": "set NODE_ENV=development && electron .",
-    "dev": "electron .",
+    "start": "cross-env NODE_ENV=development electron .",
+    "dev": "cross-env NODE_ENV=development electron .",
     "pack": "electron-builder --dir",
     "dev:inspect": "electron . --inspect",
     "build": "set NODE_ENV=production && electron-builder",
@@ -21,13 +21,14 @@
     "electron",
     "firebase"
   ],
-  "author": "Your Name",
+  "author": "mzlad",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "chart.js": "^4.4.8",
     "dotenv": "^16.4.7",
     "electron-store": "^8.1.0",
-    "firebase": "^10.7.0",
+    "firebase": "^10.14.1",
     "moment": "^2.29.4",
     "uuid": "^9.0.0"
   },
@@ -38,21 +39,19 @@
     "electron-reload": "^1.5.0"
   },
   "build": {
-    "appId": "com.yourdomain.mzlad",
+    "appId": "com.mzlad.POS",
     "productName": "mzlad",
     "extraResources": [
-      {
-        "from": ".env.production",
-        "to": ".env"
-      }
+      ".env"
     ],
     "directories": {
       "output": "dist"
     },
     "files": [
       "src/**/*",
-      "node_modules/**/*",
-      "package.json"
+      "package.json",
+      ".env",
+      "!**/node_modules/*"
     ],
     "win": {
       "target": "nsis",

@@ -504,9 +504,6 @@ body {
   overflow: hidden;
 }
 
-
-
-
 /* Decorative element */
 .barcode-form::before {
   content: "";
@@ -1193,7 +1190,6 @@ body {
 }
 
 .empty-cart td::after {
-  content: "Items you add will appear here";
   display: block;
   font-size: 0.9rem;
   margin-top: 0.5rem;
@@ -1479,7 +1475,7 @@ body {
   background-color: var(--card-bg);
   border-radius: var(--rounded-xl);
   overflow: hidden;
-  border: 1px solid ;
+  border: 1px solid;
   margin-bottom: var(--spacing-lg);
   transform: translateZ(0); /* Hardware acceleration for smooth animations */
   transition: box-shadow var(--transition-slow),
@@ -1487,7 +1483,6 @@ body {
 }
 
 /* Add subtle highlight on hover */
-
 
 /* Individual summary rows */
 .summary-row {

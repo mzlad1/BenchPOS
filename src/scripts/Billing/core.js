@@ -36,9 +36,9 @@ function formatDate(date) {
   // Use the template from translations for different locales
   const format = window.t("billing.core.dateFormat");
   return format
-      .replace("{month}", month)
-      .replace("{day}", day)
-      .replace("{year}", year);
+    .replace("{month}", month)
+    .replace("{day}", day)
+    .replace("{year}", year);
 }
 // Initialize the page
 async function initPage() {
@@ -120,7 +120,8 @@ async function checkPermission() {
 
     const userNameElement = document.getElementById("current-user-name");
     if (userNameElement) {
-      userNameElement.textContent = user.name || window.t("billing.core.userGreeting");
+      userNameElement.textContent =
+        user.name || window.t("billing.core.userGreeting");
     }
 
     if (window.location.pathname.includes("inventory.html")) {
@@ -150,6 +151,12 @@ async function updateConnectionStatus() {
   const indicator = document.getElementById("connection-indicator");
   const statusText = document.getElementById("connection-text");
 
+  // Add null check - exit early if elements don't exist
+  if (!indicator || !statusText) {
+    console.warn("Connection status elements not found in the DOM");
+    return;
+  }
+
   try {
     let isOnline = navigator.onLine;
     if (window.api && typeof window.api.getOnlineStatus === "function") {
@@ -167,8 +174,15 @@ async function updateConnectionStatus() {
     }
   } catch (error) {
     console.error("Error checking online status:", error);
-    indicator.classList.remove("online");
-    indicator.classList.add("offline");
-    statusText.textContent = window.t("billing.core.offlineMode");
+
+    // Add null checks here too
+    if (indicator) {
+      indicator.classList.remove("online");
+      indicator.classList.add("offline");
+    }
+
+    if (statusText) {
+      statusText.textContent = window.t("billing.core.offlineMode");
+    }
   }
 }

@@ -83,7 +83,7 @@
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
   background-color: var(--base-300);
   color: var(--text-primary);
   line-height: 1.5;
@@ -1806,7 +1806,6 @@ body[class*="dark"] .sync-actions .btn:focus {
 
 /* Ensure numeric columns remain properly aligned */
 
-
 /* Fix arrows and icons in RTL */
 .rtl-layout .select-wrapper::after {
   right: auto;
@@ -2027,18 +2026,18 @@ body.rtl-layout .chart-container canvas {
   gap: 5px;
   justify-content: center;
 }
-html.rtl .shortcuts-table td{
-    text-align: right;
+html.rtl .shortcuts-table td {
+  text-align: right;
 }
-html.rtl #invoices-table td{
-    text-align: right;
+html.rtl #invoices-table td {
+  text-align: right;
 }
-.rtl-layout table.report-table th, .rtl-layout table.report-table td {
-   text-align: right;
-    direction: rtl;
-    white-space: nowrap;
+.rtl-layout table.report-table th,
+.rtl-layout table.report-table td {
+  text-align: right;
+  direction: rtl;
+  white-space: nowrap;
 }
-
 
 /* RTL language overrides (like Arabic) */
 html[dir="rtl"] .sync-container {

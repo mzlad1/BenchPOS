@@ -882,6 +882,7 @@
     "profile": "Profile",
     "settings": "Account Settings",
     "logout": "Logout",
+    "confirmLogout": "Are you sure you want to log out?",
     "roles": {
       "admin": "Administrator",
       "manager": "Manager",

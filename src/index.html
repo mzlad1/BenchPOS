@@ -5,12 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline';"
+      content="default-src 'self'; 
+           script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; 
+           style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
+           font-src 'self' https://fonts.gstatic.com data:;
+           img-src 'self' data:;"
     />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="./js/chart.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script> -->
     <title data-i18n="dashboard.pageTitle">MZLAD Billing System</title>
     <link rel="stylesheet" href="styles/global.css" />
     <link rel="stylesheet" href="styles/index.css" />
+    <script src="../scripts/index.js" defer></script>
   </head>
   <body class="light-mode">
     <div class="app-container">
@@ -427,3 +434,4 @@
     </script>
   </body>
 </html>
+```

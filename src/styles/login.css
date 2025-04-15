@@ -695,6 +695,47 @@ h2 {
   color: var(--primary-color);
 }
 
+/* Add or update these styles for better icon alignment */
+
+.input-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.input-group i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 16px;
+  transition: all 0.3s ease;
+  pointer-events: none; /* Prevents the icon from interfering with input clicks */
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px 12px 45px; /* Increased left padding to make room for icon */
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+/* Make icons change color when input is focused */
+.input-group input:focus + i,
+.input-group input:focus ~ i {
+  color: var(--primary);
+}
+
+/* Improved placeholder styling */
+.input-group input::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.7;
+}
+
 /* Password Toggle */
 .password-toggle {
   position: absolute;
@@ -721,7 +762,6 @@ h2 {
 /* Validation Indicator */
 .validation-indicator {
   position: absolute;
-  right: 15px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--success-color);
@@ -1182,4 +1222,28 @@ h2 {
   .forgot-link {
     margin-left: 30px;
   }
+}
+
+/* Additional styling improvements */
+
+/* Form spacing */
+.login-form {
+  margin-bottom: 2rem;
+}
+
+/* Better button hover effects */
+.btn-primary {
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Better focus states for inputs */
+.input-group input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.25);
+  outline: none;
 }

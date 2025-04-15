@@ -1,19 +1,22 @@
+const Chart = require("chart.js/auto");
 const { app, BrowserWindow, ipcMain, Menu, screen } = require("electron");
 const path = require("path");
 const { collection, query, where, getDocs } = require("firebase/firestore");
 const fs = require("fs");
 const Store = require("electron-store");
 const { doc, getDoc, deleteDoc, setDoc } = require("firebase/firestore");
-
+const https = require("https");
 const localStore = new Store({
   name: "shop-billing-local-data",
 });
 // Load database service
 let dbService = null;
+// Variables for tracking status
+let isOnline = false;
+let db = null;
 try {
-  dbService = require("./database");
+  dbService = require(path.join(__dirname, "scripts", "database"));
   console.log("Database service loaded successfully");
-
   // Make the db variable available to other modules
   db = dbService.db;
 } catch (error) {
@@ -49,6 +52,118 @@ try {
     getLastSyncTime: () => null,
   };
 }
+
+// Add near the top where you initialize services (around line 100)
+
+// Create a global auth request handler that firebase.js can use
+global.requestFirebaseAuth = async () => {
+  return new Promise((resolve) => {
+    if (!mainWindow || mainWindow.isDestroyed()) {
+      console.log("No window available for auth request");
+      resolve({ success: false, message: "No window available" });
+      return;
+    }
+
+    // Generate a unique callback channel with timestamp and random value for uniqueness
+    const callbackChannel = `firebase-auth-callback-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
+    console.log(
+      "🔑 Setting up auth callback handler for channel:",
+      callbackChannel
+    );
+
+    // Set up a one-time handler with more robust error handling
+    ipcMain.handleOnce(callbackChannel, async (event, credentials) => {
+      console.log(
+        "Received auth callback response:",
+        credentials ? "has credentials" : "no credentials"
+      );
+
+      if (!credentials || !credentials.email) {
+        console.log("No valid credentials provided, auth failed");
+        resolve({ success: false, message: "No valid credentials provided" });
+        return { success: false };
+      }
+
+      try {
+        // Add a debugging log to verify the auth object is available
+        let auth;
+        try {
+          const { auth: firebaseAuth } = require("./services/firebase-core");
+          auth = firebaseAuth;
+        } catch (error) {
+          console.error("Failed to import Firebase auth:", error);
+          resolve({
+            success: false,
+            message: "Firebase auth module not available",
+          });
+          return { success: false };
+        }
+
+        if (!auth) {
+          console.error("Firebase auth object is not available!");
+          resolve({
+            success: false,
+            message: "Firebase not properly initialized",
+          });
+          return { success: false };
+        }
+
+        console.log(
+          "Attempting Firebase sign in with email:",
+          credentials.email
+        );
+
+        let signInWithEmailAndPassword;
+        try {
+          const authModule = require("firebase/auth");
+          signInWithEmailAndPassword = authModule.signInWithEmailAndPassword;
+        } catch (error) {
+          console.error("Failed to import signInWithEmailAndPassword:", error);
+          resolve({
+            success: false,
+            message: "Firebase auth method not available",
+          });
+          return { success: false };
+        }
+
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          credentials.email,
+          credentials.password
+        );
+
+        console.log("✅ Firebase auth successful:", userCredential.user.email);
+        resolve({ success: true, user: userCredential.user });
+        return { success: true };
+      } catch (error) {
+        console.error("❌ Firebase auth error:", error.code, error.message);
+        resolve({ success: false, error: error.message });
+        return { success: false, error: error.message };
+      }
+    });
+
+    // Send the request to the renderer with timeout handling
+    console.log(
+      "📤 Sending auth request to renderer with channel:",
+      callbackChannel
+    );
+
+    // Before sending the request, ensure we're ready to receive the response
+    setTimeout(() => {
+      mainWindow.webContents.send("request-firebase-auth", callbackChannel);
+    }, 100);
+
+    // Set a shorter timeout to improve user experience (20 seconds)
+    setTimeout(() => {
+      console.log("⏰ Firebase auth request timed out after 20 seconds");
+      ipcMain.removeHandler(callbackChannel); // Clean up the handler
+      resolve({ success: false, message: "Authentication timed out" });
+    }, 20000);
+  });
+};
 
 // Initialize sync service
 let syncService = null;
@@ -98,10 +213,6 @@ try {
   };
 }
 
-// Variables for tracking status
-let isOnline = false;
-let db = null;
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 try {
   if (require("electron-squirrel-startup")) {
@@ -113,23 +224,35 @@ try {
   );
 }
 
-let mainWindow;
+// Add this in your app initialization
+// if (process.env.NODE_ENV !== "development") {
+//   Menu.setApplicationMenu(null);
+// }
 
+let mainWindow;
+const isDev = process.env.NODE_ENV === "development";
 const createWindow = () => {
+  // Force development mode for local coding
+  if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = "production";
+    console.log("Development mode forced for local coding");
+  }
+
   // Create the browser window
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.workAreaSize;
   mainWindow = new BrowserWindow({
-    width: width,
-    height: height,
+    width: 1200,
+    height: 800,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.resolve(__dirname, "preload.js"), // Use path.resolve instead of path.join
+      preload: path.join(__dirname, "preload.js"),
       webSecurity: true,
       allowRunningInsecureContent: false,
       worldSafeExecuteJavaScript: true,
       enableRemoteModule: false,
+      devTools: false, // Temporarily enable devTools regardless of environment
     },
   });
   // Maximize the window
@@ -141,7 +264,12 @@ const createWindow = () => {
         responseHeaders: {
           ...details.responseHeaders,
           "Content-Security-Policy": [
-            "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:;",
+            "default-src 'self'; " +
+              "script-src 'self' 'unsafe-inline'; " +
+              "style-src 'self' 'unsafe-inline' https://*.cloudflare.com https://*.googleapis.com; " +
+              "font-src 'self' https://*.gstatic.com https://*.cloudflare.com data: https://*.fontawesome.com; " +
+              "connect-src 'self'; " +
+              "img-src 'self' data:;",
           ],
         },
       });
@@ -151,13 +279,45 @@ const createWindow = () => {
   // Load the login page first
   mainWindow.loadFile(path.join(__dirname, "./views/login.html"));
 
+  // // Only open dev tools in development mode
+  // if (process.env.NODE_ENV === "development") {
+  //   mainWindow.webContents.openDevTools();
+  // }
+
+  // Add this after creating the window
+  mainWindow.webContents.on("context-menu", (event, params) => {
+    // Only allow context menu in development mode
+    if (process.env.NODE_ENV !== "development") {
+      event.preventDefault();
+    }
+  });
+
+  // Add this after creating the window
+  if (process.env.NODE_ENV !== "development") {
+    mainWindow.webContents.on("before-input-event", (event, input) => {
+      // Block F12 key
+      if (input.key === "F12") {
+        event.preventDefault();
+      }
+
+      // Block Ctrl+Shift+I, Cmd+Option+I
+      if ((input.control || input.meta) && input.shift && input.key === "i") {
+        event.preventDefault();
+      }
+
+      // Block Ctrl+Shift+C, Cmd+Option+C
+      if ((input.control || input.meta) && input.shift && input.key === "c") {
+        event.preventDefault();
+      }
+    });
+  }
+
   if (syncService) {
     syncService.setupIpcHandlers(null); // Initially pass null
   }
-  // Build menu from template
-  const mainMenu = Menu.buildFromTemplate(menuTemplate);
-  Menu.setApplicationMenu(mainMenu);
 
+  // Set the minimal menu
+  Menu.setApplicationMenu(null);
   // Check online status
   checkOnlineStatus();
 
@@ -410,24 +570,24 @@ const menuTemplate = [
 ];
 
 // Add developer tools in non-production environment
-if (process.env.NODE_ENV !== "production") {
-  menuTemplate.push({
-    label: "Developer Tools",
-    submenu: [
-      {
-        label: "Toggle DevTools",
-        accelerator:
-          process.platform === "darwin" ? "Command+Alt+I" : "Ctrl+Shift+I",
-        click(item, focusedWindow) {
-          focusedWindow.toggleDevTools();
-        },
-      },
-      {
-        role: "reload",
-      },
-    ],
-  });
-}
+// if (process.env.NODE_ENV !== "production") {
+//   menuTemplate.push({
+//     label: "Developer Tools",
+//     submenu: [
+//       {
+//         label: "Toggle DevTools",
+//         accelerator:
+//           process.platform === "darwin" ? "Command+Alt+I" : "Ctrl+Shift+I",
+//         click(item, focusedWindow) {
+//           focusedWindow.toggleDevTools();
+//         },
+//       },
+//       {
+//         role: "reload",
+//       },
+//     ],
+//   });
+// }
 
 // Quit when all windows are closed, except on macOS
 app.on("window-all-closed", () => {
@@ -458,6 +618,31 @@ setupIpcHandlers();
 
 function setupIpcHandlers() {
   // Online status and sync handlers
+
+  ipcMain.handle("check-online-status", async () => {
+    return new Promise((resolve) => {
+      const request = https.get(
+        "https://www.google.com",
+        {
+          timeout: 5000,
+        },
+        (res) => {
+          resolve(true);
+        }
+      );
+
+      request.on("error", (err) => {
+        console.error("Network check failed:", err);
+        resolve(false);
+      });
+
+      request.on("timeout", () => {
+        request.destroy();
+        resolve(false);
+      });
+    });
+  });
+
   ipcMain.handle("get-online-status", () => {
     console.log("Main process: get-online-status called, returning:", isOnline);
     return isOnline;
@@ -775,46 +960,38 @@ function setupIpcHandlers() {
   // Authentication handlers
   ipcMain.handle("login-user", async (event, credentials) => {
     try {
+      // Log the login attempt with redacted password
+      console.log(
+        `Login attempt for: ${credentials.email}, online: ${isOnline}`
+      );
+
       // Add online status to credentials
       credentials.isOnline = isOnline;
 
       const result = await authService.loginUser(credentials);
 
+      // Log the result (without sensitive data)
+      console.log(
+        `Login result success: ${result.success}, message: ${
+          result.message || "No message"
+        }`
+      );
+
       if (result.success) {
-        // If login successful, tell the renderer we're logged in
-        event.sender.send("login-success", result.user);
-
-        // Check for unsynced data if we're online
-        if (isOnline && syncService && db) {
-          try {
-            // Check for unsynced data
-            const unsyncedData = await syncService.checkUnsyncedData(db);
-
-            if (unsyncedData.success && unsyncedData.hasUnsyncedData) {
-              // Send unsynced data information to renderer
-              event.sender.send("unsynced-data-available", unsyncedData);
-            }
-          } catch (syncError) {
-            console.error(
-              "Error checking for unsynced data after login:",
-              syncError
-            );
-          }
-        }
+        // Success handling...
+      } else {
+        console.warn("Login failed:", result.message);
       }
 
       return result;
     } catch (error) {
       console.error("Error during login:", error);
-      return { success: false, message: "Authentication error" };
+      // Return the actual error message to help with debugging
+      return {
+        success: false,
+        message: `Authentication error: ${error.message}`,
+      };
     }
-  });
-
-  // Firebase re-authentication callback
-  ipcMain.handle("firebase-auth-callback", async (event, authData) => {
-    // This is a placeholder that will be replaced dynamically
-    // The actual handler is created in ensureFirebaseAuth function
-    return { success: false, message: "Handler not initialized" };
   });
 
   ipcMain.handle("register-user", async (event, userData) => {
@@ -936,6 +1113,80 @@ function setupIpcHandlers() {
     } catch (error) {
       console.error("Error fetching users:", error);
       throw error;
+    }
+  });
+
+  ipcMain.handle("test-firebase-auth", async (event, credentials) => {
+    console.log("Testing direct Firebase auth with:", credentials.email);
+    try {
+      // Get Firebase auth directly
+      const { auth } = require("./services/firebase-core");
+      const { signInWithEmailAndPassword } = require("firebase/auth");
+
+      // Attempt direct Firebase login
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        credentials.email,
+        credentials.password
+      );
+      console.log("Firebase auth SUCCESS:", userCredential.user.email);
+
+      return {
+        success: true,
+        user: {
+          email: userCredential.user.email,
+          uid: userCredential.user.uid,
+        },
+      };
+    } catch (error) {
+      console.error("Firebase auth FAILED:", error.code, error.message);
+      return {
+        success: false,
+        code: error.code,
+        message: error.message,
+      };
+    }
+  });
+
+  ipcMain.handle("test-firebase-direct-auth", async (event, credentials) => {
+    try {
+      console.log("Testing direct Firebase auth");
+
+      const { auth } = require("./services/firebase-core");
+      const { signInWithEmailAndPassword } = require("firebase/auth");
+
+      console.log("Auth object available:", !!auth);
+
+      // Make sure Firebase is initialized
+      if (!auth) {
+        return {
+          success: false,
+          message: "Firebase auth is not initialized",
+        };
+      }
+
+      console.log("Attempting direct sign in with:", credentials.email);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        credentials.email,
+        credentials.password
+      );
+
+      console.log("Direct auth succeeded for:", userCredential.user.email);
+      return {
+        success: true,
+        user: {
+          email: userCredential.user.email,
+          uid: userCredential.user.uid,
+        },
+      };
+    } catch (error) {
+      console.error("Direct auth error:", error);
+      return {
+        success: false,
+        code: error.code,
+        message: error.message,
+      };
     }
   });
 }

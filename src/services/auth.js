@@ -1,13 +1,11 @@
 // services/auth.js
-const { initializeApp } = require("firebase/app");
+const { db, auth, isFirebaseConfigured } = require("./firebase-core");
 const {
-  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
 } = require("firebase/auth");
 const {
-  getFirestore,
   collection,
   doc,
   setDoc,
@@ -22,27 +20,6 @@ const bcrypt = require("bcryptjs");
 const ElectronStore = require("electron-store");
 const localStore = new ElectronStore({ name: "shop-billing-local-data" });
 const secureStore = require("./secureStore");
-const { firebaseConfig, isFirebaseConfigured } = require("../config");
-
-// Initialize Firebase only if properly configured
-let firebaseApp = null;
-let auth = null;
-let db = null;
-
-try {
-  if (isFirebaseConfigured()) {
-    firebaseApp = initializeApp(firebaseConfig);
-    auth = getAuth(firebaseApp);
-    db = getFirestore(firebaseApp);
-    console.log("Firebase auth initialized successfully");
-  } else {
-    console.warn(
-      "Firebase not configured properly, falling back to local auth"
-    );
-  }
-} catch (error) {
-  console.error("Failed to initialize Firebase auth:", error);
-}
 
 // Track current user
 let currentUser = null;
@@ -56,6 +33,35 @@ const getUserCredentials = () => {
     return null;
   }
 };
+
+// Add this diagnostic function to auth.js
+
+function checkLocalUserStore() {
+  try {
+    const users = localStore.get("users") || [];
+    console.log(`Local user store contains ${users.length} users`);
+
+    // Check for admin user
+    const adminUser = users.find((u) => u.role === "admin");
+    if (!adminUser) {
+      console.warn("No admin user found in local storage!");
+    } else {
+      console.log(`Admin user exists: ${adminUser.email}`);
+    }
+
+    // Check for duplicate emails
+    const emails = users.map((u) => u.email.toLowerCase());
+    const uniqueEmails = [...new Set(emails)];
+    if (emails.length !== uniqueEmails.length) {
+      console.warn("Duplicate emails found in user store!");
+    }
+
+    return users;
+  } catch (error) {
+    console.error("Error checking local user store:", error);
+    return [];
+  }
+}
 
 // Initialize local users if none exist
 if (!localStore.has("users")) {
@@ -74,10 +80,45 @@ if (!localStore.has("users")) {
   console.log("Created default admin user:", defaultAdmin.email);
 }
 
+// Log existing users for debugging
+console.log(
+  "Available users in local storage:",
+  localStore.get("users")?.length || 0
+);
+const users = localStore.get("users") || [];
+users.forEach((user) => {
+  console.log(`- User: ${user.email}, Role: ${user.role}`);
+});
+
+// Call this during initialization
+checkLocalUserStore();
+
+// Make sure admin@example.com exists
+const hasDefaultAdmin = users.some((u) => u.email === "admin@example.com");
+if (!hasDefaultAdmin) {
+  console.log("Re-creating default admin user that should exist");
+  const salt = bcrypt.genSaltSync(10);
+  const defaultAdmin = {
+    id: "admin",
+    email: "admin@example.com",
+    name: "Administrator",
+    passwordHash: bcrypt.hashSync("admin123", salt),
+    role: "admin",
+    createdAt: new Date().toISOString(),
+  };
+  users.push(defaultAdmin);
+  localStore.set("users", users);
+}
+
 // Login user with online/offline support
-async function loginUser(credentials) {
+async function loginUser({
+  email,
+  password,
+  remember = false,
+  isOnline = false,
+}) {
   try {
-    const { email, password, isOnline } = credentials;
+    const salt = bcrypt.genSaltSync(10);
 
     // Try to use Firebase if online and configured
     if (isOnline && auth && isFirebaseConfigured()) {
@@ -155,7 +196,20 @@ async function loginUser(credentials) {
         // Sync users with Firebase for better local data
         await syncUsersWithFirebase(firebaseUser.uid, isOnline);
 
-        return { success: true, user: userData };
+        const result = { success: true, user: userData };
+
+        if (result.success && remember) {
+          // Store encrypted credentials using secureStore
+          secureStore.set("userCredentials", {
+            email: email.toLowerCase(),
+            passwordHash: password ? bcrypt.hashSync(password, salt) : null,
+            timestamp: new Date().toISOString(),
+          });
+
+          console.log("User credentials saved for auto-login");
+        }
+
+        return result;
       } catch (firebaseError) {
         console.error("Firebase login failed:", firebaseError);
 
@@ -349,36 +403,10 @@ async function localLogin(email, password, isOnline) {
 
     // Check if we're online and should validate against Firebase
     if (isOnline && auth && isFirebaseConfigured()) {
-      try {
-        // Check if user exists in Firebase
-        const firebaseUserQuery = query(
-          collection(db, "users"),
-          where("email", "==", email.toLowerCase())
-        );
-        const querySnapshot = await getDocs(firebaseUserQuery);
-
-        // If user doesn't exist in Firebase but exists locally, they might have been deleted
-        if (querySnapshot.empty) {
-          console.log(
-            "User exists locally but not in Firebase. Account may have been deleted."
-          );
-
-          // Remove from local storage only if we confirm they don't exist in Firebase
-          const updatedUsers = users.filter(
-            (u) => u.email.toLowerCase() !== email.toLowerCase()
-          );
-          localStore.set("users", updatedUsers);
-
-          return {
-            success: false,
-            message:
-              "Your account appears to have been deleted. Please contact administrator.",
-          };
-        }
-      } catch (error) {
-        console.error("Error validating user against Firebase:", error);
-        // Continue with local login as fallback
-      }
+      console.log(
+        "Online with Firebase access, but proceeding with local login"
+      );
+      // No deletion of local users - just log and continue
     }
 
     // Verify password
@@ -666,22 +694,47 @@ function checkPermission(permission) {
   const rolePermissions = permissions[currentUser.role] || [];
   return rolePermissions.includes(permission);
 }
+async function restoreSession() {
+  try {
+    const credentials = getUserCredentials();
+
+    if (credentials && credentials.email) {
+      console.log("Attempting to restore session for:", credentials.email);
+      return await loginUser({
+        email: credentials.email,
+        password: credentials.password,
+        remember: true,
+        isRestoring: true,
+      });
+    }
+  } catch (error) {
+    console.error("Failed to restore session:", error);
+  }
+
+  return { success: false };
+}
 
 // Check page-level permissions
 function checkPagePermission(page, userRole) {
   // Define page access by role
   const permissions = {
-    "billing.html": ["admin", "manager", "cashier"], // Everyone can access billing
-    "inventory.html": ["admin", "manager"], // Admins and managers
-    "reports.html": ["admin"], // Only admins
-    "index.html": ["admin"], // Only admins
+    admin: [
+      "dashboard",
+      "inventory",
+      "users",
+      "reports",
+      "settings",
+      "billing",
+    ],
+    manager: ["dashboard", "inventory", "reports", "billing"],
+    cashier: ["billing", "dashboard"],
   };
 
-  // Check if the page exists in permissions
-  if (!permissions[page]) return false;
+  // Get allowed pages for this role
+  const allowedPages = permissions[userRole] || [];
 
-  // Check if user role has permission
-  return permissions[page].includes(userRole);
+  // Check if the requested page is in the allowed pages
+  return allowedPages.includes(page);
 }
 
 // Export all the auth functions

@@ -205,6 +205,56 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize sales chart
     initSalesChart();
 
+    // Check if user just logged in and show sync dialog if needed
+    const justLoggedIn = sessionStorage.getItem("justLoggedIn");
+    if (justLoggedIn === "true") {
+      // Clear the flag
+      sessionStorage.removeItem("justLoggedIn");
+
+      // Show the sync dialog - wait a moment for the dashboard to fully load
+      setTimeout(async () => {
+        try {
+          // Check if we have API access to get unsynced data counts
+          if (
+            window.api &&
+            typeof window.api.getUnsyncedCounts === "function"
+          ) {
+            const unsyncedCounts = await window.api.getUnsyncedCounts();
+
+            // Only show dialog if there's actually something to sync
+            const totalUnsynced =
+              (unsyncedCounts.products?.total || 0) +
+              (unsyncedCounts.invoices?.total || 0) +
+              (unsyncedCounts.settings?.total || 0);
+
+            if (totalUnsynced > 0) {
+              if (typeof window.showUnsyncedDataDialog === "function") {
+                window.showUnsyncedDataDialog({ unsyncedCounts });
+              } else if (typeof window.initLoginSyncDialog === "function") {
+                window.initLoginSyncDialog();
+              }
+            } else {
+              console.log("No unsynced data found, not showing sync dialog");
+            }
+          } else {
+            // Fallback to checking directly if possible
+            const hasUnsyncedData = await checkForUnsyncedData();
+            if (hasUnsyncedData) {
+              if (typeof window.showUnsyncedDataDialog === "function") {
+                window.showUnsyncedDataDialog({
+                  unsyncedCounts: hasUnsyncedData,
+                });
+              } else if (typeof window.initLoginSyncDialog === "function") {
+                window.initLoginSyncDialog();
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error checking unsynced data:", error);
+        }
+      }, 1000);
+    }
+
     // Set up event listeners - some are now handled by LayoutManager
     document.getElementById("sync-button").addEventListener("click", syncData);
     document
@@ -437,22 +487,6 @@ async function fetchDashboardData() {
     // Format revenue with current locale
     const revenueEl = document.getElementById("revenue-value");
     if (revenueEl) {
-      // if (lang === "ar") {
-      //   // For Arabic, format with Arabic numerals if possible
-      //   try {
-      //     revenueEl.textContent = `$${totalRevenue.toLocaleString("ar-SA", {
-      //       minimumFractionDigits: 2,
-      //       maximumFractionDigits: 2,
-      //     })}`;
-      //   } catch (e) {
-      //     // Fallback to standard format
-      //     revenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
-      //   }
-      // } else {
-      //   // For English and other languages
-      //   revenueEl.textContent = `$${totalRevenue.toFixed(2)}`;
-      // }
-      // For English and other languages
       revenueEl.textContent = formatCurrency(totalRevenue);
     }
 
@@ -1682,6 +1716,51 @@ async function updateSalesChart() {
     );
   } catch (error) {
     console.error("Error updating sales chart:", error);
+  }
+}
+
+// Helper function to check for unsynced data
+async function checkForUnsyncedData() {
+  try {
+    // Look for any indicators that data needs syncing
+    const lastSyncTime = localStorage.getItem("lastSyncTime");
+    const lastModifiedProducts = localStorage.getItem("lastModifiedProducts");
+    const lastModifiedInvoices = localStorage.getItem("lastModifiedInvoices");
+    const lastModifiedSettings = localStorage.getItem("lastModifiedSettings");
+
+    // If we have never synced, or have modified data since last sync
+    if (
+      !lastSyncTime ||
+      (lastModifiedProducts && lastModifiedProducts > lastSyncTime) ||
+      (lastModifiedInvoices && lastModifiedInvoices > lastSyncTime) ||
+      (lastModifiedSettings && lastModifiedSettings > lastSyncTime)
+    ) {
+      // Try to count unsynced items
+      const counts = {
+        products: { total: 0 },
+        invoices: { total: 0 },
+        settings: { total: 0 },
+      };
+
+      // Check localStorage or indexedDB for any unsynced flags on items
+      // This is just an example - implement based on your actual storage approach
+      try {
+        const products = JSON.parse(localStorage.getItem("products") || "[]");
+        counts.products.total = products.filter((p) => p.needsSync).length;
+
+        const invoices = JSON.parse(localStorage.getItem("invoices") || "[]");
+        counts.invoices.total = invoices.filter((i) => i.needsSync).length;
+      } catch (e) {
+        console.error("Error counting unsynced items", e);
+      }
+
+      return counts;
+    }
+
+    return null; // No unsynced data found
+  } catch (error) {
+    console.error("Error in checkForUnsyncedData:", error);
+    return null;
   }
 }
 
