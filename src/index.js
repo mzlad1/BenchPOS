@@ -252,7 +252,7 @@ const createWindow = () => {
       allowRunningInsecureContent: false,
       worldSafeExecuteJavaScript: true,
       enableRemoteModule: false,
-      devTools: false, // Temporarily enable devTools regardless of environment
+      devTools: true, // Temporarily enable devTools regardless of environment
     },
   });
   // Maximize the window
@@ -317,8 +317,8 @@ const createWindow = () => {
   }
 
   // Set the minimal menu
-  // const mainMenu = Menu.buildFromTemplate(menuTemplate);
-  // Menu.setApplicationMenu(mainMenu); // Set to null for minimal menu
+  const mainMenu = Menu.buildFromTemplate(menuTemplate);
+  Menu.setApplicationMenu(mainMenu); // Set to null for minimal menu
   // Check online status
   checkOnlineStatus();
 
@@ -612,24 +612,24 @@ const menuTemplate = [
   },
 ];
 
-// if (process.env.NODE_ENV !== "production") {
-//   menuTemplate.push({
-//     label: "Developer Tools",
-//     submenu: [
-//       {
-//         label: "Toggle DevTools",
-//         accelerator:
-//           process.platform === "darwin" ? "Command+Alt+I" : "Ctrl+Shift+I",
-//         click(item, focusedWindow) {
-//           focusedWindow.toggleDevTools();
-//         },
-//       },
-//       {
-//         role: "reload",
-//       },
-//     ],
-//   });
-// }
+if (process.env.NODE_ENV !== "production") {
+  menuTemplate.push({
+    label: "Developer Tools",
+    submenu: [
+      {
+        label: "Toggle DevTools",
+        accelerator:
+          process.platform === "darwin" ? "Command+Alt+I" : "Ctrl+Shift+I",
+        click(item, focusedWindow) {
+          focusedWindow.toggleDevTools();
+        },
+      },
+      {
+        role: "reload",
+      },
+    ],
+  });
+}
 
 // Quit when all windows are closed, except on macOS
 app.on("window-all-closed", () => {
