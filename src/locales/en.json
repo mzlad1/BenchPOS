@@ -325,6 +325,7 @@
     "success": "Success",
     "warning": "Warning",
     "info": "Information",
+    "found": "found",
     "loading": "Loading...",
     "receipt": "RECEIPT",
     "noResults": "No results found",

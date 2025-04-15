@@ -52,6 +52,15 @@ contextBridge.exposeInMainWorld("api", {
       };
     }
   },
+  // Add this diagnostic function
+  diagnoseFBAuth: async (email) => {
+    return await ipcRenderer.invoke("diagnoseFBAuth", email);
+  },
+
+  // Add this config getter
+  getFirebaseConfig: async () => {
+    return await ipcRenderer.invoke("getFirebaseConfig");
+  },
   // Online/Offline and sync functions
   // getOnlineStatus: async () => {
   //   console.log("Preload: Calling get-online-status");

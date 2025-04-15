@@ -9,6 +9,7 @@ let currentPage = 1;
 const pageSize = 10; // Number of products per page
 let totalPages = 1;
 let selectedProductIds = [];
+let searchTimeout;
 
 // DOM Elements initialization
 document.addEventListener("DOMContentLoaded", () => {
@@ -55,7 +56,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   document
     .getElementById("product-search")
-    .addEventListener("input", filterProducts);
+    .addEventListener("input", function () {
+      clearTimeout(searchTimeout);
+      document.getElementById("search-status").textContent =
+        window.t("inventory.searching") || "Searching...";
+
+      searchTimeout = setTimeout(() => {
+        filterProducts();
+      }, 300); // 300ms delay
+    });
 
   document
     .getElementById("clear-search")
@@ -407,170 +416,182 @@ async function loadProducts() {
   window.LayoutManager.refreshInventoryBadge();
 }
 
-// Render products to the table
+// Update renderProducts function to be more efficient
+
 function renderProducts(productsToRender) {
   const tableBody = document.getElementById("products-table-body");
   tableBody.innerHTML = "";
 
-  // Get search element safely
+  // Get search term and filter (keep this part)
   const searchElement = document.getElementById("product-search");
   const searchTerm = searchElement
     ? searchElement.value.toLowerCase().trim()
     : "";
-
-  // Get filter element safely
   const filterElement = document.getElementById("search-filter");
   const filterField = filterElement ? filterElement.value : "all";
 
   if (!productsToRender || productsToRender.length === 0) {
+    // Empty state handling (keep this part)
     tableBody.innerHTML =
       '<tr><td colspan="9">' +
       window.t("inventory.table.noProducts") +
       "</td></tr>";
-    // Reset pagination when no products
     currentPage = 1;
     setupPagination();
     return;
   }
 
+  // Performance improvement: Store total count but only process visible items
+  const totalCount = productsToRender.length;
+
   // Calculate pagination
-  totalPages = Math.ceil(productsToRender.length / pageSize);
+  totalPages = Math.ceil(totalCount / pageSize);
   if (currentPage > totalPages) {
     currentPage = totalPages;
   }
 
   // Get current page products
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, productsToRender.length);
-  const currentPageProducts = productsToRender.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + pageSize, totalCount);
 
-  // Render the current page products
-  currentPageProducts.forEach((product) => {
-    const row = document.createElement("tr");
+  // Only process the visible items instead of the entire dataset
+  const visibleProducts = productsToRender.slice(startIndex, endIndex);
 
-    // Determine stock status class
-    let stockStatusClass = "";
-    if (product.stock <= 5) {
-      stockStatusClass = "low-stock";
-    } else if (product.stock <= 15) {
-      stockStatusClass = "medium-stock";
-    }
+  // Display a loading indicator for large datasets
+  if (totalCount > 1000 && !tableBody.querySelector(".loading-indicator")) {
+    const loadingRow = document.createElement("tr");
+    loadingRow.className = "loading-indicator";
+    loadingRow.innerHTML = `<td colspan="9">${
+      window.t("inventory.loading") || "Loading products..."
+    }</td>`;
+    tableBody.appendChild(loadingRow);
 
-    // Add checkbox cell
-    const checkboxCell = document.createElement("td");
-    checkboxCell.className = "checkbox-cell";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "product-select";
-    checkbox.dataset.id = product.id;
-    checkbox.checked = selectedProductIds.includes(product.id);
-    checkboxCell.appendChild(checkbox);
-    row.appendChild(checkboxCell);
-
-    // Highlight search terms based on filter field
-    let skuText = product.sku || "N/A";
-    let nameText = product.name;
-    let categoryText =
-      product.category || window.t("common.none") || "Uncategorized";
-
-    // Get search element safely
-    const searchElement = document.getElementById("product-search");
-    const searchTerm = searchElement
-      ? searchElement.value.toLowerCase().trim()
-      : "";
-
-    // Get filter element safely
-    const filterElement = document.getElementById("search-filter");
-    const filterField = filterElement ? filterElement.value : "all";
-
-    if (searchTerm) {
-      if (filterField === "all" || filterField === "sku") {
-        skuText = highlightSearchTerms(skuText, searchTerm);
-      }
-      if (filterField === "all" || filterField === "name") {
-        nameText = highlightSearchTerms(nameText, searchTerm);
-      }
-      if (filterField === "all" || filterField === "category") {
-        categoryText = highlightSearchTerms(categoryText, searchTerm);
-      }
-    }
-
-    // Add data cells
-    const dataCells = [
-      { content: skuText },
-      { content: nameText },
-      { content: categoryText },
-      { content: formatCurrency(product.price) },
-      { content: formatCurrency(product.cost) || 0 },
-      { content: formatCurrency(calculateProfit(product)) },
-      { content: product.stock, className: stockStatusClass },
-    ];
-
-    dataCells.forEach((cell) => {
-      const td = document.createElement("td");
-      td.innerHTML = cell.content;
-      if (cell.className) td.className = cell.className;
-      row.appendChild(td);
-    });
-
-    // Create actions cell with buttons
-    const actionsCell = document.createElement("td");
-
-    const editBtn = document.createElement("button");
-    editBtn.className = "btn edit-btn";
-    editBtn.textContent = window.t("inventory.table.edit") || "Edit";
-    editBtn.dataset.id = product.id;
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "btn delete-btn";
-    deleteBtn.textContent = window.t("inventory.table.delete") || "Delete";
-    deleteBtn.dataset.id = product.id;
-
-    actionsCell.appendChild(editBtn);
-    actionsCell.appendChild(document.createTextNode(" "));
-    actionsCell.appendChild(deleteBtn);
-
-    row.appendChild(actionsCell);
-    tableBody.appendChild(row);
-  });
-
-  // Set up checkbox event listeners
-  document.querySelectorAll(".product-select").forEach((checkbox) => {
-    checkbox.addEventListener("change", function () {
-      const productId = this.dataset.id;
-
-      if (this.checked && !selectedProductIds.includes(productId)) {
-        selectedProductIds.push(productId);
-      } else if (!this.checked && selectedProductIds.includes(productId)) {
-        selectedProductIds = selectedProductIds.filter(
-          (id) => id !== productId
-        );
-      }
-
-      // Update UI based on selection
-      updateBulkActionsUI();
-    });
-  });
+    // Use setTimeout to prevent UI freezing
+    setTimeout(() => {
+      renderProductRows(visibleProducts, tableBody, searchTerm, filterField);
+      tableBody.querySelector(".loading-indicator")?.remove();
+    }, 10);
+  } else {
+    renderProductRows(visibleProducts, tableBody, searchTerm, filterField);
+  }
 
   // Setup pagination controls
   setupPagination();
 
-  // Reset select all checkbox state
-  const selectAllCheckbox = document.getElementById("select-all-checkbox");
-  if (selectAllCheckbox) {
-    const allSelected =
-      currentPageProducts.length > 0 &&
-      currentPageProducts.every((p) => selectedProductIds.includes(p.id));
-    selectAllCheckbox.checked = allSelected;
-    selectAllCheckbox.indeterminate =
-      !allSelected &&
-      currentPageProducts.some((p) => selectedProductIds.includes(p.id));
-  }
+  // Update selection UI
+  updateSelectionState(visibleProducts);
 
   // Update bulk actions UI
   updateBulkActionsUI();
   window.LayoutManager.refreshInventoryBadge();
 }
+
+// Extract the row rendering logic to a separate function
+function renderProductRows(products, tableBody, searchTerm, filterField) {
+  products.forEach((product) => {
+    const row = document.createElement("tr");
+
+    // Add checkbox column
+    const checkboxCell = document.createElement("td");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "product-select";
+    checkbox.dataset.id = product.id;
+    checkbox.checked = selectedProductIds.includes(product.id);
+    checkbox.addEventListener("change", function () {
+      if (this.checked) {
+        if (!selectedProductIds.includes(product.id)) {
+          selectedProductIds.push(product.id);
+        }
+      } else {
+        selectedProductIds = selectedProductIds.filter(
+          (id) => id !== product.id
+        );
+      }
+      updateBulkActionsUI();
+    });
+    checkboxCell.appendChild(checkbox);
+    row.appendChild(checkboxCell);
+
+    // Name column
+    const nameCell = document.createElement("td");
+    nameCell.innerHTML = highlightSearchTerms(
+      product.name || "",
+      filterField === "name" || filterField === "all" ? searchTerm : ""
+    );
+    row.appendChild(nameCell);
+
+    // SKU column
+    const skuCell = document.createElement("td");
+    skuCell.innerHTML = highlightSearchTerms(
+      product.sku || "",
+      filterField === "sku" || filterField === "all" ? searchTerm : ""
+    );
+    row.appendChild(skuCell);
+
+    // Category column
+    const categoryCell = document.createElement("td");
+    categoryCell.innerHTML = highlightSearchTerms(
+      product.category || "",
+      filterField === "category" || filterField === "all" ? searchTerm : ""
+    );
+    row.appendChild(categoryCell);
+
+    // Price column
+    const priceCell = document.createElement("td");
+    priceCell.textContent = formatCurrency(product.price || 0);
+    row.appendChild(priceCell);
+
+    // Cost column
+    const costCell = document.createElement("td");
+    costCell.textContent = formatCurrency(product.cost || 0);
+    row.appendChild(costCell);
+
+    // Stock column
+    const stockCell = document.createElement("td");
+    stockCell.textContent = product.stock || 0;
+    if ((product.stock || 0) <= 5) {
+      stockCell.className = "low-stock";
+    }
+    row.appendChild(stockCell);
+
+    // Actions column
+    const actionsCell = document.createElement("td");
+    actionsCell.className = "actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "btn btn-sm edit-btn";
+    editBtn.dataset.id = product.id;
+    editBtn.textContent = window.t("common.edit") || "Edit";
+    actionsCell.appendChild(editBtn);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "btn btn-sm btn-danger delete-btn";
+    deleteBtn.dataset.id = product.id;
+    deleteBtn.textContent = window.t("common.delete") || "Delete";
+    actionsCell.appendChild(deleteBtn);
+
+    row.appendChild(actionsCell);
+
+    // Add the completed row to the table
+    tableBody.appendChild(row);
+  });
+}
+
+// Update selection state based on visible products
+function updateSelectionState(visibleProducts) {
+  const selectAllCheckbox = document.getElementById("select-all-checkbox");
+  if (selectAllCheckbox) {
+    const allSelected =
+      visibleProducts.length > 0 &&
+      visibleProducts.every((p) => selectedProductIds.includes(p.id));
+    selectAllCheckbox.checked = allSelected;
+    selectAllCheckbox.indeterminate =
+      !allSelected &&
+      visibleProducts.some((p) => selectedProductIds.includes(p.id));
+  }
+}
+
 // Format currency based on user settings
 function formatCurrency(amount) {
   const currency = localStorage.getItem("currency") || "USD";

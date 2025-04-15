@@ -7,15 +7,19 @@ if (window.api.subscribeToCollection) {
   });
 }
 
+// Add at the top of the file with other global variables
+let searchTimeout;
+
 // Load products from database
 async function loadProducts() {
   try {
     products = await window.api.getProducts();
     renderProducts(products);
   } catch (error) {
-    console.error(t('products.errors.loading'), error);
-    productsListEl.innerHTML =
-        `<div class="error">${t('products.errors.failedToLoad')}</div>`;
+    console.error(t("products.errors.loading"), error);
+    productsListEl.innerHTML = `<div class="error">${t(
+      "products.errors.failedToLoad"
+    )}</div>`;
   }
 }
 
@@ -30,7 +34,7 @@ function fixProductCards() {
     if (!button) return; // Skip if no button found
 
     const otherElements = Array.from(productItem.children).filter(
-        (el) => el !== button
+      (el) => el !== button
     );
 
     // Create a details container
@@ -80,14 +84,16 @@ function formatCurrency(amount) {
   return `${symbol}${parseFloat(amount).toFixed(2)}`;
 }
 
-// Render products to the products grid
+// Update the renderProducts function to handle larger datasets better
+
 function renderProducts(productsToRender) {
   if (!productsListEl) return;
   productsListEl.innerHTML = "";
 
   if (productsToRender.length === 0) {
-    productsListEl.innerHTML =
-        `<div class="no-products">${t('products.noProductsFound')}</div>`;
+    productsListEl.innerHTML = `<div class="no-products">${t(
+      "products.noProductsFound"
+    )}</div>`;
     return;
   }
 
@@ -101,35 +107,64 @@ function renderProducts(productsToRender) {
   // Calculate start and end indices for the current page
   const startIndex = (currentPage - 1) * productsPerPage;
   const endIndex = Math.min(
-      startIndex + productsPerPage,
-      productsToRender.length
+    startIndex + productsPerPage,
+    productsToRender.length
   );
 
-  // Only render products for the current page
-  const productsForCurrentPage = productsToRender.slice(startIndex, endIndex);
+  // Show loading indicator for large datasets
+  if (productsToRender.length > 100) {
+    const loadingIndicator = document.createElement("div");
+    loadingIndicator.className = "loading-indicator";
+    loadingIndicator.textContent = t("products.loading");
+    productsListEl.appendChild(loadingIndicator);
 
-  // Render the product cards
-  productsForCurrentPage.forEach((product) => {
+    // Render asynchronously to prevent UI freezing
+    setTimeout(() => {
+      renderProductBatch(productsToRender.slice(startIndex, endIndex));
+      document.querySelector(".loading-indicator")?.remove();
+
+      // Create pagination after products are loaded
+      createPaginationControls(productsToRender.length, totalPages);
+    }, 10);
+  } else {
+    // For smaller datasets, render synchronously
+    renderProductBatch(productsToRender.slice(startIndex, endIndex));
+    createPaginationControls(productsToRender.length, totalPages);
+  }
+}
+
+// New function to render products in batches
+function renderProductBatch(products) {
+  const fragment = document.createDocumentFragment();
+
+  products.forEach((product) => {
     const productEl = document.createElement("div");
     productEl.className = "product-item";
     productEl.innerHTML = `
       <div class="product-name">${product.name}</div>
       <div class="product-price">${formatCurrency(product.price)}</div>
-      <div class="product-stock">${t('products.inStock')}: ${product.stock}</div>
-      <button class="btn add-to-cart" data-id="${
-        product.id
-    }">${t('products.addToCart')}</button>
+      <div class="product-stock">${t("products.inStock")}: ${
+      product.stock
+    }</div>
+      <button class="btn add-to-cart" data-id="${product.id}">${t(
+      "products.addToCart"
+    )}</button>
     `;
 
-    productEl.querySelector(".add-to-cart").addEventListener("click", () => {
-      addToCart(product);
-    });
-
-    productsListEl.appendChild(productEl);
+    fragment.appendChild(productEl);
   });
 
-  // Create and append pagination controls
-  createPaginationControls(productsToRender.length, totalPages);
+  productsListEl.appendChild(fragment);
+
+  // Add event listeners after appending to DOM
+  products.forEach((product, index) => {
+    const button = productsListEl.querySelectorAll(".add-to-cart")[index];
+    if (button) {
+      button.addEventListener("click", () => {
+        addToCart(product);
+      });
+    }
+  });
 }
 
 // Add this new function to create pagination controls
@@ -147,9 +182,9 @@ function createPaginationControls(totalProducts, totalPages) {
   // Add product count information
   const productCountEl = document.createElement("div");
   productCountEl.className = "product-count";
-  productCountEl.textContent = t('pagination.showing', {
+  productCountEl.textContent = t("pagination.showing", {
     shown: Math.min(productsPerPage, totalProducts),
-    total: totalProducts
+    total: totalProducts,
   });
   paginationEl.appendChild(productCountEl);
 
@@ -160,7 +195,7 @@ function createPaginationControls(totalProducts, totalPages) {
   // Previous button
   const prevBtn = document.createElement("button");
   prevBtn.className = "btn page-btn prev-btn";
-  prevBtn.textContent = t('pagination.previous');
+  prevBtn.textContent = t("pagination.previous");
   prevBtn.disabled = currentPage === 1;
   prevBtn.addEventListener("click", () => {
     if (currentPage > 1) {
@@ -173,16 +208,16 @@ function createPaginationControls(totalProducts, totalPages) {
   // Page indicator
   const pageIndicator = document.createElement("span");
   pageIndicator.className = "page-indicator";
-  pageIndicator.textContent = t('pagination.pageOf', {
+  pageIndicator.textContent = t("pagination.pageOf", {
     current: currentPage,
-    total: totalPages
+    total: totalPages,
   });
   pageControlsEl.appendChild(pageIndicator);
 
   // Next button
   const nextBtn = document.createElement("button");
   nextBtn.className = "btn page-btn next-btn";
-  nextBtn.textContent = t('pagination.next');
+  nextBtn.textContent = t("pagination.next");
   nextBtn.disabled = currentPage === totalPages;
   nextBtn.addEventListener("click", () => {
     if (currentPage < totalPages) {
@@ -197,8 +232,8 @@ function createPaginationControls(totalProducts, totalPages) {
   // Insert pagination controls after the products list
   if (productsListEl && productsListEl.parentNode) {
     productsListEl.parentNode.insertBefore(
-        paginationEl,
-        productsListEl.nextSibling
+      paginationEl,
+      productsListEl.nextSibling
     );
   }
 }
@@ -254,10 +289,10 @@ function filterProducts() {
   }
 
   const filteredProducts = products.filter(
-      (product) =>
-          product.name.toLowerCase().includes(searchTerm) ||
-          (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
-          (product.category && product.category.toLowerCase().includes(searchTerm))
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm) ||
+      (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
+      (product.category && product.category.toLowerCase().includes(searchTerm))
   );
 
   renderProducts(filteredProducts);
@@ -407,9 +442,15 @@ function enhanceProductGrid() {
 
 function initProductPagination() {
   addPaginationStyles();
-  // Reset to page 1 when doing a new search
+
+  // Replace the direct event with debounced version
   productSearchEl.addEventListener("input", () => {
-    currentPage = 1;
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(() => {
+      currentPage = 1;
+      filterProducts();
+    }, 300);
   });
 }
 
@@ -457,7 +498,7 @@ function fixProductCardHeight() {
   `;
   document.head.appendChild(styleElement);
 
-  console.log(t('products.fixCardHeightApplied'));
+  console.log(t("products.fixCardHeightApplied"));
 }
 
 function fixProductPageSpacing() {
@@ -518,5 +559,5 @@ function fixProductPageSpacing() {
   `;
   document.head.appendChild(styleElement);
 
-  console.log(t('products.fixPageSpacingApplied'));
+  console.log(t("products.fixPageSpacingApplied"));
 }

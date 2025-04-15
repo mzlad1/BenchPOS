@@ -8,8 +8,8 @@
     "dev": "cross-env NODE_ENV=development electron .",
     "pack": "electron-builder --dir",
     "dev:inspect": "electron . --inspect",
-    "build": "set NODE_ENV=production && electron-builder",
-    "build:win": "electron-builder --win",
+    "build": "NODE_ENV=production electron-builder",
+    "build:win": "set NODE_ENV=production && electron-builder",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux"
   },
@@ -40,7 +40,7 @@
   },
   "build": {
     "appId": "com.mzlad.POS",
-    "productName": "mzlad",
+    "productName": "BenchPOS",
     "extraResources": [
       ".env"
     ],

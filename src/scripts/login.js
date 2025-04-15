@@ -28,11 +28,396 @@ document.addEventListener("DOMContentLoaded", () => {
   // Check remembered user
   checkRememberedUser();
 
-  if (e.altKey && e.key === "t") {
-    testFirebaseAuthDirectly();
-  }
+  // initDiagnosticTools();
 });
+// Create and inject the diagnostic UI
+// function injectDiagnosticTool() {
+//   // Only inject in development mode or when diagnostic parameter is present
+//   const isDev =
+//     localStorage.getItem("devMode") === "true" ||
+//     window.location.search.includes("diagnostic");
 
+//   if (!isDev) return;
+
+//   // Create diagnostic panel
+//   const panel = document.createElement("div");
+//   panel.id = "firebase-diagnostic";
+//   panel.style.cssText = `
+//     position: fixed;
+//     bottom: 10px;
+//     right: 10px;
+//     background: #f8f9fa;
+//     border: 1px solid #dee2e6;
+//     border-radius: 4px;
+//     padding: 10px;
+//     width: 300px;
+//     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+//     font-family: monospace;
+//     font-size: 12px;
+//     z-index: 9999;
+//     max-height: 400px;
+//     overflow-y: auto;
+//   `;
+
+//   // Create header with title and minimize button
+//   const header = document.createElement("div");
+//   header.style.cssText = `
+//     display: flex;
+//     justify-content: space-between;
+//     align-items: center;
+//     border-bottom: 1px solid #dee2e6;
+//     padding-bottom: 8px;
+//     margin-bottom: 8px;
+//   `;
+
+//   const title = document.createElement("div");
+//   title.textContent = "Firebase Diagnostic";
+//   title.style.fontWeight = "bold";
+
+//   const minimizeBtn = document.createElement("button");
+//   minimizeBtn.textContent = "-";
+//   minimizeBtn.style.cssText = `
+//     border: none;
+//     background: #e9ecef;
+//     border-radius: 4px;
+//     cursor: pointer;
+//     width: 24px;
+//     height: 24px;
+//   `;
+
+//   header.appendChild(title);
+//   header.appendChild(minimizeBtn);
+//   panel.appendChild(header);
+
+//   // Create content area
+//   const content = document.createElement("div");
+//   content.id = "diagnostic-content";
+//   panel.appendChild(content);
+
+//   // Create actions
+//   const actions = document.createElement("div");
+//   actions.style.cssText = `
+//     display: flex;
+//     gap: 8px;
+//     margin-top: 10px;
+//   `;
+
+//   const testAuthBtn = document.createElement("button");
+//   testAuthBtn.textContent = "Test Auth";
+//   testAuthBtn.style.cssText = `
+//     padding: 5px 10px;
+//     border: none;
+//     background: #007bff;
+//     color: white;
+//     border-radius: 4px;
+//     cursor: pointer;
+//   `;
+
+//   const checkConfigBtn = document.createElement("button");
+//   checkConfigBtn.textContent = "Check Config";
+//   checkConfigBtn.style.cssText = `
+//     padding: 5px 10px;
+//     border: none;
+//     background: #28a745;
+//     color: white;
+//     border-radius: 4px;
+//     cursor: pointer;
+//   `;
+
+//   const clearBtn = document.createElement("button");
+//   clearBtn.textContent = "Clear";
+//   clearBtn.style.cssText = `
+//     padding: 5px 10px;
+//     border: none;
+//     background: #6c757d;
+//     color: white;
+//     border-radius: 4px;
+//     cursor: pointer;
+//   `;
+
+//   actions.appendChild(testAuthBtn);
+//   actions.appendChild(checkConfigBtn);
+//   actions.appendChild(clearBtn);
+//   panel.appendChild(actions);
+
+//   // Append panel to document
+//   document.body.appendChild(panel);
+
+//   // Add event listeners
+//   minimizeBtn.addEventListener("click", () => {
+//     if (content.style.display !== "none") {
+//       content.style.display = "none";
+//       actions.style.display = "none";
+//       minimizeBtn.textContent = "+";
+//       panel.style.width = "auto";
+//     } else {
+//       content.style.display = "block";
+//       actions.style.display = "flex";
+//       minimizeBtn.textContent = "-";
+//       panel.style.width = "300px";
+//     }
+//   });
+
+//   testAuthBtn.addEventListener("click", testFirebaseAuthWithDiagnostic);
+//   checkConfigBtn.addEventListener("click", checkFirebaseConfig);
+//   clearBtn.addEventListener("click", () => {
+//     content.innerHTML = "";
+//   });
+
+//   // Print initial info
+//   logDiagnostic("Diagnostic tool ready", "info");
+//   logDiagnostic(`Online: ${navigator.onLine}`, "info");
+
+//   return panel;
+// }
+
+// // Log diagnostic message
+// function logDiagnostic(message, type = "info") {
+//   const content = document.getElementById("diagnostic-content");
+//   if (!content) return;
+
+//   const entry = document.createElement("div");
+//   entry.style.cssText = `
+//     padding: 4px 0;
+//     border-bottom: 1px solid #f0f0f0;
+//     word-break: break-all;
+//   `;
+
+//   // Timestamp
+//   const time = new Date().toTimeString().split(" ")[0];
+//   const timestamp = document.createElement("span");
+//   timestamp.textContent = `[${time}] `;
+//   timestamp.style.color = "#6c757d";
+//   entry.appendChild(timestamp);
+
+//   // Message with type-based styling
+//   const text = document.createElement("span");
+//   switch (type) {
+//     case "error":
+//       text.style.color = "#dc3545";
+//       break;
+//     case "success":
+//       text.style.color = "#28a745";
+//       break;
+//     case "warning":
+//       text.style.color = "#ffc107";
+//       break;
+//     default:
+//       text.style.color = "#000";
+//   }
+
+//   // Format message
+//   if (typeof message === "object") {
+//     try {
+//       text.textContent = JSON.stringify(message);
+//     } catch (e) {
+//       text.textContent = "Object: " + Object.keys(message).join(", ");
+//     }
+//   } else {
+//     text.textContent = message;
+//   }
+
+//   entry.appendChild(text);
+//   content.appendChild(entry);
+//   content.scrollTop = content.scrollHeight;
+// }
+
+// // Enhanced Firebase auth testing with diagnostic
+// async function testFirebaseAuthWithDiagnostic() {
+//   const email = document.getElementById("email").value;
+//   const password = document.getElementById("password").value;
+
+//   if (!email || !password) {
+//     logDiagnostic("Please enter both email and password", "error");
+//     return;
+//   }
+
+//   logDiagnostic(`Testing Firebase auth for: ${email}`, "info");
+
+//   try {
+//     // Check connection first
+//     if (!navigator.onLine) {
+//       logDiagnostic("Device is offline! Check internet connection", "error");
+//       return;
+//     }
+
+//     logDiagnostic("Checking if user exists in Firebase...", "info");
+
+//     // Call the API (if window.api exists)
+//     if (window.api && typeof window.api.testFirebaseAuth === "function") {
+//       logDiagnostic("Calling API test function...", "info");
+
+//       // Try diagnostic check first if available
+//       if (window.api.diagnoseFBAuth) {
+//         try {
+//           const diagResult = await window.api.diagnoseFBAuth(email);
+//           logDiagnostic("Firebase Diagnostic Result:", "info");
+//           logDiagnostic(diagResult, "info");
+
+//           if (!diagResult.configured) {
+//             logDiagnostic("Firebase is not properly configured!", "error");
+//           }
+
+//           if (!diagResult.initialized) {
+//             logDiagnostic("Firebase auth is not initialized!", "error");
+//           }
+
+//           if (diagResult.userExists === false) {
+//             logDiagnostic(
+//               `User ${email} does not exist in Firestore!`,
+//               "warning"
+//             );
+//           }
+//         } catch (diagError) {
+//           logDiagnostic("Diagnostic check failed", "error");
+//           logDiagnostic(diagError.message || diagError, "error");
+//         }
+//       }
+
+//       // Now try actual authentication
+//       try {
+//         const result = await window.api.testFirebaseAuth({ email, password });
+
+//         if (result.success) {
+//           logDiagnostic("✅ Authentication succeeded!", "success");
+//           logDiagnostic(`User ID: ${result.user?.uid || "unknown"}`, "success");
+//           logDiagnostic(`Email: ${result.user?.email || email}`, "success");
+//           logDiagnostic(
+//             `Display Name: ${result.user?.displayName || "Not set"}`,
+//             "success"
+//           );
+//         } else {
+//           logDiagnostic("❌ Authentication failed!", "error");
+//           logDiagnostic(`Error code: ${result.code || "unknown"}`, "error");
+//           logDiagnostic(`Message: ${result.message}`, "error");
+//         }
+//       } catch (authError) {
+//         logDiagnostic("❌ Authentication error!", "error");
+//         logDiagnostic(authError.message || String(authError), "error");
+//       }
+//     } else {
+//       logDiagnostic("API access not available!", "error");
+//       logDiagnostic("This tool requires Electron API access", "error");
+//     }
+//   } catch (error) {
+//     logDiagnostic("❌ Test failed with error!", "error");
+//     logDiagnostic(error.message || String(error), "error");
+//   }
+// }
+
+// // Check Firebase configuration
+// async function checkFirebaseConfig() {
+//   logDiagnostic("Checking Firebase configuration...", "info");
+
+//   try {
+//     if (window.api && typeof window.api.getFirebaseConfig === "function") {
+//       const config = await window.api.getFirebaseConfig();
+
+//       logDiagnostic("Firebase Configuration:", "info");
+//       for (const [key, value] of Object.entries(config)) {
+//         const isApiKey = key.toLowerCase().includes("key");
+//         const displayValue = isApiKey && value ? "**********" : value;
+//         logDiagnostic(`${key}: ${displayValue}`, "info");
+//       }
+
+//       if (config.isConfigured) {
+//         logDiagnostic("✅ Firebase is properly configured", "success");
+//       } else {
+//         logDiagnostic("❌ Firebase is NOT properly configured", "error");
+//       }
+//     } else {
+//       // Try to check Firebase configuration from the browser
+//       logDiagnostic("API access not available for config check", "warning");
+
+//       // Check if Firebase is defined
+//       if (typeof firebase !== "undefined") {
+//         logDiagnostic("Firebase SDK is loaded in browser", "success");
+//       } else {
+//         logDiagnostic("Firebase SDK is not loaded in browser", "error");
+//       }
+//     }
+//   } catch (error) {
+//     logDiagnostic("Error checking Firebase config", "error");
+//     logDiagnostic(error.message || String(error), "error");
+//   }
+// }
+
+// // Add a button to toggle developer mode
+// function addDevModeToggle() {
+//   const toggleBtn = document.createElement("button");
+//   toggleBtn.textContent = "🛠️";
+//   toggleBtn.style.cssText = `
+//     position: fixed;
+//     top: 10px;
+//     right: 10px;
+//     width: 30px;
+//     height: 30px;
+//     border-radius: 50%;
+//     background: rgba(240, 240, 240, 0.7);
+//     border: 1px solid #ccc;
+//     cursor: pointer;
+//     font-size: 16px;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     opacity: 0.5;
+//     transition: opacity 0.3s;
+//   `;
+
+//   toggleBtn.addEventListener("mouseenter", () => {
+//     toggleBtn.style.opacity = "1";
+//   });
+
+//   toggleBtn.addEventListener("mouseleave", () => {
+//     toggleBtn.style.opacity = "0.5";
+//   });
+
+//   toggleBtn.addEventListener("click", () => {
+//     const currentState = localStorage.getItem("devMode") === "true";
+//     localStorage.setItem("devMode", (!currentState).toString());
+
+//     if (!currentState) {
+//       injectDiagnosticTool();
+//       toggleBtn.textContent = "🔧";
+//     } else {
+//       const panel = document.getElementById("firebase-diagnostic");
+//       if (panel) panel.remove();
+//       toggleBtn.textContent = "🛠️";
+//     }
+//   });
+
+//   document.body.appendChild(toggleBtn);
+// }
+
+// // Initialize the diagnostic tools
+// function initDiagnosticTools() {
+//   // Add developer mode toggle (always available)
+//   addDevModeToggle();
+
+//   // Check if dev mode is enabled
+//   if (
+//     localStorage.getItem("devMode") === "true" ||
+//     window.location.search.includes("diagnostic")
+//   ) {
+//     injectDiagnosticTool();
+//   }
+
+//   // Secret keyboard shortcut to enable dev mode
+//   document.addEventListener("keydown", (event) => {
+//     // Ctrl+Shift+D to toggle dev mode
+//     if (event.ctrlKey && event.shiftKey && event.key === "D") {
+//       const currentState = localStorage.getItem("devMode") === "true";
+//       localStorage.setItem("devMode", (!currentState).toString());
+
+//       if (!currentState) {
+//         injectDiagnosticTool();
+//       } else {
+//         const panel = document.getElementById("firebase-diagnostic");
+//         if (panel) panel.remove();
+//       }
+//     }
+//   });
+// }
 /**
  * Setup all event listeners for the page
  */

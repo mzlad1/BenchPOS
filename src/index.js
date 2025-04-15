@@ -226,7 +226,7 @@ try {
 
 // Add this in your app initialization
 // if (process.env.NODE_ENV !== "development") {
-//   Menu.setApplicationMenu(null);
+Menu.setApplicationMenu(null);
 // }
 
 let mainWindow;
@@ -317,7 +317,8 @@ const createWindow = () => {
   }
 
   // Set the minimal menu
-  Menu.setApplicationMenu(null);
+  // const mainMenu = Menu.buildFromTemplate(menuTemplate);
+  // Menu.setApplicationMenu(mainMenu); // Set to null for minimal menu
   // Check online status
   checkOnlineStatus();
 
@@ -331,7 +332,49 @@ const createWindow = () => {
     console.log("Firebase service not available, running in local-only mode");
   }
 };
+/**
+ * Verify Firebase is properly initialized
+ * @returns {Promise<boolean>} Whether Firebase is properly initialized
+ */
+async function verifyFirebaseSetup() {
+  try {
+    console.log("Verifying Firebase setup...");
 
+    // Import your Firebase core module
+    const firebaseCore = require("./services/firebase-core");
+
+    // Check if Firebase is configured
+    if (!firebaseCore.isFirebaseConfigured()) {
+      console.error("Firebase is not properly configured!");
+      return false;
+    }
+
+    // Check if Firebase app is initialized
+    if (!firebaseCore.app) {
+      console.error("Firebase app is not initialized!");
+      return false;
+    }
+
+    // Check if Firebase auth is initialized
+    if (!firebaseCore.auth) {
+      console.error("Firebase auth is not initialized!");
+      return false;
+    }
+
+    // Check if Firebase Firestore is initialized
+    if (!firebaseCore.db) {
+      console.error("Firebase Firestore is not initialized!");
+      return false;
+    }
+
+    // All checks passed!
+    console.log("✅ Firebase is properly initialized!");
+    return true;
+  } catch (error) {
+    console.error("Error verifying Firebase setup:", error);
+    return false;
+  }
+}
 app.on("ready", async () => {
   console.log("App is ready, creating window...");
   createWindow();
@@ -569,7 +612,6 @@ const menuTemplate = [
   },
 ];
 
-// Add developer tools in non-production environment
 // if (process.env.NODE_ENV !== "production") {
 //   menuTemplate.push({
 //     label: "Developer Tools",
@@ -777,19 +819,84 @@ function setupIpcHandlers() {
     }
   });
 
-  ipcMain.handle("get-products", async () => {
+  ipcMain.handle("get-products", async (event, options = {}) => {
     try {
+      const { page = 1, pageSize = 0, filters = {} } = options;
+
       if (firebaseService && typeof firebaseService.getAll === "function") {
-        return await firebaseService.getAll("products");
+        // If pageSize is 0, get all products (backward compatibility)
+        if (pageSize === 0) {
+          return await firebaseService.getAll("products");
+        }
+
+        // Otherwise use the new paginated method
+        return await firebaseService.getPagedProducts(
+          "products",
+          page,
+          pageSize,
+          filters
+        );
       } else {
         throw new Error("Firebase service not available");
       }
     } catch (error) {
       console.log("Using local storage for get-products:", error.message);
-      return localStore.get("products") || [];
+
+      // For local storage, we'll implement pagination manually
+      let products = localStore.get("products") || [];
+
+      // Apply filters if provided
+      if (options && options.filters) {
+        const filters = options.filters;
+        if (filters.category) {
+          products = products.filter((p) => p.category === filters.category);
+        }
+        if (filters.search) {
+          const search = filters.search.toLowerCase();
+          products = products.filter(
+            (p) =>
+              p.name?.toLowerCase().includes(search) ||
+              p.sku?.toLowerCase().includes(search)
+          );
+        }
+      }
+
+      // Apply pagination if requested
+      if (options && options.page && options.pageSize) {
+        const startIdx = (options.page - 1) * options.pageSize;
+        const endIdx = startIdx + options.pageSize;
+
+        return {
+          items: products.slice(startIdx, endIdx),
+          totalCount: products.length,
+          page: options.page,
+          totalPages: Math.ceil(products.length / options.pageSize),
+        };
+      }
+
+      // Otherwise return all products
+      return products;
+    }
+  });
+  ipcMain.handle("diagnoseFBAuth", async (event, email) => {
+    try {
+      const { diagnoseFBAuth } = require("./services/auth");
+      return await diagnoseFBAuth(email);
+    } catch (error) {
+      console.error("Error in diagnoseFBAuth:", error);
+      return { error: error.message };
     }
   });
 
+  ipcMain.handle("getFirebaseConfig", async () => {
+    try {
+      const { getConfig } = require("./services/firebase-core");
+      return getConfig();
+    } catch (error) {
+      console.error("Error getting Firebase config:", error);
+      return { error: error.message };
+    }
+  });
   ipcMain.handle("update-product", async (event, product) => {
     try {
       if (firebaseService && typeof firebaseService.update === "function") {
@@ -1256,6 +1363,19 @@ app.on("web-contents-created", (event, contents) => {
         } catch (error) {
           console.error("Error checking online status:", error);
         }
+        verifyFirebaseSetup()
+          .then((isSetup) => {
+            if (isSetup) {
+              console.log("Firebase verification completed successfully");
+            } else {
+              console.warn(
+                "Firebase verification failed - authentication may not work correctly"
+              );
+            }
+          })
+          .catch((error) => {
+            console.error("Firebase verification error:", error);
+          });
       }
     }
   );

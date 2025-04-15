@@ -1,4 +1,33 @@
 // services/firebase.js
+let firebaseConfig;
+
+// In production, use hardcoded config
+// Always use hardcoded config in packaged app
+// process.type exists in Electron and helps detect if we're in renderer or main
+if (process.type === "renderer" || process.env.NODE_ENV === "production") {
+  console.log("Using production Firebase config");
+  firebaseConfig = {
+    apiKey: "AIzaSyD5YXGZE8LMj_YLrPOh-nyjiLpqZoDouPE",
+    authDomain: "msmlal.firebaseapp.com",
+    projectId: "msmlal",
+    storageBucket: "msmlal.appspot.com", // Fixed storage bucket URL
+    messagingSenderId: "908418803307",
+    appId: "1:908418803307:web:4889cb78186ef8305d732e",
+  };
+} else {
+  // Only use env vars in development
+  console.log("Using development Firebase config from environment");
+  // In development, load from environment
+  firebaseConfig = {
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+  };
+}
+
 const { db, app, auth, isFirebaseConfigured } = require("./firebase-core");
 const { sendPasswordResetEmail } = require("firebase/auth");
 
@@ -19,7 +48,7 @@ const {
 
 const ElectronStore = require("electron-store");
 const localStore = new ElectronStore({ name: "shop-billing-local-data" });
-const { firebaseConfig } = require("../config");
+const { firebaseConfig: firebaseCoreConfig } = require("../config");
 
 // Variables for tracking status
 let isSyncing = false;

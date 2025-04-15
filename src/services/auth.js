@@ -110,7 +110,8 @@ if (!hasDefaultAdmin) {
   localStore.set("users", users);
 }
 
-// Login user with online/offline support
+// Enhanced version of loginUser function in auth.js
+// Modified loginUser function in auth.js
 async function loginUser({
   email,
   password,
@@ -120,18 +121,158 @@ async function loginUser({
   try {
     const salt = bcrypt.genSaltSync(10);
 
+    // Log authentication attempt
+    console.log(`Login attempt for ${email}, online: ${isOnline}`);
+
     // Try to use Firebase if online and configured
-    if (isOnline && auth && isFirebaseConfigured()) {
+    if (isOnline && isFirebaseConfigured()) {
       try {
         console.log("Attempting Firebase login");
+
+        // Import auth module directly to ensure it's the latest instance
+        const { auth } = require("./firebase-core");
+
+        // Check if Firebase auth is really available
+        if (!auth) {
+          console.error("Firebase auth object is not available");
+          throw new Error(
+            "Authentication service not available. Please restart the application."
+          );
+        }
+
+        const { signInWithEmailAndPassword } = require("firebase/auth");
+
+        // Directly check the auth object for proper initialization
+        if (!auth || typeof auth.signInWithEmailAndPassword !== "function") {
+          console.error(
+            "Firebase auth object is invalid or not properly initialized"
+          );
+
+          // Try to reinitialize Firebase auth
+          console.log("Attempting to reinitialize Firebase...");
+          const { initialize } = require("./firebase-core");
+          const { auth: refreshedAuth } = initialize();
+
+          if (!refreshedAuth) {
+            throw new Error(
+              "Authentication service not available. Please restart the application."
+            );
+          }
+
+          // Use the reinitialized auth object
+          try {
+            const userCredential = await signInWithEmailAndPassword(
+              refreshedAuth,
+              email,
+              password
+            );
+
+            const firebaseUser = userCredential.user;
+            const { db } = require("./firebase-core");
+
+            // Get user profile from Firestore
+            const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+            let userData;
+
+            if (userDoc.exists()) {
+              userData = userDoc.data();
+              // Check user status
+              if (userData.status === "deleted") {
+                await signOut(refreshedAuth);
+                return {
+                  success: false,
+                  message:
+                    "This account has been deleted. Please contact your administrator.",
+                };
+              }
+
+              if (userData.status === "inactive") {
+                await signOut(refreshedAuth);
+                return {
+                  success: false,
+                  message:
+                    "This account is inactive. Please contact your administrator to activate it.",
+                };
+              }
+
+              // Update last login time
+              await updateDoc(doc(db, "users", firebaseUser.uid), {
+                lastLogin: new Date().toISOString(),
+              });
+            } else {
+              // Create a basic user record if it doesn't exist
+              userData = {
+                id: firebaseUser.uid,
+                email: firebaseUser.email,
+                name: firebaseUser.displayName || email.split("@")[0],
+                role: determineUserRole(email),
+                createdAt: new Date().toISOString(),
+                lastLogin: new Date().toISOString(),
+              };
+
+              // Save to Firestore
+              await setDoc(doc(db, "users", firebaseUser.uid), userData);
+              console.log("Created new user record in Firestore");
+            }
+
+            // Save user to local storage for offline login
+            syncUserToLocal(userData, password);
+
+            // Store credentials securely
+            storeUserCredentials({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: userData.name,
+              role: userData.role,
+              accessToken: firebaseUser.accessToken,
+              refreshToken: firebaseUser.refreshToken,
+            });
+
+            // Set current user
+            currentUser = { ...userData, authProvider: "firebase" };
+
+            // Sync users with Firebase for better local data
+            await syncUsersWithFirebase(firebaseUser.uid, isOnline);
+
+            // Create success result
+            const result = { success: true, user: userData };
+
+            if (remember) {
+              // Store encrypted credentials using secureStore
+              secureStore.set("userCredentials", {
+                email: email.toLowerCase(),
+                passwordHash: password ? bcrypt.hashSync(password, salt) : null,
+                timestamp: new Date().toISOString(),
+              });
+
+              console.log("User credentials saved for auto-login");
+            }
+
+            return result;
+          } catch (reinitError) {
+            console.error("Login failed after reinitialization:", reinitError);
+            // Ensure we always return an object with success property
+            return {
+              success: false,
+              message:
+                reinitError.message ||
+                "Authentication failed after reinitialization",
+              code: reinitError.code,
+            };
+          }
+        }
+
+        // Normal flow with available auth object
         const userCredential = await signInWithEmailAndPassword(
           auth,
           email,
           password
         );
+
         const firebaseUser = userCredential.user;
 
         // Get user profile from Firestore
+        const { db } = require("./firebase-core");
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
         let userData;
 
@@ -213,9 +354,53 @@ async function loginUser({
       } catch (firebaseError) {
         console.error("Firebase login failed:", firebaseError);
 
-        // Fall back to local login if Firebase authentication fails
-        console.log("Falling back to local login");
-        return await localLogin(email, password, isOnline);
+        // Create user-friendly error message
+        let userMessage = "Login failed. ";
+
+        // Handle specific Firebase error codes
+        if (firebaseError.code === "auth/user-not-found") {
+          userMessage += "User not found. Please check your email address.";
+        } else if (firebaseError.code === "auth/wrong-password") {
+          userMessage += "Incorrect password. Please try again.";
+        } else if (firebaseError.code === "auth/invalid-credential") {
+          userMessage +=
+            "Invalid login credentials. Please check your email and password.";
+        } else if (firebaseError.code === "auth/too-many-requests") {
+          userMessage +=
+            "Too many failed login attempts. Please try again later.";
+        } else if (firebaseError.code === "auth/network-request-failed") {
+          userMessage +=
+            "Network error. Please check your internet connection.";
+        } else if (
+          firebaseError.message.includes("Authentication service not available")
+        ) {
+          userMessage =
+            "Authentication service not available. Please restart the application.";
+        } else {
+          // Default error message
+          userMessage += firebaseError.message;
+        }
+
+        // Fall back to local login only for specific errors
+        const shouldFallback = [
+          "auth/network-request-failed",
+          "auth/too-many-requests",
+          "auth/internal-error",
+          "auth/operation-not-allowed",
+        ].includes(firebaseError.code);
+
+        if (shouldFallback) {
+          console.log("Falling back to local login");
+          return await localLogin(email, password, isOnline);
+        }
+
+        // Otherwise return the specific Firebase error
+        return {
+          success: false,
+          message: userMessage,
+          code: firebaseError.code,
+          isFirebaseError: true,
+        };
       }
     } else {
       // Offline mode: use local authentication
@@ -224,7 +409,111 @@ async function loginUser({
     }
   } catch (error) {
     console.error("Login error:", error);
-    return { success: false, message: error.message };
+    // Make sure we always return an object with success property
+    return {
+      success: false,
+      message: error.message || "An unexpected error occurred during login",
+    };
+  }
+}
+/**
+ * Helper function to get human-friendly Firebase error messages
+ */
+function getFirebaseErrorMessage(error) {
+  switch (error.code) {
+    case "auth/user-not-found":
+      return "No account found with this email. Please check your email address or create an account.";
+    case "auth/wrong-password":
+      return "Incorrect password. Please try again or use the 'Forgot Password' link.";
+    case "auth/invalid-credential":
+      return "Invalid login credentials. Please check your email and password.";
+    case "auth/too-many-requests":
+      return "Access temporarily disabled due to many failed login attempts. Please try again later or reset your password.";
+    case "auth/network-request-failed":
+      return "Network error. Please check your internet connection and try again.";
+    case "auth/invalid-email":
+      return "Invalid email address format. Please enter a valid email.";
+    case "auth/app-deleted":
+      return "Authentication service unavailable. Please contact support.";
+    case "auth/internal-error":
+      return "An internal authentication error occurred. Please try again later.";
+    default:
+      return `Authentication error: ${error.message}`;
+  }
+}
+
+/**
+ * Determines whether we should fall back to local login based on Firebase error
+ */
+function shouldUseLocalFallback(error) {
+  const fallbackErrorCodes = [
+    "auth/network-request-failed",
+    "auth/internal-error",
+    "auth/app-deleted",
+    "auth/operation-not-allowed",
+  ];
+
+  return fallbackErrorCodes.includes(error.code);
+}
+
+/**
+ * Diagnose Firebase auth and check if the user exists
+ * @param {string} email - User email to check
+ * @return {Promise<Object>} Diagnostic info
+ */
+async function diagnoseFBAuth(email) {
+  try {
+    // Check if Firebase is properly configured
+    const isConfigured = isFirebaseConfigured();
+
+    if (!isConfigured) {
+      return {
+        configured: false,
+        message: "Firebase not properly configured",
+      };
+    }
+
+    // Check if auth is initialized
+    if (!auth) {
+      return {
+        configured: true,
+        initialized: false,
+        message: "Firebase auth not initialized",
+      };
+    }
+
+    // Check if the user exists in the database
+    try {
+      const userQuery = query(
+        collection(db, "users"),
+        where("email", "==", email.toLowerCase())
+      );
+
+      const querySnapshot = await getDocs(userQuery);
+      const userExists = !querySnapshot.empty;
+
+      return {
+        configured: true,
+        initialized: true,
+        userExists,
+        userCount: querySnapshot.size,
+        message: userExists
+          ? `User found in Firestore (${querySnapshot.size} records)`
+          : "User not found in Firestore",
+      };
+    } catch (dbError) {
+      return {
+        configured: true,
+        initialized: true,
+        error: dbError.message,
+        message: "Error checking user existence",
+      };
+    }
+  } catch (error) {
+    return {
+      error: error.message,
+      message: "Error during Firebase diagnostic check",
+    };
   }
 }
 
@@ -283,10 +572,86 @@ function getCurrentUser() {
 }
 
 /**
- * Synchronize Firebase users with local storage
- * This should be called after login when online
- * @param {string} currentUserId - ID of the currently logged in user
- * @returns {Promise<boolean>} - Success status
+ * Local login with improved error handling
+ */
+async function localLogin(email, password, isOnline) {
+  try {
+    const users = localStore.get("users") || [];
+    const user = users.find(
+      (u) => u.email.toLowerCase() === email.toLowerCase()
+    );
+
+    if (!user) {
+      // Check if this might be a Firebase user that's not synced locally
+      if (isOnline && auth && isFirebaseConfigured()) {
+        try {
+          console.log("User not found locally. Checking with Firebase...");
+          const authCheck = await diagnoseFBAuth(email);
+
+          if (authCheck.userExists) {
+            return {
+              success: false,
+              message:
+                "User exists in Firebase but not in local storage. Try logging in with internet connection to sync your account.",
+              needsSync: true,
+            };
+          }
+        } catch (checkError) {
+          console.error("Error checking user in Firebase:", checkError);
+        }
+      }
+
+      return {
+        success: false,
+        message:
+          "User not found. Login requires internet connection for first-time users.",
+      };
+    }
+
+    // Add these status checks
+    if (user.status === "deleted") {
+      return {
+        success: false,
+        message:
+          "This account has been deleted. Please contact your administrator.",
+      };
+    }
+
+    if (user.status === "inactive") {
+      return {
+        success: false,
+        message:
+          "This account is inactive. Please contact your administrator to activate it.",
+      };
+    }
+
+    // Special case for synced user with invalid hash
+    if (user.passwordHash?.includes("INVALID_USER_NEEDS_ONLINE_LOGIN")) {
+      return {
+        success: false,
+        needsOnlineLogin: true,
+        message:
+          "This account requires you to login with internet connection at least once.",
+      };
+    }
+
+    // Verify password
+    if (!bcrypt.compareSync(password, user.passwordHash)) {
+      return { success: false, message: "Invalid password." };
+    }
+
+    // Set current user
+    currentUser = { ...user, authProvider: "local" };
+
+    return { success: true, user };
+  } catch (error) {
+    console.error("Local login error:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+/**
+ * Improved syncUsersWithFirebase function
  */
 async function syncUsersWithFirebase(currentUserId, isOnline) {
   try {
@@ -319,9 +684,19 @@ async function syncUsersWithFirebase(currentUserId, isOnline) {
       }
     });
 
+    // Always keep the admin user
+    const adminUser = localUsers.find(
+      (user) => user.email === "admin@example.com"
+    );
+
     // Filter local users to keep only those that exist in Firebase
-    // (except for the current user which we always keep)
+    // (except for the admin user which we always keep)
     const validLocalUsers = localUsers.filter((localUser) => {
+      // Always keep the admin user
+      if (localUser.email === "admin@example.com") {
+        return true;
+      }
+
       // Always keep the current user
       if (localUser.id === currentUserId) {
         return true;
@@ -337,6 +712,8 @@ async function syncUsersWithFirebase(currentUserId, isOnline) {
     // Add any Firebase users that don't exist locally
     // (we can't add password hashes, but this makes them visible in UI)
     firebaseUsers.forEach((fbUser) => {
+      if (!fbUser.email) return; // Skip users without email
+
       const existsLocally = validLocalUsers.some(
         (localUser) =>
           localUser.id === fbUser.id ||
@@ -345,7 +722,7 @@ async function syncUsersWithFirebase(currentUserId, isOnline) {
             localUser.email.toLowerCase() === fbUser.email.toLowerCase())
       );
 
-      if (!existsLocally && fbUser.email) {
+      if (!existsLocally) {
         // Add skeleton user - they'll need to login online once to set password
         validLocalUsers.push({
           ...fbUser,
@@ -356,6 +733,14 @@ async function syncUsersWithFirebase(currentUserId, isOnline) {
       }
     });
 
+    // Make sure we always have the admin user
+    if (
+      adminUser &&
+      !validLocalUsers.some((user) => user.email === "admin@example.com")
+    ) {
+      validLocalUsers.push(adminUser);
+    }
+
     // Update local storage
     localStore.set("users", validLocalUsers);
     console.log(`User sync completed: ${validLocalUsers.length} valid users`);
@@ -364,63 +749,6 @@ async function syncUsersWithFirebase(currentUserId, isOnline) {
   } catch (error) {
     console.error("Error syncing users with Firebase:", error);
     return false;
-  }
-}
-
-// Local login fallback
-// Update to make this function async
-async function localLogin(email, password, isOnline) {
-  try {
-    const users = localStore.get("users") || [];
-    const user = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    );
-
-    if (!user) {
-      return {
-        success: false,
-        message:
-          "User not found. Login requires internet connection for first-time users.",
-      };
-    }
-
-    // Add these status checks
-    if (user.status === "deleted") {
-      return {
-        success: false,
-        message:
-          "This account has been deleted. Please contact your administrator.",
-      };
-    }
-
-    if (user.status === "inactive") {
-      return {
-        success: false,
-        message:
-          "This account is inactive. Please contact your administrator to activate it.",
-      };
-    }
-
-    // Check if we're online and should validate against Firebase
-    if (isOnline && auth && isFirebaseConfigured()) {
-      console.log(
-        "Online with Firebase access, but proceeding with local login"
-      );
-      // No deletion of local users - just log and continue
-    }
-
-    // Verify password
-    if (!bcrypt.compareSync(password, user.passwordHash)) {
-      return { success: false, message: "Invalid password." };
-    }
-
-    // Set current user
-    currentUser = { ...user, authProvider: "local" };
-
-    return { success: true, user };
-  } catch (error) {
-    console.error("Local login error:", error);
-    return { success: false, message: error.message };
   }
 }
 
@@ -747,5 +1075,6 @@ module.exports = {
   checkPagePermission,
   deleteUser,
   updateUser,
+  diagnoseFBAuth,
   db,
 };
