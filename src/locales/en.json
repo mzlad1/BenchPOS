@@ -652,16 +652,6 @@
     "settings": "Settings",
     "helpCenter": "Help Center"
   },
-  "login": {
-    "title": "Login",
-    "username": "Username",
-    "password": "Password",
-    "loginButton": "Login",
-    "forgotPassword": "Forgot Password?",
-    "rememberMe": "Remember Me",
-    "createAccount": "Create Account",
-    "invalidCredentials": "Invalid username or password"
-  },
   "settings": {
     "title": "System Settings",
     "subtitle": "Configure your application preferences",
@@ -927,5 +917,76 @@
     "retry": "Retry",
     "syncNow": "Sync Now",
     "refreshStatus": "Refresh Status"
+  },
+  "login": {
+    "pageTitle": "MZLAD Billing System - Login",
+    "tagline": "The complete solution for managing your small business inventory and sales with precision.",
+    "whyChoose": "Why Choose MZLAD?",
+    "features": {
+      "inventory": "Real-time inventory tracking",
+      "invoicing": "Smart invoicing & billing",
+      "offline": "Offline capability for uninterrupted work",
+      "analytics": "Comprehensive sales analytics",
+      "sync": "Multi-device synchronization",
+      "ai": "AI-powered sales predictions"
+    },
+    "welcome": "Welcome Back",
+    "subtitle": "Enter your credentials to access your account",
+    "email": "Email Address",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "loginButton": "Log In",
+    "loggingIn": "Logging in...",
+    "languageToggle": "العربية",
+    "accountCreationDisabled": "Account creation is currently disabled in this version.",
+    "providerAvailableLater": "{0} login will be available in the next release.",
+    "testing": "Testing...",
+    "authTestSuccess": "Auth Test: SUCCESS",
+    "authTestFailed": "Auth Test: FAILED",
+    "authTestError": "Auth Test: ERROR",
+    "firebaseSuccess": "Firebase auth test succeeded! User:",
+    "firebaseError": "Firebase auth error:",
+    "testFailed": "Firebase test failed:",
+    "noMessage": "No message",
+    "errors": {
+      "invalidEmail": "Please enter a valid email address",
+      "passwordLength": "Password must be at least 8 characters",
+      "checkCredentials": "Login failed. Please check your credentials.",
+      "loginError": "Login error:",
+      "unknown": "Unknown error",
+      "enterBoth": "Please enter both email and password to test authentication"
+    }
+  },
+  "forgotPassword": {
+    "pageTitle": "MZLAD Billing System - Reset Password",
+    "tagline": "Reset your password to regain access to your account and continue managing your business.",
+    "resetProcess": "Password Reset Process",
+    "steps": {
+      "enterEmail": "Enter your email address",
+      "sendLink": "We'll send you a reset link",
+      "clickLink": "Click the link to set a new password",
+      "login": "Log in with your new credentials"
+    },
+    "title": "Reset Password",
+    "subtitle": "Enter your email to receive a password reset link",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "sendButton": "Send Reset Link",
+    "rememberPassword": "Remember your password?",
+    "backToLogin": "Back to Login",
+    "loadingText": "Sending email",
+    "emailSent": "Email sent",
+    "successMessage": "A password reset link has been sent to {email}. Please check your inbox and follow the instructions.",
+    "simulationNote": "(Note: This is a simulation as the actual reset functionality is not available in this environment)",
+    "errors": {
+      "enterEmail": "Please enter your email address",
+      "validEmail": "Please enter a valid email address",
+      "mustBeOnline": "You must be online to reset your password",
+      "generic": "An error occurred. Please try again later.",
+      "userNotFound": "No account found with this email address.",
+      "invalidEmail": "The email address is not valid.",
+      "tooManyRequests": "Too many unsuccessful attempts. Please try again later."
+    }
   }
 }

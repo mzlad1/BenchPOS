@@ -14,8 +14,50 @@ let isProcessing = false;
 let auth;
 let sendPasswordResetEmail;
 
+// Define translation function (used before i18n is fully loaded)
+const t = function(key, args) {
+  // Get the current selected language
+  const lang = localStorage.getItem("language") || "en";
+
+  // Helper function to process template variables
+  const processTemplate = (text, args) => {
+    if (!args || typeof args !== "object" || typeof text !== "string")
+      return text;
+    return text.replace(/{(\w+)}/g, (match, name) => {
+      return args[name] !== undefined ? args[name] : match;
+    });
+  };
+
+  // First check if i18n is fully initialized and has this key
+  if (
+      window.i18n &&
+      window.i18n.translations &&
+      window.i18n.translations[lang] &&
+      window.i18n.translations[lang][key]
+  ) {
+    return processTemplate(window.i18n.translations[lang][key], args);
+  }
+
+  // If no translation found, return the key itself
+  return key;
+};
+
 // Initialize page when DOM is loaded
 document.addEventListener("DOMContentLoaded", async () => {
+  // Initialize i18n if available
+  if (window.i18n && typeof window.i18n.init === 'function') {
+    window.i18n.init().then(() => {
+      console.log('i18n initialized successfully');
+    }).catch(err => {
+      console.error('Error initializing i18n:', err);
+    });
+  } else {
+    console.warn('i18n not available, using fallback translation function');
+  }
+
+  // Initialize language switcher
+  initLanguageSwitcher();
+
   // Try to import Firebase auth dynamically
   try {
     // Import Firebase auth modules
@@ -45,18 +87,44 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 /**
+ * Initialize language switcher
+ */
+function initLanguageSwitcher() {
+  const toggleBtn = document.getElementById('language-toggle-btn');
+  if (!toggleBtn) return;
+
+  toggleBtn.addEventListener('click', () => {
+    // Get current language
+    const currentLang = localStorage.getItem('language') || 'en';
+    // Set new language
+    const newLang = currentLang === 'en' ? 'ar' : 'en';
+
+    if (window.i18n && typeof window.i18n.changeLanguage === 'function') {
+      // Use the i18n system if available
+      window.i18n.changeLanguage(newLang).then(() => {
+        console.log(`Language changed to ${newLang}`);
+      });
+    } else {
+      // Fallback - just save preference and reload
+      localStorage.setItem('language', newLang);
+      window.location.reload();
+    }
+  });
+}
+
+/**
  * Setup all event listeners for the page
  */
 function setupEventListeners() {
   // Reset form submission
   document
-    .getElementById("reset-form")
-    .addEventListener("submit", handleResetPassword);
+      .getElementById("reset-form")
+      .addEventListener("submit", handleResetPassword);
 
   // Theme switch
   document
-    .getElementById("theme-switch")
-    .addEventListener("change", toggleTheme);
+      .getElementById("theme-switch")
+      .addEventListener("change", toggleTheme);
 
   // Back to login link
   document.getElementById("back-to-login")?.addEventListener("click", (e) => {
@@ -179,7 +247,7 @@ function validateInput(input) {
 
   // Validate based on input type or data-validate attribute
   const validateType =
-    inputContainer.getAttribute("data-validate") || input.type;
+      inputContainer.getAttribute("data-validate") || input.type;
 
   switch (validateType) {
     case "email":
@@ -187,7 +255,7 @@ function validateInput(input) {
       if (!emailRegex.test(value)) {
         inputContainer.classList.add("invalid");
         if (helperText) {
-          helperText.textContent = "Please enter a valid email address";
+          helperText.textContent = t("forgotPassword.errors.validEmail");
           helperText.classList.add("error");
         }
         return false;
@@ -206,6 +274,9 @@ function validateInput(input) {
 async function initPage() {
   // Apply saved theme preference
   applySavedTheme();
+
+  // Apply saved language preference (RTL for Arabic)
+  applyLanguageDirection();
 
   // Check connection status through IPC
   if (window.api && typeof window.api.getOnlineStatus === "function") {
@@ -235,6 +306,29 @@ async function initPage() {
 }
 
 /**
+ * Apply language direction (RTL for Arabic, LTR for others)
+ */
+function applyLanguageDirection() {
+  const lang = localStorage.getItem("language") || "en";
+  const rtlLanguages = ["ar", "he", "fa", "ur"];
+  const isRtl = rtlLanguages.includes(lang);
+
+  // Set direction attribute
+  document.documentElement.dir = isRtl ? "rtl" : "ltr";
+
+  // Apply RTL class
+  if (isRtl) {
+    document.documentElement.classList.add("rtl");
+    document.documentElement.classList.remove("ltr");
+    document.body.classList.add("rtl-layout");
+  } else {
+    document.documentElement.classList.add("ltr");
+    document.documentElement.classList.remove("rtl");
+    document.body.classList.remove("rtl-layout");
+  }
+}
+
+/**
  * Update the connection UI based on status
  * @param {boolean} online - Whether the connection is online
  */
@@ -246,12 +340,12 @@ function updateConnectionUI(online) {
   if (online) {
     indicator.classList.remove("offline");
     indicator.classList.add("online");
-    statusText.textContent = "Online Mode";
+    statusText.textContent = t("header.onlineMode");
     connectionStatus.classList.remove("offline");
   } else {
     indicator.classList.remove("online");
     indicator.classList.add("offline");
-    statusText.textContent = "Offline Mode";
+    statusText.textContent = t("header.offlineMode");
     connectionStatus.classList.add("offline");
   }
 }
@@ -276,18 +370,18 @@ async function handleResetPassword(event) {
   const emailValid = validateInput(document.getElementById("email"));
 
   if (!email) {
-    showError("Please enter your email address");
+    showError(t("forgotPassword.errors.enterEmail"));
     return;
   }
 
   if (!emailValid) {
-    showError("Please enter a valid email address");
+    showError(t("forgotPassword.errors.validEmail"));
     return;
   }
 
   // Check if online
   if (!isOnline) {
-    showError("You must be online to reset your password");
+    showError(t("forgotPassword.errors.mustBeOnline"));
     return;
   }
 
@@ -299,7 +393,7 @@ async function handleResetPassword(event) {
     const originalButtonHtml = resetButton.innerHTML;
 
     // Update button text
-    resetButton.innerHTML = '<span class="btn-text">Processing</span>';
+    resetButton.innerHTML = '<span class="btn-text">' + t("common.loading") + '</span>';
 
     // Show loader overlay
     const loaderOverlay = document.getElementById("loader-overlay");
@@ -307,7 +401,7 @@ async function handleResetPassword(event) {
 
     // Add loading text with dots animation
     const loadingText = document.querySelector(".loading-text");
-    loadingText.textContent = "Sending email";
+    loadingText.textContent = t("forgotPassword.loadingText");
 
     // Send password reset email
     try {
@@ -325,14 +419,14 @@ async function handleResetPassword(event) {
       // Fallback to simulation if both methods fail
       else {
         console.log(
-          "No password reset API available - using simulated success"
+            "No password reset API available - using simulated success"
         );
         await new Promise((resolve) => setTimeout(resolve, 2000));
         result = { success: true, simulated: true };
       }
 
       // Update loading text
-      loadingText.textContent = "Email sent";
+      loadingText.textContent = t("forgotPassword.emailSent");
 
       // Show success after a slight delay
       setTimeout(() => {
@@ -340,12 +434,11 @@ async function handleResetPassword(event) {
         loaderOverlay.classList.remove("active");
 
         // Show success message
-        let message = `A password reset link has been sent to ${email}. Please check your inbox and follow the instructions.`;
+        let message = t("forgotPassword.successMessage", { email: email });
 
         // Add a note if this was simulated
         if (result.simulated) {
-          message +=
-            " (Note: This is a simulation as the actual reset functionality is not available in this environment)";
+          message += " " + t("forgotPassword.simulationNote");
         }
 
         showSuccess(message);
@@ -359,8 +452,8 @@ async function handleResetPassword(event) {
 
         // Remove validation states
         document
-          .querySelector(".input-with-icon")
-          .classList.remove("valid", "invalid");
+            .querySelector(".input-with-icon")
+            .classList.remove("valid", "invalid");
       }, 1500);
     } catch (error) {
       console.error("Password reset error:", error);
@@ -372,15 +465,14 @@ async function handleResetPassword(event) {
       resetButton.innerHTML = originalButtonHtml;
 
       // Extract the error message
-      let errorMessage = "An error occurred while processing your request.";
+      let errorMessage = t("forgotPassword.errors.generic");
 
       if (error.code === "auth/user-not-found") {
-        errorMessage = "No account found with this email address.";
+        errorMessage = t("forgotPassword.errors.userNotFound");
       } else if (error.code === "auth/invalid-email") {
-        errorMessage = "The email address is not valid.";
+        errorMessage = t("forgotPassword.errors.invalidEmail");
       } else if (error.code === "auth/too-many-requests") {
-        errorMessage =
-          "Too many unsuccessful attempts. Please try again later.";
+        errorMessage = t("forgotPassword.errors.tooManyRequests");
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -390,14 +482,14 @@ async function handleResetPassword(event) {
     }
   } catch (error) {
     console.error("Reset password error:", error);
-    showError("An error occurred. Please try again later.");
+    showError(t("forgotPassword.errors.generic"));
 
     // Hide loader
     document.getElementById("loader-overlay").classList.remove("active");
 
     // Reset button
     resetButton.innerHTML =
-      '<span class="btn-text">Send Reset Link</span><i class="fas fa-paper-plane btn-icon"></i>';
+        '<span class="btn-text">' + t("forgotPassword.sendButton") + '</span><i class="fas fa-paper-plane btn-icon"></i>';
   } finally {
     resetButton.disabled = false;
     isProcessing = false;
@@ -468,3 +560,9 @@ function hideMessages() {
   errorEl.style.display = "none";
   successEl.style.display = "none";
 }
+
+// Listen for language changes
+window.addEventListener("languageChanged", () => {
+  applyLanguageDirection();
+  updateConnectionUI(isOnline);
+});

@@ -1247,3 +1247,96 @@ h2 {
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.25);
   outline: none;
 }
+
+/* Connection status positioning */
+.connection-status {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+/* RTL (Right-to-Left) layout support for Arabic */
+.rtl-layout {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-layout .language-toggle {
+  right: auto;
+  left: 80px;
+}
+
+.rtl-layout .theme-toggle {
+  right: auto;
+  left: 20px;
+}
+
+.rtl-layout .app-info {
+  order: 2;
+}
+
+.rtl-layout .login-form-container {
+  order: 1;
+}
+
+.rtl-layout .login-container {
+  flex-direction: row-reverse;
+}
+
+.rtl-layout .input-with-icon i.icon-main {
+  left: auto;
+  right: 15px;
+}
+
+.rtl-layout .input-with-icon input {
+  padding-left: 15px;
+  padding-right: 45px;
+}
+
+.rtl-layout .password-toggle {
+  right: auto;
+  left: 15px;
+}
+
+.rtl-layout .validation-indicator {
+  right: auto;
+  left: 45px;
+}
+
+.rtl-layout .btn-icon {
+  transform: rotate(180deg);
+}
+
+.rtl-layout .fa-check-circle {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+.rtl-layout .connection-status {
+  left: 20px;
+  right: auto;
+  flex-direction: row-reverse;
+}
+
+/* Error and notification in RTL */
+.rtl-layout .error-message i,
+.rtl-layout .notification i {
+  margin-right: 0;
+  margin-left: 10px;
+}
+/* For mobile devices */
+@media (max-width: 768px) {
+  .language-toggle {
+    top: 70px;
+    right: 20px;
+  }
+
+  .rtl-layout .language-toggle {
+    right: auto;
+    left: 20px;
+  }
+
+  .rtl-layout .login-container {
+    flex-direction: column-reverse;
+  }
+}

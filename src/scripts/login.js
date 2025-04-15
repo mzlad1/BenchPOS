@@ -8,8 +8,53 @@ let isOnline = false;
 let validationTimers = {};
 let isLoggingIn = false;
 
+// Define translation function (used before i18n is fully loaded)
+const t = function(key, args) {
+  // Get the current selected language
+  const lang = localStorage.getItem("language") || "en";
+
+  // Helper function to process template variables
+  const processTemplate = (text, args) => {
+    if (!args || typeof args !== "object" || typeof text !== "string")
+      return text;
+    return text.replace(/{(\w+)}/g, (match, name) => {
+      return args[name] !== undefined ? args[name] : match;
+    });
+  };
+
+  // First check if i18n is fully initialized and has this key
+  if (
+      window.i18n &&
+      window.i18n.translations &&
+      window.i18n.translations[lang] &&
+      window.i18n.translations[lang][key]
+  ) {
+    return processTemplate(window.i18n.translations[lang][key], args);
+  }
+
+  // If no translation found, return the key itself
+  return key;
+};
+
 // Wrap your code in DOMContentLoaded event to ensure elements exist
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize i18n if available
+  if (window.i18n && typeof window.i18n.init === 'function') {
+    window.i18n.init().then(() => {
+      console.log('i18n initialized successfully');
+    }).catch(err => {
+      console.error('Error initializing i18n:', err);
+    });
+  } else {
+    console.warn('i18n not available, using fallback translation function');
+  }
+
+  // Initialize language switcher
+  initLanguageSwitcher();
+
+  // Apply saved language preference (RTL for Arabic)
+  applyLanguageDirection();
+
   // Force logout and clean storage
   forceLogoutAndCleanStorage();
 
@@ -27,405 +72,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Check remembered user
   checkRememberedUser();
-
-  // initDiagnosticTools();
 });
-// Create and inject the diagnostic UI
-// function injectDiagnosticTool() {
-//   // Only inject in development mode or when diagnostic parameter is present
-//   const isDev =
-//     localStorage.getItem("devMode") === "true" ||
-//     window.location.search.includes("diagnostic");
 
-//   if (!isDev) return;
+/**
+ * Initialize language switcher
+ */
+function initLanguageSwitcher() {
+  const toggleBtn = document.getElementById('language-toggle-btn');
+  if (!toggleBtn) return;
 
-//   // Create diagnostic panel
-//   const panel = document.createElement("div");
-//   panel.id = "firebase-diagnostic";
-//   panel.style.cssText = `
-//     position: fixed;
-//     bottom: 10px;
-//     right: 10px;
-//     background: #f8f9fa;
-//     border: 1px solid #dee2e6;
-//     border-radius: 4px;
-//     padding: 10px;
-//     width: 300px;
-//     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-//     font-family: monospace;
-//     font-size: 12px;
-//     z-index: 9999;
-//     max-height: 400px;
-//     overflow-y: auto;
-//   `;
+  toggleBtn.addEventListener('click', () => {
+    // Get current language
+    const currentLang = localStorage.getItem('language') || 'en';
+    // Set new language
+    const newLang = currentLang === 'en' ? 'ar' : 'en';
 
-//   // Create header with title and minimize button
-//   const header = document.createElement("div");
-//   header.style.cssText = `
-//     display: flex;
-//     justify-content: space-between;
-//     align-items: center;
-//     border-bottom: 1px solid #dee2e6;
-//     padding-bottom: 8px;
-//     margin-bottom: 8px;
-//   `;
+    if (window.i18n && typeof window.i18n.changeLanguage === 'function') {
+      // Use the i18n system if available
+      window.i18n.changeLanguage(newLang).then(() => {
+        console.log(`Language changed to ${newLang}`);
+      });
+    } else {
+      // Fallback - just save preference and reload
+      localStorage.setItem('language', newLang);
+      window.location.reload();
+    }
+  });
+}
 
-//   const title = document.createElement("div");
-//   title.textContent = "Firebase Diagnostic";
-//   title.style.fontWeight = "bold";
+/**
+ * Apply language direction (RTL for Arabic, LTR for others)
+ */
+function applyLanguageDirection() {
+  const lang = localStorage.getItem("language") || "en";
+  const rtlLanguages = ["ar", "he", "fa", "ur"];
+  const isRtl = rtlLanguages.includes(lang);
 
-//   const minimizeBtn = document.createElement("button");
-//   minimizeBtn.textContent = "-";
-//   minimizeBtn.style.cssText = `
-//     border: none;
-//     background: #e9ecef;
-//     border-radius: 4px;
-//     cursor: pointer;
-//     width: 24px;
-//     height: 24px;
-//   `;
+  // Set direction attribute
+  document.documentElement.dir = isRtl ? "rtl" : "ltr";
 
-//   header.appendChild(title);
-//   header.appendChild(minimizeBtn);
-//   panel.appendChild(header);
+  // Apply RTL class
+  if (isRtl) {
+    document.documentElement.classList.add("rtl");
+    document.documentElement.classList.remove("ltr");
+    document.body.classList.add("rtl-layout");
+  } else {
+    document.documentElement.classList.add("ltr");
+    document.documentElement.classList.remove("rtl");
+    document.body.classList.remove("rtl-layout");
+  }
+}
 
-//   // Create content area
-//   const content = document.createElement("div");
-//   content.id = "diagnostic-content";
-//   panel.appendChild(content);
-
-//   // Create actions
-//   const actions = document.createElement("div");
-//   actions.style.cssText = `
-//     display: flex;
-//     gap: 8px;
-//     margin-top: 10px;
-//   `;
-
-//   const testAuthBtn = document.createElement("button");
-//   testAuthBtn.textContent = "Test Auth";
-//   testAuthBtn.style.cssText = `
-//     padding: 5px 10px;
-//     border: none;
-//     background: #007bff;
-//     color: white;
-//     border-radius: 4px;
-//     cursor: pointer;
-//   `;
-
-//   const checkConfigBtn = document.createElement("button");
-//   checkConfigBtn.textContent = "Check Config";
-//   checkConfigBtn.style.cssText = `
-//     padding: 5px 10px;
-//     border: none;
-//     background: #28a745;
-//     color: white;
-//     border-radius: 4px;
-//     cursor: pointer;
-//   `;
-
-//   const clearBtn = document.createElement("button");
-//   clearBtn.textContent = "Clear";
-//   clearBtn.style.cssText = `
-//     padding: 5px 10px;
-//     border: none;
-//     background: #6c757d;
-//     color: white;
-//     border-radius: 4px;
-//     cursor: pointer;
-//   `;
-
-//   actions.appendChild(testAuthBtn);
-//   actions.appendChild(checkConfigBtn);
-//   actions.appendChild(clearBtn);
-//   panel.appendChild(actions);
-
-//   // Append panel to document
-//   document.body.appendChild(panel);
-
-//   // Add event listeners
-//   minimizeBtn.addEventListener("click", () => {
-//     if (content.style.display !== "none") {
-//       content.style.display = "none";
-//       actions.style.display = "none";
-//       minimizeBtn.textContent = "+";
-//       panel.style.width = "auto";
-//     } else {
-//       content.style.display = "block";
-//       actions.style.display = "flex";
-//       minimizeBtn.textContent = "-";
-//       panel.style.width = "300px";
-//     }
-//   });
-
-//   testAuthBtn.addEventListener("click", testFirebaseAuthWithDiagnostic);
-//   checkConfigBtn.addEventListener("click", checkFirebaseConfig);
-//   clearBtn.addEventListener("click", () => {
-//     content.innerHTML = "";
-//   });
-
-//   // Print initial info
-//   logDiagnostic("Diagnostic tool ready", "info");
-//   logDiagnostic(`Online: ${navigator.onLine}`, "info");
-
-//   return panel;
-// }
-
-// // Log diagnostic message
-// function logDiagnostic(message, type = "info") {
-//   const content = document.getElementById("diagnostic-content");
-//   if (!content) return;
-
-//   const entry = document.createElement("div");
-//   entry.style.cssText = `
-//     padding: 4px 0;
-//     border-bottom: 1px solid #f0f0f0;
-//     word-break: break-all;
-//   `;
-
-//   // Timestamp
-//   const time = new Date().toTimeString().split(" ")[0];
-//   const timestamp = document.createElement("span");
-//   timestamp.textContent = `[${time}] `;
-//   timestamp.style.color = "#6c757d";
-//   entry.appendChild(timestamp);
-
-//   // Message with type-based styling
-//   const text = document.createElement("span");
-//   switch (type) {
-//     case "error":
-//       text.style.color = "#dc3545";
-//       break;
-//     case "success":
-//       text.style.color = "#28a745";
-//       break;
-//     case "warning":
-//       text.style.color = "#ffc107";
-//       break;
-//     default:
-//       text.style.color = "#000";
-//   }
-
-//   // Format message
-//   if (typeof message === "object") {
-//     try {
-//       text.textContent = JSON.stringify(message);
-//     } catch (e) {
-//       text.textContent = "Object: " + Object.keys(message).join(", ");
-//     }
-//   } else {
-//     text.textContent = message;
-//   }
-
-//   entry.appendChild(text);
-//   content.appendChild(entry);
-//   content.scrollTop = content.scrollHeight;
-// }
-
-// // Enhanced Firebase auth testing with diagnostic
-// async function testFirebaseAuthWithDiagnostic() {
-//   const email = document.getElementById("email").value;
-//   const password = document.getElementById("password").value;
-
-//   if (!email || !password) {
-//     logDiagnostic("Please enter both email and password", "error");
-//     return;
-//   }
-
-//   logDiagnostic(`Testing Firebase auth for: ${email}`, "info");
-
-//   try {
-//     // Check connection first
-//     if (!navigator.onLine) {
-//       logDiagnostic("Device is offline! Check internet connection", "error");
-//       return;
-//     }
-
-//     logDiagnostic("Checking if user exists in Firebase...", "info");
-
-//     // Call the API (if window.api exists)
-//     if (window.api && typeof window.api.testFirebaseAuth === "function") {
-//       logDiagnostic("Calling API test function...", "info");
-
-//       // Try diagnostic check first if available
-//       if (window.api.diagnoseFBAuth) {
-//         try {
-//           const diagResult = await window.api.diagnoseFBAuth(email);
-//           logDiagnostic("Firebase Diagnostic Result:", "info");
-//           logDiagnostic(diagResult, "info");
-
-//           if (!diagResult.configured) {
-//             logDiagnostic("Firebase is not properly configured!", "error");
-//           }
-
-//           if (!diagResult.initialized) {
-//             logDiagnostic("Firebase auth is not initialized!", "error");
-//           }
-
-//           if (diagResult.userExists === false) {
-//             logDiagnostic(
-//               `User ${email} does not exist in Firestore!`,
-//               "warning"
-//             );
-//           }
-//         } catch (diagError) {
-//           logDiagnostic("Diagnostic check failed", "error");
-//           logDiagnostic(diagError.message || diagError, "error");
-//         }
-//       }
-
-//       // Now try actual authentication
-//       try {
-//         const result = await window.api.testFirebaseAuth({ email, password });
-
-//         if (result.success) {
-//           logDiagnostic("✅ Authentication succeeded!", "success");
-//           logDiagnostic(`User ID: ${result.user?.uid || "unknown"}`, "success");
-//           logDiagnostic(`Email: ${result.user?.email || email}`, "success");
-//           logDiagnostic(
-//             `Display Name: ${result.user?.displayName || "Not set"}`,
-//             "success"
-//           );
-//         } else {
-//           logDiagnostic("❌ Authentication failed!", "error");
-//           logDiagnostic(`Error code: ${result.code || "unknown"}`, "error");
-//           logDiagnostic(`Message: ${result.message}`, "error");
-//         }
-//       } catch (authError) {
-//         logDiagnostic("❌ Authentication error!", "error");
-//         logDiagnostic(authError.message || String(authError), "error");
-//       }
-//     } else {
-//       logDiagnostic("API access not available!", "error");
-//       logDiagnostic("This tool requires Electron API access", "error");
-//     }
-//   } catch (error) {
-//     logDiagnostic("❌ Test failed with error!", "error");
-//     logDiagnostic(error.message || String(error), "error");
-//   }
-// }
-
-// // Check Firebase configuration
-// async function checkFirebaseConfig() {
-//   logDiagnostic("Checking Firebase configuration...", "info");
-
-//   try {
-//     if (window.api && typeof window.api.getFirebaseConfig === "function") {
-//       const config = await window.api.getFirebaseConfig();
-
-//       logDiagnostic("Firebase Configuration:", "info");
-//       for (const [key, value] of Object.entries(config)) {
-//         const isApiKey = key.toLowerCase().includes("key");
-//         const displayValue = isApiKey && value ? "**********" : value;
-//         logDiagnostic(`${key}: ${displayValue}`, "info");
-//       }
-
-//       if (config.isConfigured) {
-//         logDiagnostic("✅ Firebase is properly configured", "success");
-//       } else {
-//         logDiagnostic("❌ Firebase is NOT properly configured", "error");
-//       }
-//     } else {
-//       // Try to check Firebase configuration from the browser
-//       logDiagnostic("API access not available for config check", "warning");
-
-//       // Check if Firebase is defined
-//       if (typeof firebase !== "undefined") {
-//         logDiagnostic("Firebase SDK is loaded in browser", "success");
-//       } else {
-//         logDiagnostic("Firebase SDK is not loaded in browser", "error");
-//       }
-//     }
-//   } catch (error) {
-//     logDiagnostic("Error checking Firebase config", "error");
-//     logDiagnostic(error.message || String(error), "error");
-//   }
-// }
-
-// // Add a button to toggle developer mode
-// function addDevModeToggle() {
-//   const toggleBtn = document.createElement("button");
-//   toggleBtn.textContent = "🛠️";
-//   toggleBtn.style.cssText = `
-//     position: fixed;
-//     top: 10px;
-//     right: 10px;
-//     width: 30px;
-//     height: 30px;
-//     border-radius: 50%;
-//     background: rgba(240, 240, 240, 0.7);
-//     border: 1px solid #ccc;
-//     cursor: pointer;
-//     font-size: 16px;
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//     opacity: 0.5;
-//     transition: opacity 0.3s;
-//   `;
-
-//   toggleBtn.addEventListener("mouseenter", () => {
-//     toggleBtn.style.opacity = "1";
-//   });
-
-//   toggleBtn.addEventListener("mouseleave", () => {
-//     toggleBtn.style.opacity = "0.5";
-//   });
-
-//   toggleBtn.addEventListener("click", () => {
-//     const currentState = localStorage.getItem("devMode") === "true";
-//     localStorage.setItem("devMode", (!currentState).toString());
-
-//     if (!currentState) {
-//       injectDiagnosticTool();
-//       toggleBtn.textContent = "🔧";
-//     } else {
-//       const panel = document.getElementById("firebase-diagnostic");
-//       if (panel) panel.remove();
-//       toggleBtn.textContent = "🛠️";
-//     }
-//   });
-
-//   document.body.appendChild(toggleBtn);
-// }
-
-// // Initialize the diagnostic tools
-// function initDiagnosticTools() {
-//   // Add developer mode toggle (always available)
-//   addDevModeToggle();
-
-//   // Check if dev mode is enabled
-//   if (
-//     localStorage.getItem("devMode") === "true" ||
-//     window.location.search.includes("diagnostic")
-//   ) {
-//     injectDiagnosticTool();
-//   }
-
-//   // Secret keyboard shortcut to enable dev mode
-//   document.addEventListener("keydown", (event) => {
-//     // Ctrl+Shift+D to toggle dev mode
-//     if (event.ctrlKey && event.shiftKey && event.key === "D") {
-//       const currentState = localStorage.getItem("devMode") === "true";
-//       localStorage.setItem("devMode", (!currentState).toString());
-
-//       if (!currentState) {
-//         injectDiagnosticTool();
-//       } else {
-//         const panel = document.getElementById("firebase-diagnostic");
-//         if (panel) panel.remove();
-//       }
-//     }
-//   });
-// }
 /**
  * Setup all event listeners for the page
  */
 function setupEventListeners() {
+  // Login form submission
+  const loginForm = document.getElementById("login-form");
+  if (loginForm) {
+    loginForm.addEventListener("submit", handleLogin);
+  }
+
   // Example of checking if an element exists before adding listeners
   const loginButton = document.getElementById("login-button");
   if (loginButton) {
-    loginButton.addEventListener("click", handleLogin);
+    loginButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      handleLogin(e);
+    });
   }
 
   // Password visibility toggle
@@ -446,7 +160,7 @@ function setupEventListeners() {
     createAccountLink.addEventListener("click", (e) => {
       e.preventDefault();
       showNotification(
-        "Account creation is currently disabled in this version."
+          t("login.accountCreationDisabled", "Account creation is currently disabled in this version.")
       );
     });
   }
@@ -482,6 +196,12 @@ function setupEventListeners() {
       testFirebaseAuth();
     }
   });
+
+  // Listen for language changes
+  window.addEventListener("languageChanged", () => {
+    applyLanguageDirection();
+    updateConnectionUI(isOnline);
+  });
 }
 
 /**
@@ -491,12 +211,12 @@ function setupEventListeners() {
 function handleSocialLogin(e) {
   e.preventDefault();
   const provider = this.classList.contains("google")
-    ? "Google"
-    : this.classList.contains("microsoft")
-    ? "Microsoft"
-    : "Apple";
+      ? "Google"
+      : this.classList.contains("microsoft")
+          ? "Microsoft"
+          : "Apple";
 
-  showNotification(`${provider} login will be available in the next release.`);
+  showNotification(t("login.providerAvailableLater", `${provider} login will be available in the next release.`));
 }
 
 /**
@@ -535,6 +255,10 @@ function showNotification(message) {
       }
       .dark-mode .notification {
         background-color: var(--accent-color);
+      }
+      .rtl-layout .notification {
+        right: auto;
+        left: 20px;
       }
     `;
     document.head.appendChild(style);
@@ -682,14 +406,14 @@ function validateInput(input) {
 
   // Validate based on input type or data-validate attribute
   const validateType =
-    inputContainer.getAttribute("data-validate") || input.type;
+      inputContainer.getAttribute("data-validate") || input.type;
 
   switch (validateType) {
     case "email":
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(value)) {
         inputContainer.classList.add("invalid");
-        helperText.textContent = "Please enter a valid email address";
+        helperText.textContent = t("login.errors.invalidEmail", "Please enter a valid email address");
         helperText.classList.add("error");
         return false;
       }
@@ -698,7 +422,7 @@ function validateInput(input) {
     case "password":
       if (value.length < 8) {
         inputContainer.classList.add("invalid");
-        helperText.textContent = "Password must be at least 8 characters";
+        helperText.textContent = t("login.errors.passwordLength", "Password must be at least 8 characters");
         helperText.classList.add("error");
         return false;
       }
@@ -717,17 +441,22 @@ function forceLogoutAndCleanStorage() {
   console.log("Forcing logout and cleaning storage");
 
   try {
-    // 1. Clear localStorage (except theme preference)
+    // 1. Clear localStorage (except theme preference and language preference)
     const savedTheme = localStorage.getItem("theme");
+    const savedLanguage = localStorage.getItem("language");
 
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     localStorage.removeItem("auth");
     localStorage.removeItem("session");
-    // Clear any other potential auth items but preserve theme
+    // Clear any other potential auth items but preserve theme and language
 
     if (savedTheme) {
       localStorage.setItem("theme", savedTheme);
+    }
+
+    if (savedLanguage) {
+      localStorage.setItem("language", savedLanguage);
     }
 
     // 2. Clear sessionStorage
@@ -739,8 +468,8 @@ function forceLogoutAndCleanStorage() {
     // 3. Clear cookies related to authentication
     document.cookie.split(";").forEach(function (c) {
       document.cookie = c
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
 
     // 4. Set a local flag to indicate this is a fresh start
@@ -750,8 +479,8 @@ function forceLogoutAndCleanStorage() {
     if (window.api && typeof window.api.logoutUser === "function") {
       console.log("Calling API logout");
       window.api
-        .logoutUser()
-        .catch((e) => console.error("Error during API logout:", e));
+          .logoutUser()
+          .catch((e) => console.error("Error during API logout:", e));
     }
   } catch (error) {
     console.error("Error during forced logout:", error);
@@ -833,12 +562,12 @@ function updateConnectionUI(online) {
   if (online) {
     indicator.classList.remove("offline");
     indicator.classList.add("online");
-    statusText.textContent = "Online Mode";
+    statusText.textContent = t("header.onlineMode", "Online Mode");
     connectionStatus.classList.remove("offline");
   } else {
     indicator.classList.remove("online");
     indicator.classList.add("offline");
-    statusText.textContent = "Offline Mode";
+    statusText.textContent = t("header.offlineMode", "Offline Mode");
     connectionStatus.classList.add("offline");
   }
 }
@@ -855,9 +584,9 @@ async function handleLogin(e) {
 
   // Show loading state
   const loginButton = document.getElementById("login-button");
-  const originalText = loginButton.textContent;
+  const originalText = loginButton.querySelector(".btn-text").textContent;
   loginButton.disabled = true;
-  loginButton.textContent = "Logging in...";
+  loginButton.querySelector(".btn-text").textContent = t("login.loggingIn", "Logging in...");
 
   try {
     const email = document.getElementById("email").value;
@@ -874,8 +603,8 @@ async function handleLogin(e) {
     } else {
       onlineStatus = navigator.onLine;
       console.log(
-        "window.api not available, using navigator.onLine:",
-        onlineStatus
+          "window.api not available, using navigator.onLine:",
+          onlineStatus
       );
     }
 
@@ -914,15 +643,15 @@ async function handleLogin(e) {
       window.location.href = "../index.html";
     } else {
       showError(
-        result.message || "Login failed. Please check your credentials."
+          result.message || t("login.errors.checkCredentials", "Login failed. Please check your credentials.")
       );
     }
   } catch (error) {
     console.error("Login error:", error);
-    showError("Login error: " + (error.message || "Unknown error"));
+    showError(t("login.errors.loginError", "Login error:") + " " + (error.message || t("login.errors.unknown", "Unknown error")));
   } finally {
     loginButton.disabled = false;
-    loginButton.textContent = originalText;
+    loginButton.querySelector(".btn-text").textContent = originalText;
     isLoggingIn = false;
   }
 }
@@ -965,14 +694,14 @@ function testFirebaseAuthDirectly() {
   const password = document.getElementById("password").value;
 
   if (!email || !password) {
-    showError("Please enter both email and password to test authentication");
+    showError(t("login.errors.enterBoth", "Please enter both email and password to test authentication"));
     return;
   }
 
   // Show loading state
   const testButton = document.createElement("button");
   testButton.id = "test-auth-button";
-  testButton.textContent = "Testing...";
+  testButton.textContent = t("login.testing", "Testing...");
   testButton.disabled = true;
   testButton.style.position = "fixed";
   testButton.style.bottom = "10px";
@@ -986,54 +715,54 @@ function testFirebaseAuthDirectly() {
 
   // Attempt to test Firebase auth directly
   window.api
-    .testFirebaseAuth({ email, password })
-    .then((result) => {
-      console.log("Direct Firebase auth test result:", result);
-      if (result.success) {
-        testButton.textContent = "Auth Test: SUCCESS";
-        testButton.style.backgroundColor = "#4CAF50";
-        testButton.style.color = "white";
+      .testFirebaseAuth({ email, password })
+      .then((result) => {
+        console.log("Direct Firebase auth test result:", result);
+        if (result.success) {
+          testButton.textContent = t("login.authTestSuccess", "Auth Test: SUCCESS");
+          testButton.style.backgroundColor = "#4CAF50";
+          testButton.style.color = "white";
 
-        // Show detailed success info
-        showNotification(
-          "Firebase auth test succeeded! User: " + result.user.email
-        );
-      } else {
-        testButton.textContent = "Auth Test: FAILED";
-        testButton.style.backgroundColor = "#F44336";
-        testButton.style.color = "white";
+          // Show detailed success info
+          showNotification(
+              t("login.firebaseSuccess", "Firebase auth test succeeded! User:") + " " + result.user.email
+          );
+        } else {
+          testButton.textContent = t("login.authTestFailed", "Auth Test: FAILED");
+          testButton.style.backgroundColor = "#F44336";
+          testButton.style.color = "white";
 
-        // Show error details
-        showError(
-          `Firebase auth error: ${result.code || "unknown"} - ${
-            result.message || "No message"
-          }`
-        );
-      }
-    })
-    .catch((error) => {
-      console.error("Error during Firebase auth test:", error);
-      testButton.textContent = "Auth Test: ERROR";
-      testButton.style.backgroundColor = "#FF9800";
-      testButton.style.color = "white";
-
-      showError("Firebase test failed: " + (error.message || "Unknown error"));
-    })
-    .finally(() => {
-      // Remove the button after 5 seconds
-      setTimeout(() => {
-        if (document.body.contains(testButton)) {
-          document.body.removeChild(testButton);
+          // Show error details
+          showError(
+              t("login.firebaseError", "Firebase auth error:") + ` ${result.code || "unknown"} - ${
+                  result.message || t("login.noMessage", "No message")
+              }`
+          );
         }
-      }, 5000);
-    });
+      })
+      .catch((error) => {
+        console.error("Error during Firebase auth test:", error);
+        testButton.textContent = t("login.authTestError", "Auth Test: ERROR");
+        testButton.style.backgroundColor = "#FF9800";
+        testButton.style.color = "white";
+
+        showError(t("login.testFailed", "Firebase test failed:") + " " + (error.message || t("login.errors.unknown", "Unknown error")));
+      })
+      .finally(() => {
+        // Remove the button after 5 seconds
+        setTimeout(() => {
+          if (document.body.contains(testButton)) {
+            document.body.removeChild(testButton);
+          }
+        }, 5000);
+      });
 }
 
 /**
  * Check remembered user
  */
 function checkRememberedUser() {
-  const rememberedUser = localStorage.getItem("rememberedUser");
+  const rememberedUser = localStorage.getItem("remembered_email");
   if (rememberedUser) {
     const emailInput = document.getElementById("email");
     if (emailInput) {
