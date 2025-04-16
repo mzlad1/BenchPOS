@@ -1,195 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Completely revised CSP that's more permissive for stylesheets -->
-  <meta
-          http-equiv="Content-Security-Policy"
-          content="default-src 'self';
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Completely revised CSP that's more permissive for stylesheets -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
                script-src 'self'; 
                style-src * 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; 
                font-src 'self' https://fonts.gstatic.com data:; 
                img-src 'self' data:;"
-  />
+    />
 
-  <title data-i18n="login.pageTitle">MZLAD billing app - Premium Login</title>
-  <link rel="stylesheet" href="../assets/fonts/fontawesome/css/all.min.css" />
-  <link rel="stylesheet" href="../styles/login.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-  />
-</head>
-<body>
-<!-- Theme toggle -->
-<div class="theme-toggle">
-  <input type="checkbox" id="theme-switch" class="theme-switch" />
-  <label for="theme-switch" class="theme-switch-label">
-    <i class="fas fa-moon"></i>
-    <i class="fas fa-sun"></i>
-    <div class="ball"></div>
-  </label>
-</div>
+    <title data-i18n="login.pageTitle">MZLAD billing app - Premium Login</title>
+    <link rel="stylesheet" href="../assets/fonts/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" href="../styles/login.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Theme toggle -->
+    <div class="theme-toggle">
+      <input type="checkbox" id="theme-switch" class="theme-switch" />
+      <label for="theme-switch" class="theme-switch-label">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+        <div class="ball"></div>
+      </label>
+    </div>
 
-
-<div class="container">
-  <!-- 3D Card Container -->
-  <div class="card-perspective">
-    <div class="login-container">
-      <!-- Left panel with brand info -->
-      <div class="app-info">
-        <div class="brand">
-          <div class="logo">
-            <svg viewBox="0 0 50 50" class="logo-svg">
-              <path
-                      d="M10,10 L40,10 L40,40 L10,40 Z"
-                      class="logo-shape"
-              ></path>
-              <text x="17" y="27" fill="white" font-size="12">MZ</text>
-            </svg>
-          </div>
-          <h1>MZLAD</h1>
-        </div>
-
-        <p class="tagline" data-i18n="login.tagline">
-          The complete solution for managing your small business inventory
-          and sales with precision.
-        </p>
-
-        <div class="features">
-          <h3 data-i18n="login.whyChoose">Why Choose MZLAD?</h3>
-          <ul class="feature-list">
-            <li data-delay="0">
-              <i class="fas fa-check-circle"></i> <span data-i18n="login.features.inventory">Real-time inventory tracking</span>
-            </li>
-            <li data-delay="0.1">
-              <i class="fas fa-check-circle"></i> <span data-i18n="login.features.invoicing">Smart invoicing & billing</span>
-            </li>
-            <li data-delay="0.2">
-              <i class="fas fa-check-circle"></i> <span data-i18n="login.features.offline">Offline capability for uninterrupted work</span>
-            </li>
-            <li data-delay="0.3">
-              <i class="fas fa-check-circle"></i> <span data-i18n="login.features.analytics">Comprehensive sales analytics</span>
-            </li>
-            <li data-delay="0.4">
-              <i class="fas fa-check-circle"></i> <span data-i18n="login.features.sync">Multi-device synchronization</span>
-            </li>
-            <li data-delay="0.5">
-              <i class="fas fa-check-circle"></i> <span data-i18n="login.features.ai">AI-powered sales predictions</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Animated background elements -->
-        <div class="animated-bg">
-          <div class="circle circle-1"></div>
-          <div class="circle circle-2"></div>
-          <div class="circle circle-3"></div>
-          <div class="blob blob-1"></div>
-          <div class="blob blob-2"></div>
-        </div>
-      </div>
-
-      <!-- Right panel with login form -->
-      <div class="login-form-container">
-        <!-- Connection status indicator -->
-        <div class="connection-status" id="connection-status">
-          <div class="indicator online" id="connection-indicator"></div>
-          <span id="connection-text" data-i18n="header.onlineMode">Online Mode</span>
-        </div>
-
-        <div class="form-header">
-          <h2 data-i18n="login.welcome">Welcome Back</h2>
-          <p class="form-subtitle" data-i18n="login.subtitle">
-            Enter your credentials to access your account
-          </p>
-        </div>
-
-        <!-- Error message container -->
-        <div id="error-message" class="error-message" style="display: none">
-          <i class="fas fa-exclamation-circle"></i>
-          <span id="error-text"></span>
-        </div>
-
-        <!-- Login form -->
-        <form id="login-form">
-          <div class="form-group">
-            <label for="email" data-i18n="login.email">Email Address</label>
-            <div class="input-with-icon" data-validate="email">
-              <input
-                      type="email"
-                      id="email"
-                      data-i18n-placeholder="login.email"
-                      placeholder="Enter your email"
-                      required
-                      autocomplete="email"
-              />
-              <i class="fas fa-envelope icon-main"></i>
-              <div class="validation-indicator">
-                <i class="fas fa-check"></i>
+    <div class="container">
+      <!-- 3D Card Container -->
+      <div class="card-perspective">
+        <div class="login-container">
+          <!-- Left panel with brand info -->
+          <div class="app-info">
+            <div class="brand">
+              <div class="logo">
+                <img
+                  src="../assets/logo.png"
+                  alt="MZLAD Logo"
+                  class="logo-svg"
+                />
               </div>
             </div>
-            <div class="helper-text" id="email-helper"></div>
-          </div>
 
-          <div class="form-group">
-            <label for="password" data-i18n="login.password">Password</label>
-            <div class="input-with-icon" data-validate="password">
-              <input
-                      type="password"
-                      id="password"
-                      data-i18n-placeholder="login.password"
-                      placeholder="Enter your password"
-                      required
-                      autocomplete="current-password"
-              />
-              <i class="fas fa-lock icon-main"></i>
-              <div class="password-toggle" id="password-toggle">
-                <i class="fas fa-eye"></i>
-              </div>
-              <div class="validation-indicator">
-                <i class="fas fa-check"></i>
-              </div>
+            <p class="tagline" data-i18n="login.tagline">
+              The complete solution for managing your small business inventory
+              and sales with precision.
+            </p>
+
+            <div class="features">
+              <h3 data-i18n="login.whyChoose">Why Choose MZLAD?</h3>
+              <ul class="feature-list">
+                <li data-delay="0">
+                  <i class="fas fa-check-circle"></i>
+                  <span data-i18n="login.features.inventory"
+                    >Real-time inventory tracking</span
+                  >
+                </li>
+                <li data-delay="0.1">
+                  <i class="fas fa-check-circle"></i>
+                  <span data-i18n="login.features.invoicing"
+                    >Smart invoicing & billing</span
+                  >
+                </li>
+                <li data-delay="0.2">
+                  <i class="fas fa-check-circle"></i>
+                  <span data-i18n="login.features.offline"
+                    >Offline capability for uninterrupted work</span
+                  >
+                </li>
+                <li data-delay="0.3">
+                  <i class="fas fa-check-circle"></i>
+                  <span data-i18n="login.features.analytics"
+                    >Comprehensive sales analytics</span
+                  >
+                </li>
+                <li data-delay="0.4">
+                  <i class="fas fa-check-circle"></i>
+                  <span data-i18n="login.features.sync"
+                    >Multi-device synchronization</span
+                  >
+                </li>
+                <li data-delay="0.5">
+                  <i class="fas fa-check-circle"></i>
+                  <span data-i18n="login.features.ai"
+                    >AI-powered sales predictions</span
+                  >
+                </li>
+              </ul>
             </div>
-            <div class="helper-text" id="password-helper"></div>
-          </div>
 
-          <div class="form-options">
-            <div class="remember-me">
-              <input
-                      type="checkbox"
-                      id="remember-me"
-                      class="custom-checkbox"
-              />
-              <label for="remember-me" data-i18n="login.rememberMe">Remember me</label>
+            <!-- Animated background elements -->
+            <div class="animated-bg">
+              <div class="circle circle-1"></div>
+              <div class="circle circle-2"></div>
+              <div class="circle circle-3"></div>
+              <div class="blob blob-1"></div>
+              <div class="blob blob-2"></div>
             </div>
-            <a href="#" id="forgot-password" class="forgot-link" data-i18n="login.forgotPassword">Forgot password?</a>
           </div>
 
-          <button type="submit" id="login-button" class="btn primary-btn">
-            <span class="btn-text" data-i18n="login.loginButton">Log In</span>
-            <i class="fas fa-arrow-right btn-icon"></i>
-          </button>
-        </form>
+          <!-- Right panel with login form -->
+          <div class="login-form-container">
+            <!-- Connection status indicator -->
+            <div class="connection-status" id="connection-status">
+              <div class="indicator online" id="connection-indicator"></div>
+              <span id="connection-text" data-i18n="header.onlineMode"
+                >Online Mode</span
+              >
+            </div>
+
+            <div class="form-header">
+              <h2 data-i18n="login.welcome">Welcome Back</h2>
+              <p class="form-subtitle" data-i18n="login.subtitle">
+                Enter your credentials to access your account
+              </p>
+            </div>
+
+            <!-- Error message container -->
+            <div id="error-message" class="error-message" style="display: none">
+              <i class="fas fa-exclamation-circle"></i>
+              <span id="error-text"></span>
+            </div>
+
+            <!-- Login form -->
+            <form id="login-form">
+              <div class="form-group">
+                <label for="email" data-i18n="login.email">Email Address</label>
+                <div class="input-with-icon" data-validate="email">
+                  <input
+                    type="email"
+                    id="email"
+                    data-i18n-placeholder="login.email"
+                    placeholder="Enter your email"
+                    required
+                    autocomplete="email"
+                  />
+                  <i class="fas fa-envelope icon-main"></i>
+                  <div class="validation-indicator">
+                    <i class="fas fa-check"></i>
+                  </div>
+                </div>
+                <div class="helper-text" id="email-helper"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="password" data-i18n="login.password"
+                  >Password</label
+                >
+                <div class="input-with-icon" data-validate="password">
+                  <input
+                    type="password"
+                    id="password"
+                    data-i18n-placeholder="login.password"
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password"
+                  />
+                  <i class="fas fa-lock icon-main"></i>
+                  <div class="password-toggle" id="password-toggle">
+                    <i class="fas fa-eye"></i>
+                  </div>
+                  <div class="validation-indicator">
+                    <i class="fas fa-check"></i>
+                  </div>
+                </div>
+                <div class="helper-text" id="password-helper"></div>
+              </div>
+
+              <div class="form-options">
+                <div class="remember-me">
+                  <input
+                    type="checkbox"
+                    id="remember-me"
+                    class="custom-checkbox"
+                  />
+                  <label for="remember-me" data-i18n="login.rememberMe"
+                    >Remember me</label
+                  >
+                </div>
+                <a
+                  href="#"
+                  id="forgot-password"
+                  class="forgot-link"
+                  data-i18n="login.forgotPassword"
+                  >Forgot password?</a
+                >
+              </div>
+
+              <button type="submit" id="login-button" class="btn primary-btn">
+                <span class="btn-text" data-i18n="login.loginButton"
+                  >Log In</span
+                >
+                <i class="fas fa-arrow-right btn-icon"></i>
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Loader overlay -->
-<div class="loader-overlay" id="loader-overlay">
-  <div class="spinner-container">
-    <div class="spinner"></div>
-    <p class="loading-text" data-i18n="login.loggingIn">Logging in</p>
-  </div>
-</div>
+    <!-- Loader overlay -->
+    <div class="loader-overlay" id="loader-overlay">
+      <div class="spinner-container">
+        <div class="spinner"></div>
+        <p class="loading-text" data-i18n="login.loggingIn">Logging in</p>
+      </div>
+    </div>
 
-<!-- Scripts -->
-<script src="../locales/i18n.js"></script>
+    <!-- Scripts -->
+    <script src="../locales/i18n.js"></script>
 
-<script src="../scripts/login.js"></script>
-</body>
+    <script src="../scripts/login.js"></script>
+  </body>
 </html>

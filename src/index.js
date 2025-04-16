@@ -241,9 +241,15 @@ const createWindow = () => {
   // Create the browser window
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width, height } = primaryDisplay.workAreaSize;
+  // Keep your initial window creation with frame: false for the splash screen
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    frame: false, // No frame for splash screen
+    transparent: true, // Make background transparent
+    backgroundColor: "rgba(0,0,0,0)",
+    center: true,
+    show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -252,37 +258,80 @@ const createWindow = () => {
       allowRunningInsecureContent: false,
       worldSafeExecuteJavaScript: true,
       enableRemoteModule: false,
-      devTools: true, // Temporarily enable devTools regardless of environment
+      devTools: true,
     },
   });
-  // Maximize the window
-  mainWindow.maximize();
-  // Set Content-Security-Policy
-  mainWindow.webContents.session.webRequest.onHeadersReceived(
-    (details, callback) => {
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          "Content-Security-Policy": [
-            "default-src 'self'; " +
-              "script-src 'self' 'unsafe-inline'; " +
-              "style-src 'self' 'unsafe-inline' https://*.cloudflare.com https://*.googleapis.com; " +
-              "font-src 'self' https://*.gstatic.com https://*.cloudflare.com data: https://*.fontawesome.com; " +
-              "connect-src 'self'; " +
-              "img-src 'self' data:;",
-          ],
+
+  // Load the splash screen
+  mainWindow.loadFile(path.join(__dirname, "./splash.html"));
+
+  // Show window when it's ready to avoid flickering
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show();
+  });
+
+  // Schedule transition to login page after splash finishes
+  setTimeout(() => {
+    // Make sure the window isn't closed before trying to load login
+    if (!mainWindow.isDestroyed()) {
+      console.log("Creating new window with frame for login");
+
+      // Create a new window with frame for login
+      const loginWindow = new BrowserWindow({
+        width: 1200,
+        height: 800,
+        frame: true, // WITH frame for login
+        center: true,
+        show: false, // Don't show until ready
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          preload: path.join(__dirname, "preload.js"),
+          webSecurity: true,
+          allowRunningInsecureContent: false,
+          worldSafeExecuteJavaScript: true,
+          enableRemoteModule: false,
+          devTools: true,
         },
       });
+
+      // Set the same content security policy
+      loginWindow.webContents.session.webRequest.onHeadersReceived(
+        (details, callback) => {
+          callback({
+            responseHeaders: {
+              ...details.responseHeaders,
+              "Content-Security-Policy": [
+                "default-src 'self'; " +
+                  "script-src 'self' 'unsafe-inline'; " +
+                  "style-src 'self' 'unsafe-inline' https://*.cloudflare.com https://*.googleapis.com; " +
+                  "font-src 'self' https://*.gstatic.com https://*.cloudflare.com data: https://*.fontawesome.com; " +
+                  "connect-src 'self'; " +
+                  "img-src 'self' data:;",
+              ],
+            },
+          });
+        }
+      );
+
+      // Load login page in new window
+      loginWindow.loadFile(path.join(__dirname, "./views/login.html"));
+
+      // Show new window when ready
+      loginWindow.once("ready-to-show", () => {
+        loginWindow.show();
+        loginWindow.maximize(); // Maximize it
+
+        // Close the splash window once login is loaded
+        if (!mainWindow.isDestroyed()) {
+          mainWindow.close();
+        }
+
+        // Replace the mainWindow reference with the new window
+        mainWindow = loginWindow;
+      });
     }
-  );
-
-  // Load the login page first
-  mainWindow.loadFile(path.join(__dirname, "./views/login.html"));
-
-  // // Only open dev tools in development mode
-  // if (process.env.NODE_ENV === "development") {
-  //   mainWindow.webContents.openDevTools();
-  // }
+  }, 3000); // Adjust timing as needed (3 seconds matches the animation)
 
   // Add this after creating the window
   mainWindow.webContents.on("context-menu", (event, params) => {
@@ -683,6 +732,25 @@ function setupIpcHandlers() {
         resolve(false);
       });
     });
+  });
+  // Add this handler for splash screen
+  ipcMain.handle("splash-ready", () => {
+    // This would be called by splash.html to signal it's ready
+    console.log("Splash screen is ready");
+    return true;
+  });
+
+  const splashHandlers = [];
+  ipcMain.on("register-splash-complete-handler", (event) => {
+    const webContentsId = event.sender.id;
+
+    // Keep track of which window registered the handler
+    splashHandlers.push(webContentsId);
+
+    // Make sure we don't have duplicate handlers
+    console.log(
+      `Registered splash complete handler for window ${webContentsId}`
+    );
   });
 
   ipcMain.handle("get-online-status", () => {

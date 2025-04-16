@@ -61,6 +61,11 @@ contextBridge.exposeInMainWorld("api", {
   getFirebaseConfig: async () => {
     return await ipcRenderer.invoke("getFirebaseConfig");
   },
+  splashReady: () => ipcRenderer.invoke("splash-ready"),
+  onSplashScreenComplete: (callback) => {
+    ipcRenderer.on("splash-complete", () => callback());
+    ipcRenderer.send("register-splash-complete-handler");
+  },
   // Online/Offline and sync functions
   // getOnlineStatus: async () => {
   //   console.log("Preload: Calling get-online-status");

@@ -144,7 +144,7 @@ const CORE_TRANSLATIONS = {
   },
   ar: {
     // App
-    // "app.name": "نظام مزلاد للفواتير",
+    // "app.name": "نظام بينش للفواتير",
     // // Sidebar
     // "sidebar.dashboard": "لوحة التحكم",
     // "sidebar.newSale": "بيع جديد",
