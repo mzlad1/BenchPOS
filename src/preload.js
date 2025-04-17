@@ -16,9 +16,9 @@ contextBridge.exposeInMainWorld("api", {
     console.log("Preload: Calling add-product", product);
     return await safeIpcInvoke("add-product", product);
   },
-  getProducts: async () => {
-    console.log("Preload: Calling get-products");
-    return await safeIpcInvoke("get-products");
+  getProducts: async (options = {}) => {
+    console.log("Preload: Calling get-products with options:", options);
+    return await safeIpcInvoke("get-products", options);
   },
   updateProduct: async (product) => {
     console.log("Preload: Calling update-product", product);

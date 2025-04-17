@@ -10,7 +10,39 @@ const pageSize = 10; // Number of products per page
 let totalPages = 1;
 let selectedProductIds = [];
 let searchTimeout;
+document.addEventListener('pageCacheCleared', resetInventoryState);
+function resetInventoryState() {
+  console.log("Resetting inventory state variables");
 
+  // Reset all inventory-specific global variables
+  products = [];
+  editingProductId = null;
+  currentPage = 1;
+  selectedProductIds = [];
+
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+    searchTimeout = null;
+  }
+
+  // Clear the search field and results
+  const searchField = document.getElementById("product-search");
+  if (searchField) searchField.value = "";
+
+  const searchStatus = document.getElementById("search-status");
+  if (searchStatus) searchStatus.textContent = "";
+
+  // Reset the search filter to default
+  const searchFilter = document.getElementById("search-filter");
+  if (searchFilter) searchFilter.value = "all";
+
+  // Clear selection checkboxes
+  const selectAllCheckbox = document.getElementById("select-all-checkbox");
+  if (selectAllCheckbox) selectAllCheckbox.checked = false;
+
+  // Reset bulk actions UI
+  updateBulkActionsUI();
+}
 // DOM Elements initialization
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize page
@@ -178,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Initialize the page
 async function initPage() {
   // Check permissions (this is now handled in the main HTML by LayoutManager)
-
+  resetInventoryState();
   // Make sure elements exist before trying to use them
   const currentDate = document.getElementById("current-date");
   if (currentDate) {
@@ -381,105 +413,161 @@ function showNotification(message, type = "info") {
 // Load products from database
 async function loadProducts() {
   try {
-    console.log("Loading products...");
-    products = await window.api.getProducts();
-    console.log(`Loaded ${products ? products.length : 0} products`);
+    console.log("Loading products for page:", currentPage , ' page size:', pageSize);
 
-    // Make sure products is always an array, even if the API returns null
-    if (!products || !Array.isArray(products)) {
-      console.warn(
-        "Products is null or not an array, initializing empty array"
-      );
-      products = [];
+    // Define pagination options
+    const options = {
+      page: currentPage,
+      pageSize: pageSize,
+      filters: {} // We'll use this for search/filtering later
+    };
+
+    // Get search term if any
+    const searchElement = document.getElementById("product-search");
+    const searchTerm = searchElement ? searchElement.value.toLowerCase().trim() : "";
+    const filterElement = document.getElementById("search-filter");
+    const filterField = filterElement ? filterElement.value : "all";
+
+    // Add search filters if present
+    if (searchTerm) {
+      if (filterField === "all") {
+        options.filters.search = searchTerm;
+      } else {
+        options.filters[filterField] = searchTerm;
+      }
     }
 
-    renderProducts(products);
+    // Request paginated data from backend
+    const result = await window.api.getProducts(options);
+
+    // Handle the new response format
+    if (result && result.items) {
+      // Server returned paginated format
+      products = result.items;
+      totalPages = result.totalPages;
+      currentPage = result.page;
+
+      // Pass only the items for rendering
+      renderProducts(products, true, result.totalCount);
+    } else {
+      // Fallback for backward compatibility if server didn't return paginated format
+      products = result || [];
+      renderProducts(products);
+    }
+
     updateProductStats();
 
     // Update inventory badge in sidebar if LayoutManager is available
     if (window.LayoutManager) {
-      const lowStockCount = products.filter(
-        (product) => product.stock <= 5
-      ).length;
+      // We need to make a separate call to get low stock count if we're paginating
+      const lowStockCount = await getLowStockCount();
       window.LayoutManager.updateInventoryBadge(lowStockCount);
     }
   } catch (error) {
     console.error("Error loading products:", error);
     document.getElementById("products-table-body").innerHTML =
-      '<tr><td colspan="9">' +
-      window.t("reports.messages.dataLoadError") +
-      "</td></tr>";
+        '<tr><td colspan="9">' +
+        window.t("reports.messages.dataLoadError") +
+        "</td></tr>";
     // Initialize empty products array to prevent further errors
     products = [];
   }
 
   window.LayoutManager.refreshInventoryBadge();
 }
+async function getLowStockCount() {
+  try {
+    // This could be a specialized API call that just returns the count
+    // For now, we'll make a request with a filter
+    const options = {
+      filters: {
+        lowStock: true
+      }
+    };
 
+    const result = await window.api.getProducts(options);
+
+    if (result && typeof result.totalCount === 'number') {
+      return result.totalCount;
+    } else if (Array.isArray(result)) {
+      return result.filter(product => product.stock <= 5).length;
+    }
+
+    return 0;
+  } catch (error) {
+    console.error("Error getting low stock count:", error);
+    return 0;
+  }
+}
 // Update renderProducts function to be more efficient
 
-function renderProducts(productsToRender) {
+function renderProducts(productsToRender, isPaginated = false, totalCount = 0) {
   const tableBody = document.getElementById("products-table-body");
   tableBody.innerHTML = "";
 
-  // Get search term and filter (keep this part)
-  const searchElement = document.getElementById("product-search");
-  const searchTerm = searchElement
-    ? searchElement.value.toLowerCase().trim()
-    : "";
-  const filterElement = document.getElementById("search-filter");
-  const filterField = filterElement ? filterElement.value : "all";
-
   if (!productsToRender || productsToRender.length === 0) {
-    // Empty state handling (keep this part)
+    // Empty state handling
     tableBody.innerHTML =
-      '<tr><td colspan="9">' +
-      window.t("inventory.table.noProducts") +
-      "</td></tr>";
-    currentPage = 1;
+        '<tr><td colspan="9">' +
+        window.t("inventory.table.noProducts") +
+        "</td></tr>";
+
+    if (!isPaginated) {
+      currentPage = 1;
+      totalPages = 1;
+    }
+
     setupPagination();
     return;
   }
 
-  // Performance improvement: Store total count but only process visible items
-  const totalCount = productsToRender.length;
+  // Use total count from server if provided, otherwise use local length
+  const effectiveTotalCount = isPaginated ? totalCount : productsToRender.length;
 
-  // Calculate pagination
-  totalPages = Math.ceil(totalCount / pageSize);
-  if (currentPage > totalPages) {
-    currentPage = totalPages;
+  // If not paginated, calculate pagination locally
+  if (!isPaginated) {
+    totalPages = Math.ceil(effectiveTotalCount / pageSize);
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    // Get current page products for client-side pagination
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, effectiveTotalCount);
+    productsToRender = productsToRender.slice(startIndex, endIndex);
   }
 
-  // Get current page products
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalCount);
-
-  // Only process the visible items instead of the entire dataset
-  const visibleProducts = productsToRender.slice(startIndex, endIndex);
+  // Get search term and filter (keep this part)
+  const searchElement = document.getElementById("product-search");
+  const searchTerm = searchElement
+      ? searchElement.value.toLowerCase().trim()
+      : "";
+  const filterElement = document.getElementById("search-filter");
+  const filterField = filterElement ? filterElement.value : "all";
 
   // Display a loading indicator for large datasets
-  if (totalCount > 1000 && !tableBody.querySelector(".loading-indicator")) {
+  if (effectiveTotalCount > 1000 && !tableBody.querySelector(".loading-indicator")) {
     const loadingRow = document.createElement("tr");
     loadingRow.className = "loading-indicator";
     loadingRow.innerHTML = `<td colspan="9">${
-      window.t("inventory.loading") || "Loading products..."
+        window.t("inventory.loading") || "Loading products..."
     }</td>`;
     tableBody.appendChild(loadingRow);
 
     // Use setTimeout to prevent UI freezing
     setTimeout(() => {
-      renderProductRows(visibleProducts, tableBody, searchTerm, filterField);
+      renderProductRows(productsToRender, tableBody, searchTerm, filterField);
       tableBody.querySelector(".loading-indicator")?.remove();
     }, 10);
   } else {
-    renderProductRows(visibleProducts, tableBody, searchTerm, filterField);
+    renderProductRows(productsToRender, tableBody, searchTerm, filterField);
   }
 
   // Setup pagination controls
-  setupPagination();
+  setupPagination(effectiveTotalCount);
 
   // Update selection UI
-  updateSelectionState(visibleProducts);
+  updateSelectionState(productsToRender);
 
   // Update bulk actions UI
   updateBulkActionsUI();
@@ -505,7 +593,7 @@ function renderProductRows(products, tableBody, searchTerm, filterField) {
         }
       } else {
         selectedProductIds = selectedProductIds.filter(
-          (id) => id !== product.id
+            (id) => id !== product.id
         );
       }
       updateBulkActionsUI();
@@ -513,27 +601,27 @@ function renderProductRows(products, tableBody, searchTerm, filterField) {
     checkboxCell.appendChild(checkbox);
     row.appendChild(checkboxCell);
 
-    // Name column
-    const nameCell = document.createElement("td");
-    nameCell.innerHTML = highlightSearchTerms(
-      product.name || "",
-      filterField === "name" || filterField === "all" ? searchTerm : ""
-    );
-    row.appendChild(nameCell);
-
-    // SKU column
+    // SKU column - MOVED TO MATCH HTML ORDER
     const skuCell = document.createElement("td");
     skuCell.innerHTML = highlightSearchTerms(
-      product.sku || "",
-      filterField === "sku" || filterField === "all" ? searchTerm : ""
+        product.sku || "",
+        filterField === "sku" || filterField === "all" ? searchTerm : ""
     );
     row.appendChild(skuCell);
+
+    // Name column - MOVED TO MATCH HTML ORDER
+    const nameCell = document.createElement("td");
+    nameCell.innerHTML = highlightSearchTerms(
+        product.name || "",
+        filterField === "name" || filterField === "all" ? searchTerm : ""
+    );
+    row.appendChild(nameCell);
 
     // Category column
     const categoryCell = document.createElement("td");
     categoryCell.innerHTML = highlightSearchTerms(
-      product.category || "",
-      filterField === "category" || filterField === "all" ? searchTerm : ""
+        product.category || "",
+        filterField === "category" || filterField === "all" ? searchTerm : ""
     );
     row.appendChild(categoryCell);
 
@@ -546,6 +634,12 @@ function renderProductRows(products, tableBody, searchTerm, filterField) {
     const costCell = document.createElement("td");
     costCell.textContent = formatCurrency(product.cost || 0);
     row.appendChild(costCell);
+
+    // ADDED: Profit column
+    const profitCell = document.createElement("td");
+    const profit = calculateProfit(product);
+    profitCell.textContent = profit;
+    row.appendChild(profitCell);
 
     // Stock column
     const stockCell = document.createElement("td");
@@ -577,6 +671,7 @@ function renderProductRows(products, tableBody, searchTerm, filterField) {
     tableBody.appendChild(row);
   });
 }
+
 
 // Update selection state based on visible products
 function updateSelectionState(visibleProducts) {
@@ -641,90 +736,14 @@ function updateBulkActionsUI() {
 
 // Function to render the current page
 function renderCurrentPage() {
-  // If filtering is active, use filtered products, otherwise use all products
-  const searchTerm = document
-    .getElementById("product-search")
-    .value.toLowerCase();
-
-  if (!searchTerm) {
-    renderProducts(products);
-  } else {
-    filterProducts();
-  }
-
-  window.LayoutManager.refreshInventoryBadge();
+  loadProducts(); // Call loadProducts with the current page
 }
+
 
 // Filter products based on search input
 function filterProducts() {
   currentPage = 1; // Reset to first page when filtering
-  const searchTerm = document
-    .getElementById("product-search")
-    .value.toLowerCase();
-  const filterField = document.getElementById("search-filter").value;
-  const searchStatus = document.getElementById("search-status");
-
-  if (!searchTerm) {
-    if (searchStatus) searchStatus.textContent = "";
-    renderProducts(products);
-    return;
-  }
-
-  let filteredProducts;
-
-  switch (filterField) {
-    case "sku":
-      filteredProducts = products.filter(
-        (product) =>
-          product.sku && product.sku.toLowerCase().includes(searchTerm)
-      );
-      break;
-    case "name":
-      filteredProducts = products.filter(
-        (product) =>
-          product.name && product.name.toLowerCase().includes(searchTerm)
-      );
-      break;
-    case "category":
-      filteredProducts = products.filter(
-        (product) =>
-          product.category &&
-          product.category.toLowerCase().includes(searchTerm)
-      );
-      break;
-    default:
-      // 'all' - search all fields
-      filteredProducts = products.filter(
-        (product) =>
-          (product.name && product.name.toLowerCase().includes(searchTerm)) ||
-          (product.sku && product.sku.toLowerCase().includes(searchTerm)) ||
-          (product.category &&
-            product.category.toLowerCase().includes(searchTerm))
-      );
-  }
-
-  // Update search status
-  if (searchStatus) {
-    const foundText = window.t("common.found") || "found";
-    searchStatus.textContent = `${filteredProducts.length} ${window.t(
-      "inventory.table.name"
-    )}${filteredProducts.length !== 1 ? "s" : ""} ${foundText}`;
-
-    // If no products found, show a message with reset option
-    if (filteredProducts.length === 0) {
-      const resetText = window.t("common.reset") || "Reset search";
-      searchStatus.innerHTML = `${window.t(
-        "inventory.table.noProducts"
-      )}. <a href="#" id="reset-search">${resetText}</a>`;
-      document.getElementById("reset-search").addEventListener("click", (e) => {
-        e.preventDefault();
-        clearSearch();
-      });
-    }
-  }
-
-  renderProducts(filteredProducts);
-  window.LayoutManager.refreshInventoryBadge();
+  loadProducts(); // Just call loadProducts which will now use the search term
 }
 
 // Clear the search field and reset the product list
@@ -1692,9 +1711,11 @@ async function processCSVImport(csvData) {
 }
 
 // Add pagination
-function setupPagination() {
-  // Calculate total pages
-  totalPages = Math.ceil(products.length / pageSize);
+function setupPagination(totalCount = 0) {
+  // If totalCount is provided, use it to calculate totalPages
+  if (totalCount > 0) {
+    totalPages = Math.ceil(totalCount / pageSize);
+  }
 
   // Get pagination container (or create it if it doesn't exist)
   let paginationContainer = document.getElementById("pagination-container");
@@ -1706,8 +1727,8 @@ function setupPagination() {
     // Add it after the table-container
     const tableContainer = document.querySelector(".table-container");
     tableContainer.parentNode.insertBefore(
-      paginationContainer,
-      tableContainer.nextSibling
+        paginationContainer,
+        tableContainer.nextSibling
     );
   }
 
@@ -1722,12 +1743,12 @@ function setupPagination() {
   const prevButton = document.createElement("button");
   prevButton.className = "btn pagination-btn";
   prevButton.textContent =
-    window.t("inventory.pagination.previous") || "« Previous";
+      window.t("inventory.pagination.previous") || "« Previous";
   prevButton.disabled = currentPage === 1;
   prevButton.addEventListener("click", () => {
     if (currentPage > 1) {
       currentPage--;
-      renderCurrentPage();
+      loadProducts(); // Changed from renderCurrentPage to loadProducts for server pagination
     }
   });
 
@@ -1739,7 +1760,7 @@ function setupPagination() {
   nextButton.addEventListener("click", () => {
     if (currentPage < totalPages) {
       currentPage++;
-      renderCurrentPage();
+      loadProducts(); // Changed from renderCurrentPage to loadProducts for server pagination
     }
   });
 
@@ -1747,29 +1768,29 @@ function setupPagination() {
   const pageInfo = document.createElement("span");
   pageInfo.className = "page-info";
   pageInfo.textContent =
-    window.t("inventory.pagination.page", {
-      current: currentPage,
-      total: totalPages,
-    }) || `Page ${currentPage} of ${totalPages}`;
+      window.t("inventory.pagination.page", {
+        current: currentPage,
+        total: totalPages,
+      }) || `Page ${currentPage} of ${totalPages}`;
 
   // Add page selector for larger data sets
   const pageSelector = document.createElement("select");
   pageSelector.className = "page-selector";
   pageSelector.addEventListener("change", (e) => {
     currentPage = parseInt(e.target.value);
-    renderCurrentPage();
+    loadProducts(); // Changed from renderCurrentPage to loadProducts for server pagination
   });
 
   for (let i = 1; i <= totalPages; i++) {
     const option = document.createElement("option");
     option.value = i;
     option.textContent =
-      window
-        .t("inventory.pagination.page", {
-          current: i,
-          total: totalPages,
-        })
-        .replace(` ${totalPages}`, "") || `Page ${i}`;
+        window
+            .t("inventory.pagination.page", {
+              current: i,
+              total: totalPages,
+            })
+            .replace(` ${totalPages}`, "") || `Page ${i}`;
     option.selected = i === currentPage;
     pageSelector.appendChild(option);
   }
@@ -1789,34 +1810,81 @@ function setupPagination() {
 
 // Calculate profit for a product
 function calculateProfit(product) {
-  if (!product.cost || product.cost <= 0) {
-    return product.price || 0;
+  if (!product.price || !product.cost) {
+    return formatCurrency(0);
   }
-  return (product.price || 0) - (product.cost || 0);
+  // Calculate the profit (selling price - cost)
+  const profit = (product.price || 0) - (product.cost || 0);
+  return formatCurrency(profit);
 }
 
 // Update product statistics
 function updateProductStats() {
-  const totalProducts = products.length;
-  const totalValue = products.reduce(
-    (sum, product) => sum + product.price * product.stock,
-    0
+  // This function now needs to make additional API calls to get aggregate stats
+  // Or you could add these stats to the response of the getProducts API
+
+  // For now, we'll show stats for the current page only
+  const pageProducts = products.length;
+  const pageValue = products.reduce(
+      (sum, product) => sum + product.price * product.stock,
+      0
   );
-  const lowStockCount = products.filter((product) => product.stock <= 5).length;
+  const pageLowStock = products.filter((product) => product.stock <= 5).length;
 
-  document.getElementById("total-products").textContent = totalProducts;
-  document.getElementById("inventory-value").textContent =
-    formatCurrency(totalValue);
-  document.getElementById("low-stock-count").textContent = lowStockCount;
+  // Try to get total counts asynchronously
+  getTotalProductStats().then(stats => {
+    document.getElementById("total-products").textContent = stats.totalProducts;
+    document.getElementById("inventory-value").textContent = formatCurrency(stats.totalValue);
+    document.getElementById("low-stock-count").textContent = stats.lowStockCount;
 
-  // Update badge in sidebar if LayoutManager is available
-  if (window.LayoutManager) {
-    window.LayoutManager.updateInventoryBadge(lowStockCount);
-  }
-
-  window.LayoutManager.refreshInventoryBadge();
+    // Update badge in sidebar if LayoutManager is available
+    if (window.LayoutManager) {
+      window.LayoutManager.updateInventoryBadge(stats.lowStockCount);
+    }
+  }).catch(error => {
+    console.error("Error getting total stats:", error);
+    // Fallback to page stats
+    document.getElementById("total-products").textContent = pageProducts;
+    document.getElementById("inventory-value").textContent = formatCurrency(pageValue);
+    document.getElementById("low-stock-count").textContent = pageLowStock;
+  });
 }
+async function getTotalProductStats() {
+  try {
+    // This would ideally be a specialized API endpoint that returns just the stats
+    // For now, we'll make a request with a special option
+    const options = {
+      stats: true
+    };
 
+    const result = await window.api.getProducts(options);
+
+    if (result && result.stats) {
+      return result.stats;
+    }
+
+    // Fallback: If the API doesn't support stats,
+    // we'll need to load all products once to get accurate counts
+    const allProducts = await window.api.getProducts({ page: 1, pageSize: 1000000 });
+
+    const products = Array.isArray(allProducts) ? allProducts :
+        (allProducts && allProducts.items ? allProducts.items : []);
+
+    return {
+      totalProducts: products.length,
+      totalValue: products.reduce((sum, p) => sum + p.price * p.stock, 0),
+      lowStockCount: products.filter(p => p.stock <= 5).length
+    };
+  } catch (error) {
+    console.error("Error getting product stats:", error);
+    // Return default values
+    return {
+      totalProducts: products.length,
+      totalValue: products.reduce((sum, p) => sum + p.price * p.stock, 0),
+      lowStockCount: products.filter(p => p.stock <= 5).length
+    };
+  }
+}
 // Highlight search terms in the product table
 function highlightSearchTerms(text, searchTerm) {
   if (!searchTerm || !text) return text;

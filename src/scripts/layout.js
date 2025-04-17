@@ -317,7 +317,26 @@ const LayoutManager = {
     if (logoutBtn) {
       logoutBtn.addEventListener("click", () => this.handleLogout());
     }
+    const menuItems = document.querySelectorAll(".menu-item");
+    if (menuItems) {
+      menuItems.forEach((item) => {
+        item.addEventListener("click", (event) => {
+          // Only add the special handling for links to different pages
+          const targetPage = item.id.replace('nav-', '');
+          if (targetPage !== this.currentPage) {
+            console.log(`Navigating from ${this.currentPage} to ${targetPage}`);
 
+            // Clear general page cache
+            this.clearPageCache();
+
+            // Clear page-specific cache if needed
+            if (this.currentPage === 'inventory') {
+              this.clearInventoryCache();
+            }
+          }
+        });
+      });
+    }
     // Setup connection status listeners
     this.setupOnlineListeners();
 
@@ -547,6 +566,30 @@ const LayoutManager = {
     } catch (error) {
       console.error("Error applying language direction:", error);
     }
+  },
+  clearPageCache: function() {
+    console.log("Clearing page cache during navigation");
+
+    // Reset global variables that should be cleared between page views
+    window.selectedProductIds = [];
+
+    // Clear any pending timeouts
+    if (window.searchTimeout) {
+      clearTimeout(window.searchTimeout);
+    }
+
+    // Fire a custom event that specific pages can listen for
+    const event = new CustomEvent('pageCacheCleared');
+    document.dispatchEvent(event);
+  },
+  clearInventoryCache: function() {
+    console.log("Clearing inventory cache");
+
+    // Reset inventory-specific variables to default state
+    if (window.products) window.products = [];
+    if (window.selectedProductIds) window.selectedProductIds = [];
+    if (window.editingProductId) window.editingProductId = null;
+    if (window.currentPage) window.currentPage = 1;
   },
 
   // Update inventory badge count
