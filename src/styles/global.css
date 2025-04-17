@@ -2097,3 +2097,180 @@ html[dir="rtl"] .temp-notification.success {
 html[dir="rtl"] .temp-notification.error {
   border-right-color: var(--danger-color, #e5383b);
 }
+/* RTL Stylesheet for Arabic Language Support */
+
+/* Base RTL direction */
+html[dir="rtl"],
+html.rtl,
+.rtl-layout {
+  direction: rtl;
+  text-align: right;
+}
+
+/* General layout adjustments */
+html[dir="rtl"] .help-body,
+.rtl-layout .help-body {
+  text-align: right;
+}
+
+/* Reverse margins and paddings */
+html[dir="rtl"] .help-section,
+.rtl-layout .help-section {
+  margin-left: 0;
+  margin-right: 20px;
+  padding-left: 0;
+  padding-right: 20px;
+}
+
+/* Flip floats */
+html[dir="rtl"] .float-right,
+.rtl-layout .float-right {
+  float: left !important;
+}
+
+html[dir="rtl"] .float-left,
+.rtl-layout .float-left {
+  float: right !important;
+}
+
+/* RTL for navigation buttons */
+html[dir="rtl"] .navigation-buttons,
+.rtl-layout .navigation-buttons {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+/* Flip navigation icons */
+html[dir="rtl"] .navigation-buttons a.btn::before,
+.rtl-layout .navigation-buttons a.btn::before {
+  transform: scaleX(-1);
+}
+
+/* Support hours and tables */
+html[dir="rtl"] .hours-row,
+.rtl-layout .hours-row,
+html[dir="rtl"] .requirements-table th,
+.rtl-layout .requirements-table th,
+html[dir="rtl"] .requirements-table td,
+.rtl-layout .requirements-table td {
+  text-align: right;
+}
+
+/* Feature cards container */
+html[dir="rtl"] .feature-cards,
+.rtl-layout .feature-cards,
+html[dir="rtl"] .support-options,
+.rtl-layout .support-options {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+
+/* Button icons alignment */
+html[dir="rtl"] .btn .icon,
+.rtl-layout .btn .icon {
+  margin-right: 0;
+  margin-left: 5px;
+}
+
+/* FAQ toggle icons */
+html[dir="rtl"] .faq-question .toggle-icon,
+.rtl-layout .faq-question .toggle-icon {
+  right: auto;
+  left: 15px;
+}
+
+/* List markers */
+html[dir="rtl"] ul,
+.rtl-layout ul {
+  padding-left: 0;
+  padding-right: 20px;
+}
+
+html[dir="rtl"] ol,
+.rtl-layout ol {
+  padding-left: 0;
+  padding-right: 20px;
+}
+
+/* Help callouts */
+html[dir="rtl"] .help-callout,
+.rtl-layout .help-callout {
+  border-left: none;
+  border-right: 4px solid #3498db;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+html[dir="rtl"] .help-callout .callout-icon,
+.rtl-layout .help-callout .callout-icon {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+/* RTL for form elements */
+html[dir="rtl"] input,
+.rtl-layout input,
+html[dir="rtl"] select,
+.rtl-layout select,
+html[dir="rtl"] textarea,
+.rtl-layout textarea {
+  text-align: right;
+}
+
+/* RTL for search bar */
+html[dir="rtl"] .search-input input,
+.rtl-layout .search-input input {
+  padding-right: 15px;
+  padding-left: 40px;
+}
+
+html[dir="rtl"] .search-input .search-icon,
+.rtl-layout .search-input .search-icon {
+  left: 15px;
+  right: auto;
+}
+
+/* Steps lists */
+html[dir="rtl"] .steps-list li::before,
+.rtl-layout .steps-list li::before {
+  left: auto;
+  right: -30px;
+}
+
+/* Table of contents adjustments */
+html[dir="rtl"] .table-of-contents,
+.rtl-layout .table-of-contents {
+  border-left: none;
+  border-right: 2px solid #e0e0e0;
+  padding-left: 0;
+  padding-right: 20px;
+}
+
+/* Screenshots and captions */
+html[dir="rtl"] .screenshot-caption,
+.rtl-layout .screenshot-caption {
+  text-align: center;
+}
+
+/* Support cards */
+html[dir="rtl"] .support-card,
+.rtl-layout .support-card {
+  text-align: right;
+}
+
+/* Responsive adjustments for RTL */
+@media screen and (max-width: 768px) {
+  html[dir="rtl"] .feature-cards,
+  .rtl-layout .feature-cards,
+  html[dir="rtl"] .support-options,
+  .rtl-layout .support-options {
+    flex-direction: column;
+  }
+}
+.steps-list li {
+  position: relative;
+  padding: 0 0 1.5rem 3rem;
+  counter-increment: step-counter;
+  padding-right: 15px;
+}

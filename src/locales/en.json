@@ -322,6 +322,9 @@
     "no": "No",
     "ok": "OK",
     "error": "Error",
+    "note" : "Note:",
+    "important": "Important:",
+    "proTip": "Pro Tip:",
     "success": "Success",
     "warning": "Warning",
     "info": "Information",
@@ -987,6 +990,3581 @@
       "userNotFound": "No account found with this email address.",
       "invalidEmail": "The email address is not valid.",
       "tooManyRequests": "Too many unsuccessful attempts. Please try again later."
+    }
+  },
+  "help": {
+    "pageTitle": "Help Center - MZLAD Billing System",
+    "search": {
+      "placeholder": "Search help topics..."
+    },
+
+    "lastUpdated": "Last updated: {date}",
+    "navigation": {
+      "back": "← Back to {section}",
+      "next": "Next: {section} →"
+    },
+    "toc": {
+      "title": "On this page:"
+    },
+    "nav": {
+      "sections": {
+        "gettingStarted": "Getting Started",
+        "salesBilling": "Sales & Billing",
+        "inventoryManagement": "Inventory Management",
+        "reportsAnalytics": "Reports & Analytics",
+        "systemSettings": "System & Settings",
+        "contact": "Contact"
+      },
+      "items": {
+        "welcome": "Welcome to MZLAD",
+        "quickStart": "Quick Start Guide",
+        "systemRequirements": "System Requirements",
+        "createInvoice": "Creating Invoices",
+        "manageTransactions": "Managing Transactions",
+        "processReturns": "Processing Returns",
+        "addProducts": "Adding Products",
+        "updateStock": "Updating Stock",
+        "importExport": "Import & Export",
+        "salesReports": "Sales Reports",
+        "inventoryReports": "Inventory Reports",
+        "exportingData": "Exporting Data",
+        "userManagement": "User Management",
+        "offlineMode": "Offline Mode",
+        "syncingData": "Syncing Data",
+        "contactSupport": "Contact Support"
+      }
+    },
+    "welcome": {
+      "title": "Welcome to MZLAD Billing System",
+      "intro": "Welcome to MZLAD Billing System, your all-in-one solution for managing sales, inventory, and business reporting. This help center will guide you through all the features and functions of the application.",
+      "features": {
+        "sales": {
+          "icon": "💵",
+          "title": "Sales & Billing",
+          "description": "Create invoices, manage transactions, and process payments efficiently."
+        },
+        "inventory": {
+          "icon": "📦",
+          "title": "Inventory Management",
+          "description": "Track stock levels, add products, and manage your inventory with ease."
+        },
+        "reports": {
+          "icon": "📊",
+          "title": "Reports & Analytics",
+          "description": "Generate detailed reports to gain insights into your business performance."
+        },
+        "offline": {
+          "icon": "🔄",
+          "title": "Offline & Sync",
+          "description": "Work offline and synchronize your data across devices when connected."
+        }
+      },
+      "gettingStarted": {
+        "title": "Getting Started",
+        "intro": "To begin using MZLAD Billing System, we recommend following these steps:",
+        "step1": {
+          "title": "Set up your business information",
+          "description": "Configure your business details in the Settings section."
+        },
+        "step2": {
+          "title": "Add your inventory",
+          "description": "Add your products and set up initial stock levels."
+        },
+        "step3": {
+          "title": "Create user accounts",
+          "description": "Add users and assign appropriate roles for your staff."
+        },
+        "step4": {
+          "title": "Customize receipt templates",
+          "description": "Personalize your receipts with your business information and branding."
+        },
+        "step5": {
+          "title": "Start selling",
+          "description": "Begin creating invoices and processing sales."
+        }
+      },
+      "proTip": {
+        "title": "Pro Tip:",
+        "content": "Take some time to explore the application and familiarize yourself with its features before going live with real transactions."
+      },
+      "keyFeatures": {
+        "title": "Key Features",
+        "feature1": {
+          "title": "Multi-User Support",
+          "description": "Create accounts with different roles (Admin, Manager, Cashier) to control access to sensitive functions."
+        },
+        "feature2": {
+          "title": "Offline Mode",
+          "description": "Continue operations even without internet connectivity. Data will sync automatically when connection is restored."
+        },
+        "feature3": {
+          "title": "Detailed Reporting",
+          "description": "Access daily, weekly, and monthly reports for sales, inventory, and profitability."
+        },
+        "feature4": {
+          "title": "Receipt Printing",
+          "description": "Generate and print professional receipts for customer transactions."
+        },
+        "feature5": {
+          "title": "Data Backup",
+          "description": "Automatically backup your data to prevent loss of important business information."
+        },
+        "feature6": {
+          "title": "Multi-Device Sync",
+          "description": "Synchronize data across multiple devices to keep your business information up-to-date everywhere."
+        }
+      },
+      "navigation": {
+        "getStarted": "Get Started →"
+      }
+    },
+    "quickStart": {
+      "title": "Quick Start Guide",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "This guide will help you quickly set up and start using MZLAD Billing System for your business operations.",
+      "toc": {
+        "title": "On this page:",
+        "installation": "Installation",
+        "firstLogin": "First Login",
+        "businessSetup": "Business Setup",
+        "addingProducts": "Adding Products",
+        "creatingSales": "Creating Sales"
+      },
+      "installation": {
+        "title": "Installation",
+        "intro": "MZLAD Billing System is a desktop application that requires installation on your computer:",
+        "step1": {
+          "title": "Download the installer",
+          "description": "Visit our website and download the appropriate installer for your operating system (Windows, macOS, or Linux)."
+        },
+        "step2": {
+          "title": "Run the installer",
+          "description": "Double-click the downloaded file and follow the on-screen instructions."
+        },
+        "step3": {
+          "title": "Complete the installation",
+          "description": "Choose your installation location, create shortcuts, and complete the installation process."
+        },
+        "step4": {
+          "title": "Launch the application",
+          "description": "Use the desktop shortcut or start menu entry to launch MZLAD Billing System."
+        },
+        "note": {
+          "title": "Note:",
+          "description": "You may need administrator privileges to install the application on your computer."
+        }
+      },
+      "firstLogin": {
+        "title": "First Login",
+        "intro": "When you launch MZLAD Billing System for the first time, you'll need to create an admin account:",
+        "step1": {
+          "title": "Create admin account",
+          "description": "Enter your name, email, and create a secure password for the administrator account."
+        },
+        "step2": {
+          "title": "Verify your email",
+          "description": "Check your email for a verification link and click it to verify your account."
+        },
+        "step3": {
+          "title": "Login with admin credentials",
+          "description": "Use your email and password to log into the system."
+        },
+        "screenshot": "Login screen of MZLAD Billing System"
+      },
+      "businessSetup": {
+        "title": "Business Setup",
+        "intro": "Configure your business information in the Settings section:",
+        "step1": {
+          "title": "Navigate to Settings",
+          "description": "Click on the \"Settings\" icon in the sidebar menu."
+        },
+        "step2": {
+          "title": "Go to Business Information",
+          "description": "Select the \"Business Info\" tab from the settings sidebar."
+        },
+        "step3": {
+          "title": "Enter business details",
+          "description": "Enter your business name, address, contact information, and tax ID."
+        },
+        "step4": {
+          "title": "Upload your logo",
+          "description": "Add your business logo which will appear on invoices and receipts."
+        },
+        "step5": {
+          "title": "Set currency and tax settings",
+          "description": "Configure your default currency and tax rates."
+        },
+        "step6": {
+          "title": "Save changes",
+          "description": "Click the \"Save Changes\" button to apply your business settings."
+        }
+      },
+      "addingProducts": {
+        "title": "Adding Products",
+        "intro": "Start building your inventory by adding products:",
+        "step1": {
+          "title": "Go to Inventory",
+          "description": "Click on the \"Inventory\" icon in the sidebar menu."
+        },
+        "step2": {
+          "title": "Add a new product",
+          "description": "Click the \"Add Product\" button to open the product form."
+        },
+        "step3": {
+          "title": "Enter product details",
+          "description": "Add the product name, SKU, category, price, cost, and initial stock quantity."
+        },
+        "step4": {
+          "title": "Save the product",
+          "description": "Click \"Save\" to add the product to your inventory."
+        },
+        "tip": {
+          "title": "Pro Tip:",
+          "description": "You can also import multiple products at once using the \"Import Products\" feature with a CSV file."
+        }
+      },
+      "creatingSales": {
+        "title": "Creating Sales",
+        "intro": "Process sales and generate invoices:",
+        "step1": {
+          "title": "Go to New Sale",
+          "description": "Click on the \"New Sale\" icon in the sidebar menu."
+        },
+        "step2": {
+          "title": "Add items to cart",
+          "description": "Search for products and click on them to add to the cart, or scan barcodes if available."
+        },
+        "step3": {
+          "title": "Adjust quantities",
+          "description": "Change the quantity of items as needed."
+        },
+        "step4": {
+          "title": "Add customer information",
+          "description": "Enter customer details if desired for the receipt."
+        },
+        "step5": {
+          "title": "Apply discounts if needed",
+          "description": "Add any applicable discounts to individual items or the entire sale."
+        },
+        "step6": {
+          "title": "Complete the sale",
+          "description": "Click \"Complete Sale\" button to process the transaction."
+        },
+        "step7": {
+          "title": "Print or email receipt",
+          "description": "Generate a receipt that can be printed or emailed to the customer."
+        }
+      },
+      "navigation": {
+        "back": "← Back to Welcome",
+        "next": "Next: System Requirements →"
+      }
+    },
+    "systemRequirements": {
+      "title": "System Requirements",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "MZLAD Billing System is designed to run efficiently on modern computers. Check if your system meets the requirements below.",
+      "minimumRequirements": {
+        "title": "Minimum Requirements",
+        "table": {
+          "headers": {
+            "component": "Component",
+            "minimum": "Minimum Requirement",
+            "recommended": "Recommended"
+          },
+          "rows": {
+            "os": {
+              "name": "Operating System",
+              "minimum": {
+                "item1": "Windows 10 (64-bit)",
+                "item2": "macOS 11 (Big Sur) or later",
+                "item3": "Ubuntu 20.04 LTS or later"
+              },
+              "recommended": {
+                "item1": "Windows 11 (64-bit)",
+                "item2": "macOS 12 (Monterey) or later",
+                "item3": "Ubuntu 22.04 LTS or later"
+              }
+            },
+            "processor": {
+              "name": "Processor",
+              "minimum": "Intel Core i3 or equivalent",
+              "recommended": "Intel Core i5/i7 or equivalent"
+            },
+            "memory": {
+              "name": "Memory (RAM)",
+              "minimum": "4 GB",
+              "recommended": "8 GB or more"
+            },
+            "diskSpace": {
+              "name": "Disk Space",
+              "minimum": "500 MB free space",
+              "recommended": "1 GB or more free space"
+            },
+            "display": {
+              "name": "Display",
+              "minimum": "1366 x 768 resolution",
+              "recommended": "1920 x 1080 resolution or higher"
+            },
+            "internet": {
+              "name": "Internet Connection",
+              "minimum": "Required for initial setup and synchronization",
+              "recommended": "Broadband connection for optimal performance"
+            }
+          }
+        }
+      },
+      "additionalRequirements": {
+        "title": "Additional Requirements for Specific Features",
+        "receiptPrinting": {
+          "title": "Receipt Printing",
+          "item1": "Thermal receipt printer (compatible with ESC/POS commands)",
+          "item2": "Standard desktop printer for A4/Letter paper receipts"
+        },
+        "barcodeScanning": {
+          "title": "Barcode Scanning",
+          "item1": "USB Barcode Scanner compatible with your operating system",
+          "item2": "Webcam with at least 720p resolution for QR code scanning"
+        },
+        "multiDeviceSync": {
+          "title": "Multi-Device Sync",
+          "item1": "Internet connection on all devices",
+          "item2": "Firebase account (free tier is sufficient for small businesses)"
+        },
+        "dataBackup": {
+          "title": "Data Backup",
+          "item1": "External storage device or cloud storage account",
+          "item2": "Sufficient storage space for regular backups"
+        }
+      },
+      "supportedBrowsers": {
+        "title": "Supported Browsers (for Web Sync Portal)",
+        "intro": "If you use the optional web sync portal, it's supported on the following browsers:",
+        "browsers": {
+          "item1": "Google Chrome (latest 2 versions)",
+          "item2": "Mozilla Firefox (latest 2 versions)",
+          "item3": "Microsoft Edge (latest 2 versions)",
+          "item4": "Safari (latest 2 versions)"
+        }
+      },
+      "importantNote": {
+        "title": "Important:",
+        "content": "While MZLAD Billing System can operate offline, an internet connection is required for initial setup, updates, and data synchronization between devices."
+      },
+      "performanceConsiderations": {
+        "title": "Performance Considerations",
+        "intro": "The performance of MZLAD Billing System may vary based on:",
+        "factors": {
+          "item1": "The size of your product database (5,000+ products may require more RAM)",
+          "item2": "The number of concurrent users if multiple terminals are in use",
+          "item3": "The frequency of synchronization between devices",
+          "item4": "The size and number of images stored for products"
+        },
+        "recommendation": "For large businesses with 10,000+ products or high transaction volumes, we recommend upgrading to the recommended specifications for optimal performance."
+      },
+      "navigation": {
+        "back": "← Back to Quick Start",
+        "next": "Next: Creating Invoices →"
+      }
+    },
+    "createInvoice": {
+      "title": "Creating Invoices",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to create and manage invoices for your customers in MZLAD Billing System. Creating accurate invoices is essential for tracking sales, managing inventory, and maintaining financial records.",
+      "toc": {
+        "title": "On this page:",
+        "accessingSale": "Accessing the New Sale Screen",
+        "addingItems": "Adding Items to an Invoice",
+        "managingCustomers": "Managing Customer Information",
+        "applyingDiscounts": "Applying Discounts and Taxes",
+        "completingSale": "Completing a Sale",
+        "managingInvoices": "Managing Existing Invoices"
+      },
+      "accessingSale": {
+        "title": "Accessing the New Sale Screen",
+        "intro": "To create a new invoice, you'll need to access the New Sale screen:",
+        "step1": {
+          "title": "Navigate to New Sale",
+          "description": "Click on the \"New Sale\" button in the main navigation sidebar"
+        },
+        "step2": {
+          "title": "Understand the Interface",
+          "description": "The New Sale screen is divided into two main sections:",
+          "leftPanel": "Left Panel: Product search and selection",
+          "rightPanel": "Right Panel: Current invoice details and calculations"
+        },
+        "screenshot": "New Sale screen with product selection and invoice details"
+      },
+      "addingItems": {
+        "title": "Adding Items to an Invoice",
+        "intro": "There are multiple ways to add items to your invoice:",
+        "methods": {
+          "search": {
+            "icon": "🔍",
+            "title": "Search and Select",
+            "description": "Use the search bar to find products by name, SKU, or description, then click to add them to your invoice."
+          },
+          "barcode": {
+            "icon": "📷",
+            "title": "Barcode Scanning",
+            "description": "Use the barcode entry field to scan product barcodes or enter codes manually to quickly add items."
+          },
+          "browse": {
+            "icon": "📋",
+            "title": "Browse Products",
+            "description": "Browse through your product catalog and click \"Add to Cart\" on any product card to add it to the invoice."
+          }
+        },
+        "method1": {
+          "title": "Method 1: Search and Select",
+          "step1": {
+            "title": "Use the product search bar",
+            "description": "Type the product name, SKU, or description in the search field at the top of the left panel"
+          },
+          "step2": {
+            "title": "Select from results",
+            "description": "Click on the product from the search results to add it to the invoice"
+          },
+          "step3": {
+            "title": "Adjust quantity",
+            "description": "Change the quantity as needed using the quantity selector in the invoice table"
+          }
+        },
+        "method2": {
+          "title": "Method 2: Barcode Scanning",
+          "step1": {
+            "title": "Access barcode entry",
+            "description": "Click on the barcode entry field or press B on your keyboard"
+          },
+          "step2": {
+            "title": "Scan or enter barcode",
+            "description": "Scan the product barcode using a connected scanner or type the barcode number manually"
+          },
+          "step3": {
+            "title": "Add to invoice",
+            "description": "Click \"Add Item\" or press Enter to add the product to the invoice"
+          }
+        },
+        "proTip": {
+          "title": "Pro Tip:",
+          "content": "When using a barcode scanner, the system will automatically add the item to the invoice. If scanning multiple units of the same item, scan once, then adjust the quantity in the invoice."
+        },
+        "adjusting": {
+          "title": "Adjusting Quantities and Removing Items",
+          "intro": "After adding items to your invoice, you can modify them as needed:",
+          "quantity": "Adjust quantity:",
+          "quantityDesc": "Use the quantity selector in the invoice table to change the amount",
+          "remove": "Remove item:",
+          "removeDesc": "Click the \"Remove\" icon in the Action column to delete an item from the invoice"
+        }
+      },
+      "managingCustomers": {
+        "title": "Managing Customer Information",
+        "intro": "Adding customer information to invoices helps with record-keeping and customer relationship management:",
+        "step1": {
+          "title": "Add Customer Details",
+          "description": "Click in the \"Customer name\" field at the top of the invoice"
+        },
+        "step2": {
+          "title": "Search Existing Customers",
+          "description": "Start typing to search for existing customers in your database"
+        },
+        "step3": {
+          "title": "Select a Customer",
+          "description": "Click on a customer from the dropdown to auto-fill their details"
+        },
+        "note": {
+          "title": "Note:",
+          "content": "If this is a new customer, you can create a new record by clicking the \"+\" icon next to the Customer field and filling in their details in the popup form."
+        }
+      },
+      "applyingDiscounts": {
+        "title": "Applying Discounts and Taxes",
+        "intro": "You can apply discounts and adjust taxes for the entire invoice or for individual items:",
+        "discounts": {
+          "title": "Applying Discounts",
+          "step1": {
+            "title": "For the Entire Invoice",
+            "description": "Click the \"Add Discount\" button below the subtotal"
+          },
+          "step2": {
+            "title": "Select Discount Type",
+            "description": "Choose between percentage (%) or fixed amount"
+          },
+          "step3": {
+            "title": "Enter Value",
+            "description": "Enter the discount value and click \"Apply\""
+          },
+          "screenshot": "Discount dialog for applying discounts to an invoice"
+        },
+        "taxes": {
+          "title": "Managing Taxes",
+          "intro": "Tax rates are automatically applied based on your system settings. To adjust tax for the current invoice:",
+          "step1": {
+            "title": "Click on Tax Field",
+            "description": "Click on the tax field in the invoice summary"
+          },
+          "step2": {
+            "title": "Select Tax Rate",
+            "description": "Choose a different tax rate or enter a custom rate"
+          },
+          "step3": {
+            "title": "Apply Changes",
+            "description": "Click \"Apply\" to update the invoice with the new tax calculation"
+          }
+        },
+        "warning": {
+          "title": "Important:",
+          "content": "Ensure you apply the correct tax rates according to your local regulations. Incorrect tax applications may lead to compliance issues."
+        }
+      },
+      "completingSale": {
+        "title": "Completing a Sale",
+        "intro": "When you've finished adding items and making adjustments, you can complete the sale:",
+        "step1": {
+          "title": "Review the Invoice",
+          "description": "Check all items, quantities, prices, customer information, and applied discounts or taxes"
+        },
+        "step2": {
+          "title": "Click \"Complete Sale\"",
+          "description": "Press the \"Complete Sale\" button (or use the F3 shortcut)"
+        },
+        "step3": {
+          "title": "Process Payment",
+          "description": "Select the payment method (cash, credit card, etc.) and enter the amount received"
+        },
+        "step4": {
+          "title": "Finalize the Transaction",
+          "description": "Click \"Complete Transaction\" to save the invoice and update your inventory"
+        },
+        "step5": {
+          "title": "Print or Email Receipt",
+          "description": "Choose to print, email, or both for the customer receipt"
+        }
+      },
+      "managingInvoices": {
+        "title": "Managing Existing Invoices",
+        "intro": "You can browse, search, and manage all your previously created invoices:",
+        "features": {
+          "browse": {
+            "icon": "🔍",
+            "title": "Browse Invoices",
+            "description": "Click \"Browse Invoices\" on the New Sale screen to view all your invoices and use filters to find specific ones."
+          },
+          "edit": {
+            "icon": "📝",
+            "title": "Edit Invoices",
+            "description": "Open any existing invoice and make adjustments as needed, then save your changes."
+          },
+          "returns": {
+            "icon": "↩️",
+            "title": "Process Returns",
+            "description": "Handle returns and refunds through the original invoice with the \"Refund Selected\" option."
+          }
+        },
+        "shortcuts": {
+          "title": "Keyboard Shortcuts",
+          "intro": "To speed up invoice creation, use these keyboard shortcuts:",
+          "table": {
+            "headers": {
+              "action": "Action",
+              "shortcut": "Shortcut"
+            },
+            "rows": {
+              "newSale": {
+                "action": "New Sale",
+                "shortcut": "Ctrl+N (Windows/Linux) or Cmd+N (Mac)"
+              },
+              "searchProducts": {
+                "action": "Search Products",
+                "shortcut": "Ctrl+F (Windows/Linux) or Cmd+F (Mac)"
+              },
+              "barcodeEntry": {
+                "action": "Barcode Entry",
+                "shortcut": "B"
+              },
+              "completeSale": {
+                "action": "Complete Sale",
+                "shortcut": "F3"
+              },
+              "clearInvoice": {
+                "action": "Clear Invoice",
+                "shortcut": "F7"
+              },
+              "addDiscount": {
+                "action": "Add Discount",
+                "shortcut": "F4"
+              },
+              "viewShortcuts": {
+                "action": "View All Shortcuts",
+                "shortcut": "?"
+              }
+            }
+          }
+        },
+        "troubleshooting": {
+          "title": "Troubleshooting Common Issues",
+          "invoiceProcess": {
+            "question": "Invoice won't complete or process",
+            "answer": "Check the following:",
+            "item1": "Ensure all required fields are filled out",
+            "item2": "Verify that product quantities don't exceed available stock",
+            "item3": "Confirm that the payment amount covers the total"
+          },
+          "itemsSearch": {
+            "question": "Items not appearing in search",
+            "answer": "Try these solutions:",
+            "item1": "Check if the product is marked as \"active\" in inventory",
+            "item2": "Verify the spelling in your search",
+            "item3": "Try searching by SKU instead of product name"
+          },
+          "customerNotFound": {
+            "question": "Customer not found in database",
+            "answer": "Possible solutions:",
+            "item1": "Try searching with different spellings or partial name",
+            "item2": "Check if the customer exists under a different name",
+            "item3": "Create a new customer record if needed"
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to System Requirements",
+        "next": "Next: Managing Transactions →"
+      }
+    },
+    "manageTransactions": {
+      "title": "Managing Transactions",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to view, filter, edit, and manage your sales transactions in MZLAD Billing System. Efficient transaction management helps you keep track of your business activities and maintain accurate financial records.",
+      "toc": {
+        "title": "On this page:",
+        "accessingTransactions": "Accessing Transaction History",
+        "filteringTransactions": "Filtering and Searching Transactions",
+        "viewingDetails": "Viewing Transaction Details",
+        "editingTransactions": "Editing Existing Transactions",
+        "processingPayments": "Processing Payments for Outstanding Invoices",
+        "transactionReports": "Generating Transaction Reports"
+      },
+      "accessingTransactions": {
+        "title": "Accessing Transaction History",
+        "intro": "To view your transaction history and manage existing invoices:",
+        "step1": {
+          "title": "Navigate to Transactions",
+          "description": "Click on the \"Transactions\" icon in the main navigation sidebar"
+        },
+        "step2": {
+          "title": "View Transaction List",
+          "description": "The main transaction screen displays a list of all transactions with key information including:",
+          "info": {
+            "item1": "Invoice number",
+            "item2": "Date and time",
+            "item3": "Customer name",
+            "item4": "Total amount",
+            "item5": "Payment status",
+            "item6": "Actions available"
+          }
+        },
+        "screenshot": "Transaction list showing recent sales and their status"
+      },
+      "filteringTransactions": {
+        "title": "Filtering and Searching Transactions",
+        "intro": "You can quickly find specific transactions using these tools:",
+        "features": {
+          "search": {
+            "icon": "🔍",
+            "title": "Search",
+            "description": "Use the search bar to find transactions by invoice number, customer name, or item description."
+          },
+          "dateFilters": {
+            "icon": "📅",
+            "title": "Date Filters",
+            "description": "Filter transactions by date range, including today, this week, this month, or custom periods."
+          },
+          "statusFilters": {
+            "icon": "📋",
+            "title": "Status Filters",
+            "description": "Filter by payment status (paid, unpaid, partially paid) or transaction type (sales, returns)."
+          }
+        },
+        "proTip": {
+          "title": "Pro Tip:",
+          "content": "You can save frequently used filters as presets by clicking the \"Save Filter\" button after setting up your criteria. Access saved filters from the dropdown menu."
+        }
+      },
+      "viewingDetails": {
+        "title": "Viewing Transaction Details",
+        "intro": "To see the complete details of any transaction:",
+        "step1": {
+          "title": "Select a Transaction",
+          "description": "Click on any transaction in the list to view its details"
+        },
+        "step2": {
+          "title": "Review Transaction Information",
+          "description": "The transaction details screen shows:",
+          "info": {
+            "item1": "Complete item list with quantities and prices",
+            "item2": "Customer information",
+            "item3": "Applied discounts and taxes",
+            "item4": "Payment information",
+            "item5": "Transaction notes"
+          }
+        },
+        "step3": {
+          "title": "Access Additional Options",
+          "description": "From the details screen, you can:",
+          "options": {
+            "item1": "Print or email a receipt",
+            "item2": "Edit the transaction (if applicable)",
+            "item3": "Process a return",
+            "item4": "Add notes"
+          }
+        },
+        "screenshot": "Detailed view of a transaction showing items, payments, and available actions"
+      },
+      "editingTransactions": {
+        "title": "Editing Existing Transactions",
+        "intro": "You can edit certain aspects of a transaction depending on its status:",
+        "table": {
+          "headers": {
+            "status": "Transaction Status",
+            "canEdit": "What Can Be Edited",
+            "cannotEdit": "What Cannot Be Edited"
+          },
+          "rows": {
+            "draft": {
+              "status": "Draft / Pending",
+              "canEdit": {
+                "item1": "All items and quantities",
+                "item2": "Customer information",
+                "item3": "Discounts and taxes",
+                "item4": "Payment information"
+              },
+              "cannotEdit": {
+                "item1": "N/A - Full editing allowed"
+              }
+            },
+            "completed": {
+              "status": "Completed (Recent)",
+              "canEdit": {
+                "item1": "Customer information",
+                "item2": "Payment information",
+                "item3": "Transaction notes"
+              },
+              "cannotEdit": {
+                "item1": "Items and quantities",
+                "item2": "Prices",
+                "item3": "Discounts after 24 hours"
+              }
+            },
+            "closed": {
+              "status": "Closed / Archived",
+              "canEdit": {
+                "item1": "Transaction notes only"
+              },
+              "cannotEdit": {
+                "item1": "Most transaction details",
+                "item2": "Returns must be processed separately"
+              }
+            }
+          }
+        },
+        "howToEdit": {
+          "intro": "To edit a transaction:",
+          "step1": {
+            "title": "Open Transaction Details",
+            "description": "Locate and click on the transaction you want to edit"
+          },
+          "step2": {
+            "title": "Enter Edit Mode",
+            "description": "Click the \"Edit\" button in the transaction details screen"
+          },
+          "step3": {
+            "title": "Make Changes",
+            "description": "Modify the allowed fields based on the transaction status"
+          },
+          "step4": {
+            "title": "Save Changes",
+            "description": "Click \"Save Changes\" to update the transaction"
+          }
+        },
+        "warning": {
+          "title": "Important:",
+          "content": "All transaction edits are logged in the system for auditing purposes. Major changes to completed transactions may require manager approval depending on your system settings."
+        }
+      },
+      "processingPayments": {
+        "title": "Processing Payments for Outstanding Invoices",
+        "intro": "For transactions with outstanding balances, you can process additional payments:",
+        "step1": {
+          "title": "Find the Transaction",
+          "description": "Locate the transaction with an outstanding balance"
+        },
+        "step2": {
+          "title": "Open Payment Screen",
+          "description": "Click the \"Process Payment\" button in the transaction details"
+        },
+        "step3": {
+          "title": "Enter Payment Details",
+          "description": "Select the payment method and enter the amount being paid"
+        },
+        "step4": {
+          "title": "Complete Payment",
+          "description": "Click \"Complete Payment\" to record the transaction"
+        },
+        "step5": {
+          "title": "Update Payment Status",
+          "description": "The system will automatically update the payment status to \"Paid\" or \"Partially Paid\""
+        },
+        "note": {
+          "title": "Note:",
+          "content": "You can process partial payments multiple times until the full amount is paid. Each payment is recorded separately for accurate bookkeeping."
+        }
+      },
+      "transactionReports": {
+        "title": "Generating Transaction Reports",
+        "intro": "You can generate various reports from your transaction data:",
+        "step1": {
+          "title": "Access Reports Section",
+          "description": "From the Transactions screen, click the \"Reports\" button"
+        },
+        "step2": {
+          "title": "Select Report Type",
+          "description": "Choose from available report types:",
+          "types": {
+            "item1": "Sales Summary",
+            "item2": "Payment Collection",
+            "item3": "Item Sales Analysis",
+            "item4": "Customer Purchase History",
+            "item5": "Tax Collection"
+          }
+        },
+        "step3": {
+          "title": "Set Parameters",
+          "description": "Define the date range and any additional filters for your report"
+        },
+        "step4": {
+          "title": "Generate Report",
+          "description": "Click \"Generate Report\" to create the report"
+        },
+        "step5": {
+          "title": "Export or Print",
+          "description": "Choose to view on screen, export (CSV, PDF, Excel), or print the report"
+        },
+        "features": {
+          "visual": {
+            "icon": "📊",
+            "title": "Visual Reports",
+            "description": "View transaction data as charts and graphs for better visualization of business performance."
+          },
+          "scheduled": {
+            "icon": "🔄",
+            "title": "Scheduled Reports",
+            "description": "Set up recurring reports to be automatically generated and emailed on a schedule."
+          },
+          "custom": {
+            "icon": "⚙️",
+            "title": "Custom Reports",
+            "description": "Create custom report templates tailored to your specific business needs."
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to Creating Invoices",
+        "next": "Next: Processing Returns →"
+      }
+    },
+    "processReturns": {
+      "title": "Processing Returns",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to process product returns and issue refunds to customers in MZLAD Billing System. Properly handling returns helps maintain accurate inventory records and ensures customer satisfaction.",
+      "toc": {
+        "title": "On this page:",
+        "understandingReturns": "Understanding Returns Process",
+        "accessingReturns": "Accessing the Returns Feature",
+        "processingFullReturns": "Processing Full Returns",
+        "processingPartialReturns": "Processing Partial Returns",
+        "returnReasons": "Recording Return Reasons",
+        "returnsReporting": "Returns Reporting"
+      },
+      "understandingReturns": {
+        "title": "Understanding Returns Process",
+        "description": "The MZLAD Billing System handles returns by referencing the original sales transaction. This approach ensures proper inventory tracking and maintains the connection between sales and returns for accurate reporting.",
+        "note": "Note: Returns can only be processed for items that were sold through the system. For each return, you'll need to reference the original sale by invoice number or by finding the transaction."
+      },
+      "accessingReturns": {
+        "title": "Accessing the Returns Feature",
+        "intro": "There are two main ways to access the returns feature:",
+        "methods": {
+          "fromTransaction": {
+            "title": "From Transaction History",
+            "description": "Find the original sale in your transaction history and initiate the return from there."
+          },
+          "usingInvoice": {
+            "title": "Using Invoice Number",
+            "description": "Enter the invoice number from the customer's receipt to quickly locate the transaction."
+          }
+        }
+      },
+      "processingFullReturns": {
+        "title": "Processing Full Returns",
+        "intro": "To process a complete return of all items in a sale:",
+        "steps": {
+          "step1": {
+            "title": "Find the Original Transaction",
+            "description": "Locate the transaction in your history or search by invoice number"
+          },
+          "step2": {
+            "title": "Open Return Interface",
+            "description": "Click the \"Process Return\" button in the transaction details"
+          },
+          "step3": {
+            "title": "Select All Items",
+            "description": "By default, all items will be selected. Verify that quantities match what's being returned"
+          },
+          "step4": {
+            "title": "Click \"Refund Selected\"",
+            "description": "This will indicate that all items are being returned to inventory"
+          },
+          "step5": {
+            "title": "Choose Refund Method",
+            "description": "Select how the customer will be refunded (original payment method, store credit, etc.)"
+          },
+          "step6": {
+            "title": "Complete Refund",
+            "description": "Click the \"Complete Refund\" button to process the return"
+          },
+          "step7": {
+            "title": "Print Return Receipt",
+            "description": "Generate a return receipt for the customer"
+          }
+        },
+        "screenshot": {
+          "caption": "Full return process showing items selected and the \"Refund Selected\" button"
+        }
+      },
+      "processingPartialReturns": {
+        "title": "Processing Partial Returns",
+        "intro": "For returning only some items from a sale:",
+        "steps": {
+          "step1": {
+            "title": "Find the Original Transaction",
+            "description": "Locate the transaction as described above"
+          },
+          "step2": {
+            "title": "Open Return Interface",
+            "description": "Click the \"Process Return\" button in the transaction details"
+          },
+          "step3": {
+            "title": "Select Specific Items",
+            "description": "Check only the items that are being returned"
+          },
+          "step4": {
+            "title": "Adjust Quantities if Needed",
+            "description": "If returning only some units of a product, adjust the quantity accordingly"
+          },
+          "step5": {
+            "title": "Click \"Refund Selected\"",
+            "description": "This will process only the selected items"
+          },
+          "step6": {
+            "title": "Choose Refund Method",
+            "description": "Select how the customer will be refunded for the returned items"
+          },
+          "step7": {
+            "title": "Complete Refund",
+            "description": "Click the \"Complete Refund\" button to process the partial return"
+          }
+        },
+        "proTip": "Pro Tip: When processing partial returns, the system will automatically calculate the correct refund amount based on the original per-item price, including any discounts that were applied during the sale.",
+        "screenshot": {
+          "caption": "Partial return process with specific items selected for return"
+        }
+      },
+      "returnReasons": {
+        "title": "Recording Return Reasons",
+        "intro": "Tracking why items are returned helps improve inventory management and customer service:",
+        "steps": {
+          "step1": {
+            "title": "During Return Process",
+            "description": "After selecting items for return, you'll see a \"Return Reason\" dropdown menu"
+          },
+          "step2": {
+            "title": "Select Appropriate Reason",
+            "description": "Choose from common return reasons such as:",
+            "reasons": {
+              "defective": "Defective product",
+              "wrong": "Wrong item purchased",
+              "dissatisfied": "Customer dissatisfaction",
+              "damaged": "Damaged in shipping",
+              "notNeeded": "No longer needed",
+              "other": "Other (with text field for details)"
+            }
+          },
+          "step3": {
+            "title": "Add Notes if Needed",
+            "description": "For complex situations, add detailed notes about the return"
+          },
+          "step4": {
+            "title": "Specify Item Condition",
+            "description": "Indicate whether the item can be returned to inventory or must be discarded"
+          }
+        },
+        "warning": "Important: Return reasons and item condition affect inventory management. Items marked as defective or damaged will not be added back to available inventory but will be tracked in separate inventory reports."
+      },
+      "returnsReporting": {
+        "title": "Returns Reporting",
+        "intro": "MZLAD Billing System provides detailed reports on returns to help analyze trends:",
+        "reports": {
+          "summary": {
+            "title": "Returns Summary",
+            "description": "View overall return rates, total return value, and comparison with sales volume over time."
+          },
+          "reasons": {
+            "title": "Return Reasons Analysis",
+            "description": "Analyze the most common reasons for returns to identify product quality or customer service issues."
+          },
+          "products": {
+            "title": "Product Return Rates",
+            "description": "Identify specific products with high return rates that may need quality improvements or better descriptions."
+          }
+        },
+        "steps": {
+          "step1": {
+            "title": "Go to Reports Section",
+            "description": "Navigate to the Reports & Analytics area from the main menu"
+          },
+          "step2": {
+            "title": "Select Returns Reports",
+            "description": "Choose from the various returns report options"
+          },
+          "step3": {
+            "title": "Set Parameters",
+            "description": "Define the date range and any additional filters"
+          },
+          "step4": {
+            "title": "Generate and Analyze",
+            "description": "Review the data to identify trends and areas for improvement"
+          }
+        },
+        "note": "Note: Regular analysis of returns data can help reduce return rates by identifying recurring issues with specific products or highlighting training opportunities for staff."
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "questions": {
+          "noReceipt": {
+            "question": "Can I process a return if the customer doesn't have their receipt?",
+            "answer": "Yes, you can look up the transaction using customer name or phone number, payment method details, or date of purchase with approximate amount. Use the search filters in the transaction history to narrow down potential matches."
+          },
+          "outOfPolicy": {
+            "question": "Can I process returns after the return policy period?",
+            "answer": "The system will display a warning if you attempt to process a return outside the configured return period. By default, returns after 30 days require manager approval, and returns after 90 days require administrator approval. These timeframes can be customized in your system settings."
+          },
+          "exchanges": {
+            "question": "How do I handle exchanges instead of returns?",
+            "answer": "For exchanges: 1) Process the return as normal, 2) Create a new sale for the replacement item, 3) In the notes section of both transactions, reference the related return/new purchase. For even exchanges (same price), you can check the \"Exchange\" option during the return process, which will generate a credit note that can be applied immediately to a new sale."
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to Managing Transactions",
+        "next": "Next: Adding Products →"
+      }
+    },
+    "addProducts": {
+      "title": "Adding Products",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to add products to your inventory in MZLAD Billing System. Maintaining a complete and accurate product database is essential for efficient sales processing and inventory management.",
+      "toc": {
+        "title": "On this page:",
+        "accessingInventory": "Accessing Inventory Management",
+        "addingIndividual": "Adding Individual Products",
+        "productFields": "Understanding Product Fields",
+        "bulkImport": "Bulk Importing Products",
+        "productCategories": "Managing Product Categories",
+        "bestPractices": "Best Practices"
+      },
+      "accessingInventory": {
+        "title": "Accessing Inventory Management",
+        "intro": "To access the inventory management section:",
+        "steps": {
+          "step1": {
+            "title": "Navigate to Inventory",
+            "description": "Click on the \"Inventory\" icon in the main navigation sidebar"
+          },
+          "step2": {
+            "title": "View Inventory Dashboard",
+            "description": "The inventory dashboard displays key metrics including:",
+            "metrics": {
+              "item1": "Total number of products",
+              "item2": "Total inventory value",
+              "item3": "Number of low stock items"
+            }
+          },
+          "step3": {
+            "title": "Access Product List",
+            "description": "Below the dashboard, you'll find the complete list of your products with details such as SKU, name, category, pricing, and stock levels"
+          }
+        },
+        "screenshot": {
+          "caption": "Inventory Management dashboard showing key metrics and product list"
+        }
+      },
+      "addingIndividual": {
+        "title": "Adding Individual Products",
+        "intro": "To add a single new product to your inventory:",
+        "steps": {
+          "step1": {
+            "title": "Click \"Add New Product\"",
+            "description": "Locate and click the blue \"Add New Product\" button at the top of the inventory page"
+          },
+          "step2": {
+            "title": "Fill in Product Details",
+            "description": "In the popup form, enter the required information:",
+            "fields": {
+              "item1": "Product Name",
+              "item2": "SKU (Stock Keeping Unit)",
+              "item3": "Category",
+              "item4": "Selling Price",
+              "item5": "Purchase Cost",
+              "item6": "Stock Quantity"
+            }
+          },
+          "step3": {
+            "title": "Save the Product",
+            "description": "Click the \"Save Product\" button to add the product to your inventory"
+          }
+        },
+        "screenshot": {
+          "caption": "Add New Product form with fields for product details"
+        },
+        "note": "The system automatically calculates profit margins based on the selling price and purchase cost you enter. These calculations are visible in the product list."
+      },
+      "productFields": {
+        "title": "Understanding Product Fields",
+        "intro": "Each product in MZLAD Billing System has several important fields:",
+        "table": {
+          "headers": {
+            "field": "Field",
+            "description": "Description",
+            "bestPractice": "Best Practice"
+          },
+          "rows": {
+            "name": {
+              "field": "Product Name",
+              "description": "The name or title of the product",
+              "bestPractice": "Use clear, descriptive names that will be easy to search for"
+            },
+            "sku": {
+              "field": "SKU",
+              "description": "Stock Keeping Unit - a unique identifier for each product",
+              "bestPractice": "Create a consistent SKU format for your business (e.g., category-number-variant)"
+            },
+            "category": {
+              "field": "Category",
+              "description": "The product classification for grouping similar items",
+              "bestPractice": "Use a logical category system that makes sense for your business"
+            },
+            "sellingPrice": {
+              "field": "Selling Price",
+              "description": "The retail price charged to customers",
+              "bestPractice": "Include any taxes or fees in your pricing strategy if applicable"
+            },
+            "purchaseCost": {
+              "field": "Purchase Cost",
+              "description": "How much you paid for the item",
+              "bestPractice": "Include shipping or handling costs in your purchase cost for accurate profit calculation"
+            },
+            "stockQuantity": {
+              "field": "Stock Quantity",
+              "description": "Current quantity available for sale",
+              "bestPractice": "Perform regular inventory counts to ensure accuracy"
+            }
+          }
+        }
+      },
+      "bulkImport": {
+        "title": "Bulk Importing Products",
+        "intro": "For adding multiple products at once, you can use the CSV import feature:",
+        "steps": {
+          "step1": {
+            "title": "Prepare Your CSV File",
+            "description": "Create a CSV file with these required columns:",
+            "columns": "id,sku,name,category,price,cost,stock",
+            "note": "Leave the id column blank for new products"
+          },
+          "step2": {
+            "title": "Click \"Import CSV\"",
+            "description": "Locate and click the \"Import CSV\" button at the top right of the inventory page"
+          },
+          "step3": {
+            "title": "Upload Your File",
+            "description": "Click \"Choose File\" and select your prepared CSV file"
+          },
+          "step4": {
+            "title": "Set Import Options",
+            "description": "Choose whether to:",
+            "options": {
+              "item1": "Update existing products (matched by ID or SKU)",
+              "item2": "Add new products"
+            }
+          },
+          "step5": {
+            "title": "Import Products",
+            "description": "Click the \"Import Products\" button to begin the import process"
+          }
+        },
+        "screenshot": {
+          "caption": "Import Products from CSV dialog showing required columns and options"
+        },
+        "proTip": "Before importing a large product list, try importing a small test file with just a few products to ensure your CSV format is correct."
+      },
+      "productCategories": {
+        "title": "Managing Product Categories",
+        "intro": "Organizing products into categories helps with inventory management and sales reporting:",
+        "features": {
+          "creating": {
+            "title": "Creating Categories",
+            "description": "Use the Category Manager to create a structured hierarchy of product categories that suits your business needs."
+          },
+          "changing": {
+            "title": "Changing Categories",
+            "description": "Select multiple products and use the bulk action menu to quickly move items between categories."
+          },
+          "reporting": {
+            "title": "Category Reporting",
+            "description": "Generate sales and inventory reports filtered by category to analyze performance by product group."
+          }
+        },
+        "changingCategory": {
+          "intro": "To change a product's category:",
+          "steps": {
+            "step1": {
+              "title": "Select Product(s)",
+              "description": "Check the box next to the product(s) you want to modify"
+            },
+            "step2": {
+              "title": "Open Bulk Actions",
+              "description": "From the \"-- Select Action --\" dropdown, choose \"Change Category\""
+            },
+            "step3": {
+              "title": "Select New Category",
+              "description": "Choose the desired category from the list"
+            },
+            "step4": {
+              "title": "Apply Changes",
+              "description": "Click the \"Apply\" button to update the selected products"
+            }
+          }
+        }
+      },
+      "bestPractices": {
+        "title": "Best Practices for Product Management",
+        "intro": "For efficient inventory management, we recommend:",
+        "tips": {
+          "item1": "Create a consistent naming convention for products",
+          "item2": "Use systematic SKUs that encode useful information (category, size, color, etc.)",
+          "item3": "Regularly review and update product costs to ensure accurate profit calculations",
+          "item4": "Set up low stock alerts to avoid stockouts of popular items",
+          "item5": "Periodically export your product database as a backup",
+          "item6": "Conduct regular physical inventory counts to verify system accuracy"
+        }
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "questions": {
+          "productImages": {
+            "question": "Can I add product images to my inventory?",
+            "answer": "Yes, you can add product images after creating the basic product entry:",
+            "steps": {
+              "step1": "In the product list, click on a product name to open its detail view",
+              "step2": "In the Media tab, click \"Add Image\"",
+              "step3": "Select an image file from your computer (supported formats: JPG, PNG, GIF)",
+              "step4": "Click \"Upload\" to add the image to the product"
+            }
+          },
+          "variations": {
+            "question": "How do I add products with variations (size, color, etc.)?",
+            "answer": "For products with variations, you have two options:",
+            "options": {
+              "separate": {
+                "title": "Create separate products:",
+                "description": "Make individual entries for each variation with unique Bar Codes (e.g., TSHIRT-S, TSHIRT-M, TSHIRT-L)"
+              },
+              "variants": {
+                "title": "Use the Variants feature:",
+                "description": "Create a parent product, then add variants with specific attributes. Access this by creating a product, then clicking \"Add Variants\" in the product detail view."
+              }
+            }
+          },
+          "deleteProduct": {
+            "question": "What happens when I delete a product?",
+            "answer": "When you delete a product:",
+            "consequences": {
+              "item1": "The product is removed from active inventory",
+              "item2": "Past transactions involving this product remain intact for reporting purposes",
+              "item3": "The product SKU becomes available for reuse"
+            },
+            "alternative": "If you want to keep the product but prevent new sales, consider setting the stock to zero instead of deleting it."
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to Processing Returns",
+        "next": "Next: Updating Stock →"
+      }
+    },
+    "updateStock": {
+      "title": "Updating Stock",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to update stock levels and manage inventory quantities in MZLAD Billing System. Keeping accurate stock information is crucial for smooth business operations and avoiding stockouts or overstock situations.",
+      "toc": {
+        "title": "On this page:",
+        "overview": "Stock Management Overview",
+        "updatingIndividual": "Updating Individual Product Stock",
+        "bulkUpdates": "Bulk Stock Updates",
+        "adjustments": "Stock Adjustments and Reasons",
+        "lowStockAlerts": "Managing Low Stock Alerts",
+        "stockCount": "Physical Inventory Count"
+      },
+      "overview": {
+        "title": "Stock Management Overview",
+        "intro": "MZLAD Billing System automatically updates stock levels during normal business operations:",
+        "features": {
+          "reduction": {
+            "title": "Automatic Stock Reduction",
+            "description": "Stock is reduced automatically when sales are processed through the system."
+          },
+          "addition": {
+            "title": "Automatic Stock Addition",
+            "description": "Stock increases when returns are processed or when new inventory is received."
+          },
+          "manual": {
+            "title": "Manual Adjustments",
+            "description": "Manual stock adjustments can be made to correct discrepancies or record damaged/lost items."
+          }
+        }
+      },
+      "updatingIndividual": {
+        "title": "Updating Individual Product Stock",
+        "intro": "To update the stock quantity for a single product:",
+        "method1": {
+          "steps": {
+            "step1": {
+              "title": "Navigate to Inventory",
+              "description": "Go to the Inventory section from the main sidebar"
+            },
+            "step2": {
+              "title": "Find the Product",
+              "description": "Locate the product using the search function or by browsing the list"
+            },
+            "step3": {
+              "title": "Edit Stock Directly",
+              "description": "Method 1: Click directly on the stock number in the Stock column to edit inline"
+            },
+            "step4": {
+              "title": "Save Changes",
+              "description": "Press Enter or click outside the field to save the updated stock value"
+            }
+          }
+        },
+        "method2": {
+          "intro": "Alternatively, you can use the product detail view:",
+          "steps": {
+            "step1": {
+              "title": "Open Product Details",
+              "description": "Click on the product name to open its detailed view"
+            },
+            "step2": {
+              "title": "Go to Stock Tab",
+              "description": "Navigate to the Stock/Inventory tab within the product details"
+            },
+            "step3": {
+              "title": "Add Stock Adjustment",
+              "description": "Click \"Add Adjustment\" to open the stock adjustment dialog"
+            },
+            "step4": {
+              "title": "Enter New Stock",
+              "description": "Enter the quantity to add or subtract and select a reason for the adjustment"
+            },
+            "step5": {
+              "title": "Confirm Update",
+              "description": "Click \"Save Adjustment\" to update the stock level"
+            }
+          }
+        },
+        "screenshot": {
+          "caption": "Stock adjustment dialog showing quantity field and reason dropdown"
+        }
+      },
+      "bulkUpdates": {
+        "title": "Bulk Stock Updates",
+        "intro": "To update stock for multiple products at once:",
+        "steps": {
+          "step1": {
+            "title": "Select Multiple Products",
+            "description": "Check the boxes next to the products you want to update"
+          },
+          "step2": {
+            "title": "Access Bulk Actions",
+            "description": "From the \"-- Select Action --\" dropdown, choose \"Update Stock\""
+          },
+          "step3": {
+            "title": "Enter Adjustment Method",
+            "description": "In the dialog that appears, choose whether to:",
+            "options": {
+              "option1": "Set to a specific quantity",
+              "option2": "Add to current stock",
+              "option3": "Subtract from current stock"
+            }
+          },
+          "step4": {
+            "title": "Enter Quantity",
+            "description": "Input the quantity to set, add, or subtract"
+          },
+          "step5": {
+            "title": "Select Reason",
+            "description": "Choose a reason for the adjustment from the dropdown menu"
+          },
+          "step6": {
+            "title": "Apply Changes",
+            "description": "Click the \"Apply\" button to update all selected products"
+          }
+        },
+        "proTip": "Use the filter options before selecting products to group items by category or other attributes, making bulk updates more efficient."
+      },
+      "adjustments": {
+        "title": "Stock Adjustments and Reasons",
+        "intro": "When adjusting stock, it's important to record the reason for proper inventory tracking and auditing:",
+        "table": {
+          "headers": {
+            "reason": "Adjustment Reason",
+            "whenToUse": "When to Use",
+            "effect": "Effect on Reports"
+          },
+          "rows": {
+            "initialStock": {
+              "reason": "Initial Stock",
+              "whenToUse": "When setting up initial inventory or adding new products",
+              "effect": "Recorded as initial inventory, no effect on cost/profit"
+            },
+            "stockReceived": {
+              "reason": "Stock Received",
+              "whenToUse": "When receiving new shipments from suppliers",
+              "effect": "Updates average cost if purchase price differs from existing stock"
+            },
+            "inventoryCount": {
+              "reason": "Inventory Count",
+              "whenToUse": "After performing a physical inventory count",
+              "effect": "Recorded as inventory adjustment, may affect inventory valuation"
+            },
+            "damaged": {
+              "reason": "Damaged/Expired",
+              "whenToUse": "When removing items due to damage or expiration",
+              "effect": "Recorded as loss, affects profitability reports"
+            },
+            "internalUse": {
+              "reason": "Internal Use",
+              "whenToUse": "Items used by the business (not for sale)",
+              "effect": "Recorded as expense, affects profitability reports"
+            },
+            "theft": {
+              "reason": "Theft/Loss",
+              "whenToUse": "Items lost due to theft or unexplained loss",
+              "effect": "Recorded as shrinkage, affects loss reports"
+            },
+            "other": {
+              "reason": "Other",
+              "whenToUse": "For unique situations not covered by other reasons",
+              "effect": "Requires notes for proper tracking and reporting"
+            }
+          }
+        },
+        "important": "All stock adjustments are logged in the system and cannot be deleted. Make sure to select the correct reason and quantity before confirming the adjustment."
+      },
+      "lowStockAlerts": {
+        "title": "Managing Low Stock Alerts",
+        "intro": "MZLAD Billing System can alert you when stock levels fall below specified thresholds:",
+        "steps": {
+          "step1": {
+            "title": "Set Low Stock Threshold",
+            "description": "For individual products:",
+            "substeps": {
+              "substep1": "Open the product details",
+              "substep2": "Navigate to the Stock/Inventory tab",
+              "substep3": "Set the \"Low Stock Alert\" threshold",
+              "substep4": "Save changes"
+            }
+          },
+          "step2": {
+            "title": "View Low Stock Items",
+            "description": "On the Inventory dashboard, click on the \"Low Stock Items\" card to see all products below their threshold"
+          },
+          "step3": {
+            "title": "Configure Notifications",
+            "description": "To receive automatic alerts:",
+            "substeps": {
+              "substep1": "Go to Settings > Inventory Settings",
+              "substep2": "Enable \"Low Stock Notifications\"",
+              "substep3": "Choose notification method (in-app, email, or both)",
+              "substep4": "Set frequency (immediate, daily summary, weekly summary)"
+            }
+          }
+        },
+        "note": "You can set category-wide low stock thresholds to quickly configure multiple products. Individual product settings will override category defaults."
+      },
+      "stockCount": {
+        "title": "Physical Inventory Count",
+        "intro": "Regularly conducting physical inventory counts helps maintain accurate stock records:",
+        "features": {
+          "countSheet": {
+            "title": "Inventory Count Sheet",
+            "description": "Generate a printable count sheet to use during physical inventory checks."
+          },
+          "mobileCounting": {
+            "title": "Mobile Counting",
+            "description": "Use the mobile app with a device camera as a barcode scanner for more efficient counting."
+          },
+          "reconciliation": {
+            "title": "Reconciliation",
+            "description": "Compare counted quantities with system records and make adjustments as needed."
+          }
+        },
+        "process": {
+          "intro": "To conduct a physical inventory count:",
+          "steps": {
+            "step1": {
+              "title": "Prepare for Count",
+              "description": "Go to Inventory > Stock Count > Start New Count"
+            },
+            "step2": {
+              "title": "Select Products to Count",
+              "description": "Choose to count all inventory or select specific categories/products"
+            },
+            "step3": {
+              "title": "Generate Count Sheet",
+              "description": "Print the count sheet or use the mobile app for digital counting"
+            },
+            "step4": {
+              "title": "Record Physical Counts",
+              "description": "Count each item and record the actual quantities"
+            },
+            "step5": {
+              "title": "Enter Count Results",
+              "description": "Input the counted quantities into the system"
+            },
+            "step6": {
+              "title": "Review Discrepancies",
+              "description": "The system will highlight differences between expected and actual quantities"
+            },
+            "step7": {
+              "title": "Make Adjustments",
+              "description": "Approve stock adjustments to update inventory levels based on the count"
+            },
+            "step8": {
+              "title": "Finalize Count",
+              "description": "Confirm all adjustments and complete the inventory count process"
+            }
+          }
+        },
+        "proTip": "For large inventories, consider using cycle counting—counting a portion of your inventory on a rotating schedule—rather than counting everything at once."
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "questions": {
+          "zeroStock": {
+            "question": "What happens if I sell a product with zero stock?",
+            "answer": "By default, the system will warn you when attempting to sell a product with zero stock, but will allow the sale to proceed, resulting in a negative stock value. This behavior can be changed in Settings:",
+            "steps": {
+              "step1": "Go to Settings > Inventory Settings",
+              "step2": "Find the \"Allow Negative Stock\" option",
+              "step3": "Disable this option to prevent sales of out-of-stock items"
+            }
+          },
+          "multipleLocations": {
+            "question": "How do I track products across multiple locations?",
+            "answer": "For businesses with multiple locations:",
+            "steps": {
+              "step1": "Enable the \"Multi-location Inventory\" feature in Settings > Advanced Features",
+              "step2": "Set up your locations in Settings > Locations",
+              "step3": "When updating stock, you'll be able to specify the location for each adjustment",
+              "step4": "The inventory list will show stock by location, with an option to view total stock"
+            }
+          },
+          "importStock": {
+            "question": "Can I import stock levels from a file?",
+            "answer": "Yes, you can import stock quantities using a CSV file:",
+            "steps": {
+              "step1": "Create a CSV with columns for product identifier (Bar Code or ID) and stock quantity",
+              "step2": "Go to Inventory > Import/Export > Import Stock",
+              "step3": "Upload your CSV file",
+              "step4": "Map the columns to the correct fields",
+              "step5": "Choose whether to set absolute quantities or add/subtract from current stock",
+              "step6": "Select a reason for the adjustment",
+              "step7": "Click \"Import\" to update stock levels"
+            }
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to Adding Products",
+        "next": "Next: Import & Export →"
+      }
+    },
+    "importExport": {
+      "title": "Import & Export",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to import and export data in MZLAD Billing System. These powerful features allow you to easily update your inventory in bulk, migrate data from other systems, and create backups of your product information.",
+      "toc": {
+        "title": "On this page:",
+        "importOverview": "Importing Data Overview",
+        "importingProducts": "Importing Products",
+        "csvFormat": "CSV File Format Requirements",
+        "exportData": "Exporting Inventory Data",
+        "dataTemplates": "Using Data Templates",
+        "troubleshooting": "Troubleshooting Import Issues"
+      },
+      "importOverview": {
+        "title": "Importing Data Overview",
+        "intro": "MZLAD Billing System allows you to import various types of data using CSV (Comma Separated Values) files:",
+        "features": {
+          "productImport": {
+            "title": "Product Import",
+            "description": "Add or update multiple products at once, including product details, pricing, and stock levels."
+          },
+          "customerImport": {
+            "title": "Customer Import",
+            "description": "Import your customer database with contact information and purchase history."
+          },
+          "priceListImport": {
+            "title": "Price List Import",
+            "description": "Update pricing for multiple products quickly with bulk price updates."
+          }
+        }
+      },
+      "importingProducts": {
+        "title": "Importing Products",
+        "intro": "Follow these steps to import products using a CSV file:",
+        "steps": {
+          "step1": {
+            "title": "Prepare Your CSV File",
+            "description": "Create a CSV file with the required columns (detailed below)"
+          },
+          "step2": {
+            "title": "Access Import Function",
+            "description": "In the Inventory section, click the \"Import CSV\" button in the top-right corner"
+          },
+          "step3": {
+            "title": "Upload Your File",
+            "description": "Click \"Choose File\" and select your prepared CSV file"
+          },
+          "step4": {
+            "title": "Configure Import Options",
+            "description": "Select the appropriate options:",
+            "options": {
+              "option1": "Check \"Update existing products\" to modify products that match by ID or SKU",
+              "option2": "Check \"Add new products\" to import products that don't exist in the system"
+            }
+          },
+          "step5": {
+            "title": "Review Preview",
+            "description": "The system will show a preview of the data to be imported"
+          },
+          "step6": {
+            "title": "Complete Import",
+            "description": "Click \"Import Products\" to process the file and add/update your inventory"
+          }
+        },
+        "screenshot": {
+          "caption": "Import Products dialog showing file selection and import options"
+        }
+      },
+      "csvFormat": {
+        "title": "CSV File Format Requirements",
+        "intro": "Your CSV file must follow specific format requirements for successful import:",
+        "table": {
+          "headers": {
+            "columnName": "Column Name",
+            "description": "Description",
+            "required": "Required?",
+            "format": "Format/Example"
+          },
+          "rows": {
+            "id": {
+              "name": "id",
+              "description": "Internal product ID (leave blank for new products)",
+              "required": "Optional",
+              "format": "123"
+            },
+            "sku": {
+              "name": "sku",
+              "description": "Stock Keeping Unit - unique product identifier",
+              "required": "Required",
+              "format": "PROD-001"
+            },
+            "name": {
+              "name": "name",
+              "description": "Product name or description",
+              "required": "Required",
+              "format": "Wireless Bluetooth Headphones"
+            },
+            "category": {
+              "name": "category",
+              "description": "Product category",
+              "required": "Required",
+              "format": "Electronics"
+            },
+            "price": {
+              "name": "price",
+              "description": "Selling price (without currency symbol)",
+              "required": "Required",
+              "format": "89.99"
+            },
+            "cost": {
+              "name": "cost",
+              "description": "Purchase cost (without currency symbol)",
+              "required": "Required",
+              "format": "45.50"
+            },
+            "stock": {
+              "name": "stock",
+              "description": "Current stock quantity",
+              "required": "Required",
+              "format": "25"
+            }
+          }
+        },
+        "note": "Your CSV file must include the header row with exact column names as listed above. Additional columns beyond the required ones will be ignored during import.",
+        "example": {
+          "title": "Example of a properly formatted CSV file:",
+          "content": "id,sku,name,category,price,cost,stock\n,HDPH-001,Wireless Bluetooth Headphones,Electronics,89.99,45.50,25\n,SPKR-002,Portable Bluetooth Speaker,Electronics,69.99,32.75,18\n,CHRG-003,Fast Charging Cable,Accessories,19.99,8.25,50"
+        }
+      },
+      "exportData": {
+        "title": "Exporting Inventory Data",
+        "intro": "To export your inventory data to a CSV file:",
+        "steps": {
+          "step1": {
+            "title": "Access Export Function",
+            "description": "In the Inventory section, click the \"Export CSV\" button in the top-right corner"
+          },
+          "step2": {
+            "title": "Configure Export Options",
+            "description": "In the export dialog, choose what to include:",
+            "options": {
+              "option1": "All products or filtered selection",
+              "option2": "Which fields to include in the export",
+              "option3": "File format (typically CSV)"
+            }
+          },
+          "step3": {
+            "title": "Generate Export",
+            "description": "Click \"Export\" to generate the file"
+          },
+          "step4": {
+            "title": "Save File",
+            "description": "Choose where to save the exported file on your computer"
+          }
+        },
+        "proTip": "Before making substantial changes to your inventory, export your current data as a backup. This allows you to restore your data if needed."
+      },
+      "dataTemplates": {
+        "title": "Using Data Templates",
+        "intro": "MZLAD Billing System provides templates to make data import easier:",
+        "features": {
+          "downloadTemplates": {
+            "title": "Download Templates",
+            "description": "Get pre-formatted CSV templates with correct headers for various data types."
+          },
+          "exportTemplate": {
+            "title": "Export as Template",
+            "description": "Export your existing data as a template for future imports or for updating in bulk."
+          },
+          "templateExamples": {
+            "title": "Template Examples",
+            "description": "View sample data examples to understand the expected format for each field."
+          }
+        },
+        "accessing": {
+          "intro": "To access templates:",
+          "steps": {
+            "step1": {
+              "title": "Open Import Dialog",
+              "description": "Click \"Import CSV\" in the inventory section"
+            },
+            "step2": {
+              "title": "Access Templates",
+              "description": "Click the \"Download Template\" link in the import dialog"
+            },
+            "step3": {
+              "title": "Choose Template Type",
+              "description": "Select the type of template you need (Products, Customers, etc.)"
+            },
+            "step4": {
+              "title": "Download and Use",
+              "description": "Save the template and fill it with your data before importing"
+            }
+          }
+        }
+      },
+      "troubleshooting": {
+        "title": "Troubleshooting Import Issues",
+        "intro": "If you encounter problems during the import process, check these common issues:",
+        "issues": {
+          "fileFormat": {
+            "title": "File format errors",
+            "problem": "System reports file format errors",
+            "solutions": {
+              "solution1": "Ensure your file is saved as CSV (not Excel or other formats)",
+              "solution2": "Check that the delimiter is a comma (,)",
+              "solution3": "Remove any special characters from the header row",
+              "solution4": "Save the file with UTF-8 encoding to support special characters"
+            }
+          },
+          "missingColumns": {
+            "title": "Missing or incorrect columns",
+            "problem": "Import fails due to missing required columns",
+            "solutions": {
+              "solution1": "Compare your file headers with the required column names",
+              "solution2": "Check for spelling errors or extra spaces in column names",
+              "solution3": "Ensure all required columns are included",
+              "solution4": "Download and use the provided templates to ensure correct formatting"
+            }
+          },
+          "dataValidation": {
+            "title": "Data validation errors",
+            "problem": "Import fails with data validation errors",
+            "solutions": {
+              "solution1": "Check numeric fields (price, cost, stock) contain only numbers",
+              "solution2": "Ensure decimal values use a period (.) not a comma",
+              "solution3": "Verify SKUs are unique across all products",
+              "solution4": "Check for empty cells in required fields",
+              "solution5": "Look for excessively long text that exceeds field limits"
+            }
+          }
+        },
+        "important": "When updating existing products, make sure the SKU or ID values match exactly with your system records. Mismatches can result in duplicate products instead of updates."
+      },
+      "advancedOptions": {
+        "title": "Advanced Import/Export Options",
+        "intro": "MZLAD Billing System offers several advanced options for data management:",
+        "options": {
+          "option1": "Scheduled Exports: Automatically export data on a regular schedule for backup purposes",
+          "option2": "Custom Field Mapping: Map columns from your existing data files to system fields",
+          "option3": "Selective Updates: Update only specific fields (like prices or stock) without changing other product data",
+          "option4": "Data Validation Rules: Create custom validation rules to ensure imported data meets your business requirements",
+          "option5": "Integration APIs: Use the system API for automated data exchange with other business systems"
+        },
+        "accessing": {
+          "intro": "To access these advanced features:",
+          "steps": {
+            "step1": {
+              "title": "Go to Settings",
+              "description": "Navigate to Settings > Advanced Settings"
+            },
+            "step2": {
+              "title": "Select Import/Export Configuration",
+              "description": "Configure advanced import/export options according to your needs"
+            },
+            "step3": {
+              "title": "Save Configuration",
+              "description": "Apply and save your custom settings"
+            }
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to Updating Stock",
+        "next": "Next: Sales Reports →"
+      }
+    },
+    "salesReports": {
+      "title": "Sales Reports",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to access and interpret sales reports in MZLAD Billing System. These powerful reporting tools provide insights into your sales performance, helping you make data-driven decisions to grow your business.",
+      "toc": {
+        "title": "On this page:",
+        "accessingReports": "Accessing Sales Reports",
+        "dashboardOverview": "Dashboard Overview",
+        "salesPerformance": "Sales Performance Charts",
+        "detailedReports": "Detailed Sales Reports",
+        "filteringReports": "Filtering and Customizing Reports",
+        "exportingReports": "Exporting and Printing Reports"
+      },
+      "accessingReports": {
+        "title": "Accessing Sales Reports",
+        "intro": "To access the sales reports section:",
+        "steps": {
+          "step1": {
+            "title": "Navigate to Reports & Analytics",
+            "description": "Click on the \"Reports\" icon in the main navigation sidebar"
+          },
+          "step2": {
+            "title": "Select Sales Reports",
+            "description": "Click on \"Sales Reports\" in the submenu or select it from the main Reports dashboard"
+          },
+          "step3": {
+            "title": "View Report Dashboard",
+            "description": "The sales report dashboard will display with key metrics and performance charts"
+          }
+        },
+        "screenshot": {
+          "caption": "Reports & Analytics dashboard showing key sales metrics"
+        }
+      },
+      "dashboardOverview": {
+        "title": "Dashboard Overview",
+        "intro": "The Sales Reports dashboard provides a quick overview of your business performance with key metrics:",
+        "metrics": {
+          "totalSales": {
+            "title": "Total Sales",
+            "description": "Shows the total sales value for the selected period, with a percentage comparison to the previous period."
+          },
+          "transactions": {
+            "title": "Transactions",
+            "description": "Displays the number of completed transactions, with a percentage comparison to the previous period."
+          },
+          "averageSale": {
+            "title": "Average Sale",
+            "description": "Shows the average value per transaction, helping you track if customers are spending more or less over time."
+          },
+          "totalProfit": {
+            "title": "Total Profit",
+            "description": "Displays the total profit generated during the selected period, with a comparison to the previous period."
+          }
+        },
+        "note": "Percentages shown in green indicate an increase compared to the previous period, while red percentages indicate a decrease. This provides a quick visual cue of business trends."
+      },
+      "salesPerformance": {
+        "title": "Sales Performance Charts",
+        "intro": "The Sales Performance chart provides a visual representation of your sales data:",
+        "steps": {
+          "step1": {
+            "title": "View the Chart",
+            "description": "The chart displays Revenue and Profit data for the selected time period"
+          },
+          "step2": {
+            "title": "Change Time Frame",
+            "description": "Switch between Daily, Weekly, and Monthly views using the buttons above the chart"
+          },
+          "step3": {
+            "title": "Analyze Trends",
+            "description": "Hover over data points to see detailed values for specific dates"
+          },
+          "step4": {
+            "title": "Identify Patterns",
+            "description": "Look for patterns in sales performance to identify busy days or seasonal trends"
+          }
+        },
+        "screenshot": {
+          "caption": "Sales performance chart showing revenue and profit over time"
+        }
+      },
+      "detailedReports": {
+        "title": "Detailed Sales Reports",
+        "intro": "MZLAD Billing System offers several detailed sales report views:",
+        "table": {
+          "headers": {
+            "reportType": "Report Type",
+            "description": "Description",
+            "keyInsights": "Key Insights"
+          },
+          "rows": {
+            "dailySales": {
+              "type": "Daily Sales",
+              "description": "Shows sales data broken down by day",
+              "insights": {
+                "insight1": "Transactions per day",
+                "insight2": "Items sold per day",
+                "insight3": "Sales, cost, profit, and margin"
+              }
+            },
+            "productSales": {
+              "type": "Product Sales",
+              "description": "Shows sales data broken down by product",
+              "insights": {
+                "insight1": "Units sold of each product",
+                "insight2": "Revenue generated per product",
+                "insight3": "Profit margin by product"
+              }
+            },
+            "categorySales": {
+              "type": "Category Sales",
+              "description": "Shows sales data broken down by product category",
+              "insights": {
+                "insight1": "Performance by category",
+                "insight2": "Category profit margins",
+                "insight3": "Trend analysis by category"
+              }
+            }
+          }
+        },
+        "switching": {
+          "intro": "To switch between different report views:",
+          "steps": {
+            "step1": {
+              "title": "Access Sales Report",
+              "description": "Click on the \"Sales Report\" section below the dashboard"
+            },
+            "step2": {
+              "title": "Select Report Type",
+              "description": "Click on the tabs at the top of the report to switch between Daily Sales, Product Sales, and Category Sales"
+            },
+            "step3": {
+              "title": "Review Data",
+              "description": "Analyze the detailed data presented in tabular format"
+            },
+            "step4": {
+              "title": "Sort Results",
+              "description": "Click on any column header to sort the data by that column"
+            }
+          }
+        },
+        "screenshot": {
+          "caption": "Detailed daily sales report showing transactions by date"
+        }
+      },
+      "filteringReports": {
+        "title": "Filtering and Customizing Reports",
+        "intro": "You can customize your reports to focus on specific time periods or data:",
+        "steps": {
+          "step1": {
+            "title": "Set Date Range",
+            "description": "Use the Date Range dropdown to select a predefined period:",
+            "options": {
+              "option1": "Today",
+              "option2": "Yesterday",
+              "option3": "This Week",
+              "option4": "Last Week",
+              "option5": "This Month",
+              "option6": "Last Month",
+              "option7": "Custom Range"
+            }
+          },
+          "step2": {
+            "title": "Custom Date Range",
+            "description": "If you select \"Custom Range\", a date picker will appear allowing you to select specific start and end dates"
+          },
+          "step3": {
+            "title": "Apply Additional Filters",
+            "description": "Depending on the report type, you may be able to filter by:",
+            "filters": {
+              "filter1": "Product category",
+              "filter2": "Payment method",
+              "filter3": "Staff member",
+              "filter4": "Customer"
+            }
+          },
+          "step4": {
+            "title": "Apply Filters",
+            "description": "Click the \"Apply Filters\" button to update the report with your selections"
+          }
+        },
+        "proTip": "Save frequently used filter combinations by clicking the \"Save View\" button after applying your filters. You can then access these saved views from the \"Saved Views\" dropdown for quick access to your most important reports."
+      },
+      "exportingReports": {
+        "title": "Exporting and Printing Reports",
+        "intro": "You can export your reports for further analysis or presentation:",
+        "options": {
+          "csv": {
+            "title": "Export to CSV",
+            "description": "Export your report data to a CSV file for analysis in spreadsheet software like Excel or Google Sheets."
+          },
+          "print": {
+            "title": "Print Report",
+            "description": "Print a formatted version of your report directly from the system for physical records or presentations."
+          },
+          "email": {
+            "title": "Email Report",
+            "description": "Send the report directly via email to team members or stakeholders (available in advanced settings)."
+          }
+        },
+        "process": {
+          "intro": "To export or print a report:",
+          "steps": {
+            "step1": {
+              "title": "Set Up Your Report",
+              "description": "Apply the desired filters and customize the report as needed"
+            },
+            "step2": {
+              "title": "Select Export Format",
+              "description": "Click the \"Export CSV\" button to download the data as a CSV file"
+            },
+            "step3": {
+              "title": "Print Report",
+              "description": "Click the \"Print\" button to open the print dialog and print the report"
+            }
+          }
+        },
+        "note": "The exported CSV file will contain all the data from your report, including any applied filters. This makes it easy to perform additional analysis or create custom visualizations in other software."
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "questions": {
+          "salesTotalsDiffer": {
+            "question": "Why might my sales totals differ between reports?",
+            "answer": "Sales totals may differ between reports due to:",
+            "reasons": {
+              "reason1": "Time zone differences: If you changed your system time zone setting",
+              "reason2": "Return handling: Some reports show gross sales while others show net sales (after returns)",
+              "reason3": "Tax inclusion: Reports can be configured to show amounts with or without tax",
+              "reason4": "Filter differences: Different filters applied to various reports"
+            },
+            "solution": "You can standardize your reporting by configuring these options in Settings > Reporting Preferences."
+          },
+          "trackEmployeeSales": {
+            "question": "How can I track sales by specific employees?",
+            "answer": "To track sales by employee:",
+            "steps": {
+              "step1": "Go to the Reports & Analytics section",
+              "step2": "Select \"Advanced Reports\" from the submenu",
+              "step3": "Choose \"Staff Performance Report\"",
+              "step4": "Set your desired date range",
+              "step5": "View detailed breakdowns of sales by each staff member"
+            },
+            "conclusion": "This report provides insights into transaction counts, average sale values, return rates, and more for each employee."
+          },
+          "scheduleReports": {
+            "question": "Can I schedule regular reports to be sent automatically?",
+            "answer": "Yes, you can schedule automatic reports:",
+            "steps": {
+              "step1": "Configure your report with the desired filters and view",
+              "step2": "Click the \"Schedule\" button in the report toolbar",
+              "step3": "Set the frequency (daily, weekly, monthly)",
+              "step4": "Enter email recipients",
+              "step5": "Choose the format (PDF, CSV, or both)",
+              "step6": "Click \"Save Schedule\""
+            },
+            "conclusion": "The system will automatically generate and send reports according to your schedule."
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to Import & Export",
+        "next": "Next: Inventory Reports →"
+      }
+    },
+    "inventoryReports": {
+      "title": "Inventory Reports",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to access and utilize inventory reports in MZLAD Billing System. These reports provide valuable insights into your product performance, stock levels, and inventory valuation, helping you make informed decisions about purchasing and stock management.",
+      "toc": {
+        "title": "On this page:",
+        "accessingReports": "Accessing Inventory Reports",
+        "inventoryOverview": "Inventory Overview Dashboard",
+        "topSelling": "Top Selling Products Report",
+        "lowStock": "Low Stock Reporting",
+        "valuation": "Inventory Valuation Reports",
+        "performance": "Product Performance Analysis",
+        "movement": "Inventory Movement Reports"
+      },
+      "accessing": {
+        "title": "Accessing Inventory Reports",
+        "intro": "To access the inventory reports section:",
+        "step1": "Navigate to Reports & Analytics",
+        "step1Description": "Click on the \"Reports\" icon in the main navigation sidebar",
+        "step2": "Select Inventory Reports",
+        "step2Description": "Click on \"Inventory Reports\" in the submenu",
+        "step3": "View Report Dashboard",
+        "step3Description": "The inventory reports dashboard will display with key metrics and report options",
+        "screenshotCaption": "Inventory Reports dashboard showing key inventory metrics"
+      },
+      "overview": {
+        "title": "Inventory Overview Dashboard",
+        "intro": "The Inventory Overview dashboard provides a snapshot of your current inventory status:",
+        "cards": {
+          "totalProducts": "Total Products",
+          "totalProductsDescription": "Shows the total number of product SKUs in your inventory.",
+          "inventoryValue": "Inventory Value",
+          "inventoryValueDescription": "Displays the total retail value of your current inventory at selling prices.",
+          "inventoryCost": "Inventory Cost",
+          "inventoryCostDescription": "Shows the total cost value of your current inventory (what you paid for the stock).",
+          "lowStock": "Low Stock Items",
+          "lowStockDescription": "Indicates the number of products that have fallen below their minimum stock threshold."
+        },
+        "note": "Inventory valuation is calculated based on the current stock quantities and the latest cost/price values for each product. Any changes to these values will be reflected in real-time on the dashboard."
+      },
+      "topSelling": {
+        "title": "Top Selling Products Report",
+        "intro": "The Top Selling Products report helps you identify your best-performing items:",
+        "steps": {
+          "step1": "View the Report",
+          "step1Description": "Scroll down to the \"Top Selling Products\" section on the Inventory Overview page",
+          "step2": "Understand the Metrics",
+          "step2Description": "For each product, you'll see:",
+          "metrics": {
+            "name": "Product name",
+            "price": "Selling price",
+            "unitsSold": "Units sold during the selected period",
+            "revenue": "Total revenue generated",
+            "stock": "Current stock level"
+          },
+          "step3": "Use the Information",
+          "step3Description": "This data helps you:",
+          "uses": {
+            "prioritize": "Identify which products to prioritize when restocking",
+            "promotional": "Recognize high-performing items for promotional opportunities",
+            "spotLow": "Spot popular products that may be running low on stock"
+          }
+        },
+        "screenshotCaption": "Top Selling Products report showing units sold and revenue"
+      },
+      "lowStock": {
+        "title": "Low Stock Reporting",
+        "intro": "The Low Stock Products report helps you identify items that need to be reordered:",
+        "steps": {
+          "step1": "Access the Report",
+          "step1Description": "Scroll down to the \"Low Stock Products\" section on the Inventory Overview page",
+          "step2": "Review Low Stock Items",
+          "step2Description": "The report displays all products that have fallen below their minimum stock threshold, showing:",
+          "items": {
+            "name": "Product name",
+            "sku": "SKU",
+            "price": "Current price",
+            "stock": "Current stock level"
+          },
+          "step3": "Take Action",
+          "step3Description": "Click on any product name to view detailed product information and stock history",
+          "step4": "Generate Purchase Orders",
+          "step4Description": "Use the \"Generate Purchase Order\" button to automatically create purchase orders for low stock items"
+        },
+        "tip": "Configure low stock thresholds for each product based on its sales velocity and lead time for reordering. This ensures you'll be alerted to reorder products with enough time to prevent stockouts."
+      },
+      "valuation": {
+        "title": "Inventory Valuation Reports",
+        "intro": "Inventory Valuation reports provide detailed financial information about your inventory:",
+        "reportTypes": {
+          "header1": "Report Type",
+          "header2": "Description",
+          "header3": "Use Cases",
+          "current": {
+            "title": "Current Valuation",
+            "description": "Shows the current value of inventory based on cost and retail prices",
+            "uses": {
+              "financial": "Financial reporting",
+              "insurance": "Insurance documentation",
+              "valuation": "Business valuation"
+            }
+          },
+          "category": {
+            "title": "Valuation by Category",
+            "description": "Breaks down inventory value by product categories",
+            "uses": {
+              "performance": "Department performance analysis",
+              "investment": "Category investment decisions",
+              "planning": "Stock allocation planning"
+            }
+          },
+          "history": {
+            "title": "Valuation History",
+            "description": "Shows how inventory value has changed over time",
+            "uses": {
+              "tracking": "Tracking inventory growth",
+              "seasonal": "Seasonal trend analysis",
+              "growth": "Business growth measurement"
+            }
+          }
+        },
+        "accessing": "To access these reports:",
+        "steps": {
+          "step1": "Go to Inventory Reports",
+          "step1Description": "Navigate to Reports & Analytics > Inventory Reports",
+          "step2": "Select Valuation Reports",
+          "step2Description": "Click on \"Inventory Valuation\" in the sidebar menu",
+          "step3": "Choose Report Type",
+          "step3Description": "Select from the available valuation report types",
+          "step4": "Set Parameters",
+          "step4Description": "Define the date range and other filters as needed",
+          "step5": "View or Export",
+          "step5Description": "View the report on screen or export it for further analysis"
+        }
+      },
+      "performance": {
+        "title": "Product Performance Analysis",
+        "intro": "Product Performance reports help you analyze the sales and profitability of your inventory:",
+        "cards": {
+          "velocity": {
+            "title": "Sales Velocity",
+            "description": "Track how quickly products sell, helping you optimize stock levels and identify fast-moving items."
+          },
+          "margin": {
+            "title": "Profit Margin Analysis",
+            "description": "Analyze profit margins across products to identify your most and least profitable inventory items."
+          },
+          "turnover": {
+            "title": "Inventory Turnover",
+            "description": "Measure how many times your inventory is sold and replaced over a period to assess efficiency."
+          }
+        },
+        "accessing": "To access these reports:",
+        "steps": {
+          "step1": "Go to Inventory Reports",
+          "step1Description": "Navigate to Reports & Analytics > Inventory Reports",
+          "step2": "Select Product Performance",
+          "step2Description": "Click on \"Product Performance\" in the sidebar menu",
+          "step3": "Choose Analysis Type",
+          "step3Description": "Select the specific performance metric you want to analyze",
+          "step4": "Configure Parameters",
+          "step4Description": "Set the time period and any filters needed",
+          "step5": "Review Results",
+          "step5Description": "Analyze the data presented in tables and charts"
+        },
+        "tip": "Use the Product Performance Analysis to identify \"dead stock\" (items that haven't sold in a long time) and consider running promotions or clearance sales to convert these items into cash."
+      },
+      "movement": {
+        "title": "Inventory Movement Reports",
+        "intro": "Inventory Movement reports track changes in your inventory over time:",
+        "steps": {
+          "step1": "Access Movement Reports",
+          "step1Description": "Go to Reports & Analytics > Inventory Reports > Inventory Movement",
+          "step2": "Select Report Type",
+          "step2Description": "Choose from available reports:",
+          "reports": {
+            "adjustments": "Stock Adjustment History",
+            "transactions": "Inventory Transaction Log",
+            "transfers": "Stock Transfer Report",
+            "receiving": "Receiving History"
+          },
+          "step3": "Set Filters",
+          "step3Description": "Filter by date range, product, category, or adjustment reason",
+          "step4": "Review the Data",
+          "step4Description": "Analyze the movement history to track inventory changes"
+        },
+        "note": "Inventory Movement reports are particularly useful for auditing and inventory reconciliation, as they provide a complete history of all stock changes, including who made the changes and when."
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "questions": {
+          "thresholds": {
+            "question": "How are low stock thresholds determined?",
+            "answer": "Low stock thresholds can be set in several ways:",
+            "methods": {
+              "manual": "Manual setting: You can set a specific threshold for each product in the product details.",
+              "category": "Category defaults: You can set default thresholds by product category.",
+              "automatic": "Automatic calculation: The system can calculate suggested thresholds based on sales velocity and your specified lead time for reordering."
+            },
+            "configure": "To configure low stock thresholds, go to Inventory > Settings > Stock Alerts."
+          },
+          "discrepancies": {
+            "question": "Why might there be discrepancies in my inventory reports?",
+            "answer": "Discrepancies in inventory reporting might occur due to:",
+            "reasons": {
+              "sales": "Sales or returns processed while viewing a report",
+              "adjustments": "Manual stock adjustments made by staff",
+              "negative": "Items with negative stock values (if allowed in settings)",
+              "timing": "Timing differences between reports generated at different times",
+              "unprocessed": "Unprocessed receiving orders or stock transfers"
+            },
+            "solution": "Regular physical inventory counts and reconciliation can help ensure your system data matches your actual inventory."
+          },
+          "slowMoving": {
+            "question": "How can I identify products that aren't selling well?",
+            "answer": "To identify slow-moving or non-selling products:",
+            "steps": {
+              "step1": "Go to Reports & Analytics > Inventory Reports",
+              "step2": "Select \"Product Performance\"",
+              "step3": "Choose \"Non-Performing Products\"",
+              "step4": "Set the time period (e.g., last 30, 60, or 90 days)",
+              "step5": "The report will show products with low or no sales during the period"
+            },
+            "additional": "You can also sort any product report by \"Units Sold\" in ascending order to see the least-sold items first."
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to Sales Reports",
+        "next": "Next: Exporting Data →"
+      }
+    },
+    "exportingData": {
+      "title": "Exporting Data",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to export data from MZLAD Billing System for analysis, backup, or use in other business applications. Exporting data allows you to create custom reports, share information with stakeholders, and perform advanced analysis using your preferred tools.",
+      "toc": {
+        "title": "On this page:",
+        "exportOverview": "Data Export Overview",
+        "exportReports": "Exporting Reports",
+        "exportInventory": "Exporting Inventory Data",
+        "exportSales": "Exporting Sales Data",
+        "exportCustomers": "Exporting Customer Data",
+        "scheduledExports": "Scheduled Exports",
+        "dataSecurity": "Data Security Considerations"
+      },
+      "overview": {
+        "title": "Data Export Overview",
+        "intro": "MZLAD Billing System allows you to export various types of data in multiple formats:",
+        "formats": {
+          "csv": {
+            "title": "CSV Format",
+            "description": "Comma-Separated Values (CSV) files that can be opened in spreadsheet applications like Excel or Google Sheets."
+          },
+          "pdf": {
+            "title": "PDF Format",
+            "description": "Formatted reports in PDF format suitable for printing, sharing, or archiving."
+          },
+          "excel": {
+            "title": "Excel Format",
+            "description": "Native Excel (XLSX) files with formatting and multiple sheets (available for certain reports)."
+          }
+        }
+      },
+      "reports": {
+        "title": "Exporting Reports",
+        "intro": "You can export any report generated in the system:",
+        "steps": {
+          "step1": "Generate the Report",
+          "step1Description": "Navigate to the Reports & Analytics section and generate the desired report",
+          "step2": "Apply Filters",
+          "step2Description": "Use filters to customize the report as needed",
+          "step3": "Click Export Button",
+          "step3Description": "Look for the \"Export CSV\" or \"Print\" button in the report toolbar",
+          "step4": "Select Format (if applicable)",
+          "step4Description": "Choose your preferred format (CSV, PDF, or Excel)",
+          "step5": "Save or Open",
+          "step5Description": "Choose to save the file to your computer or open it immediately"
+        },
+        "screenshotCaption": "Report toolbar showing Export CSV and Print buttons",
+        "note": "The \"Print\" button not only allows you to print a physical copy but also to save the report as a PDF file using your operating system's print-to-PDF feature."
+      },
+      "inventory": {
+        "title": "Exporting Inventory Data",
+        "intro": "To export your complete inventory data:",
+        "steps": {
+          "step1": "Go to Inventory",
+          "step1Description": "Navigate to the Inventory section from the main menu",
+          "step2": "Access Export Function",
+          "step2Description": "Look for the \"Export CSV\" button in the top-right corner of the inventory page",
+          "step3": "Configure Export Options",
+          "step3Description": "In the export dialog, you can:",
+          "options": {
+            "option1": "Choose which products to include (all or filtered selection)",
+            "option2": "Select which fields to include in the export",
+            "option3": "Choose the format (typically CSV)"
+          },
+          "step4": "Start Export",
+          "step4Description": "Click \"Export\" to generate and download the file"
+        },
+        "tip": "Exporting your full inventory regularly serves as a backup of your product data. Consider scheduling a weekly or monthly export to maintain an offline copy of your inventory information."
+      },
+      "sales": {
+        "title": "Exporting Sales Data",
+        "intro": "To export detailed sales transaction data:",
+        "table": {
+          "headers": {
+            "exportType": "Export Type",
+            "access": "Where to Access",
+            "info": "Information Included"
+          },
+          "rows": {
+            "transactions": {
+              "type": "Transaction List",
+              "access": "Transactions > Export CSV",
+              "info": {
+                "item1": "Transaction ID",
+                "item2": "Date/time",
+                "item3": "Customer information",
+                "item4": "Total amount",
+                "item5": "Payment method",
+                "item6": "Status"
+              }
+            },
+            "detailedSales": {
+              "type": "Detailed Sales",
+              "access": "Reports > Sales Reports > Export CSV",
+              "info": {
+                "item1": "All transaction details",
+                "item2": "Line items with product details",
+                "item3": "Pricing and quantity information",
+                "item4": "Discounts and taxes",
+                "item5": "Profit margins"
+              }
+            },
+            "paymentReport": {
+              "type": "Payment Report",
+              "access": "Reports > Payment Reports > Export CSV",
+              "info": {
+                "item1": "Payment method breakdown",
+                "item2": "Payment dates",
+                "item3": "Related transactions",
+                "item4": "Payment status information"
+              }
+            }
+          }
+        },
+        "generalSteps": {
+          "intro": "General steps for exporting sales data:",
+          "step1": "Navigate to the Desired Section",
+          "step1Description": "Go to Transactions or Reports section as needed",
+          "step2": "Apply Relevant Filters",
+          "step2Description": "Filter by date range, payment method, product, etc. to narrow down the data",
+          "step3": "Click Export",
+          "step3Description": "Use the \"Export CSV\" button to download the data"
+        }
+      },
+      "customers": {
+        "title": "Exporting Customer Data",
+        "intro": "To export your customer database:",
+        "steps": {
+          "step1": "Go to Customers",
+          "step1Description": "Navigate to the Customers section from the main menu",
+          "step2": "Select Customers",
+          "step2Description": "You can choose to export all customers or select specific ones",
+          "step3": "Access Export Function",
+          "step3Description": "Click the \"Export\" button in the toolbar",
+          "step4": "Choose Export Options",
+          "step4Description": "Select the information to include in the export:",
+          "options": {
+            "option1": "Basic contact information",
+            "option2": "Purchase history",
+            "option3": "Account balance",
+            "option4": "Notes and custom fields"
+          },
+          "step5": "Select Format",
+          "step5Description": "Choose CSV or Excel format",
+          "step6": "Complete Export",
+          "step6Description": "Click \"Export\" to generate and download the file"
+        },
+        "warning": "Customer data often contains sensitive personal information. Ensure you comply with applicable data protection regulations (such as GDPR or CCPA) when exporting, storing, and using customer data."
+      },
+      "scheduled": {
+        "title": "Scheduled Exports",
+        "intro": "MZLAD Billing System allows you to schedule automatic exports:",
+        "features": {
+          "recurring": {
+            "title": "Recurring Exports",
+            "description": "Schedule exports to run automatically at regular intervals (daily, weekly, or monthly)."
+          },
+          "email": {
+            "title": "Email Delivery",
+            "description": "Have exports automatically emailed to specified recipients, such as managers or accountants."
+          },
+          "cloud": {
+            "title": "Cloud Storage",
+            "description": "Configure exports to be saved directly to cloud storage services like Google Drive or Dropbox."
+          }
+        },
+        "setup": {
+          "intro": "To set up scheduled exports:",
+          "step1": "Go to Settings",
+          "step1Description": "Navigate to Settings > System Settings",
+          "step2": "Select Scheduled Tasks",
+          "step2Description": "Click on \"Scheduled Tasks\" or \"Automation\" section",
+          "step3": "Create New Schedule",
+          "step3Description": "Click \"Add Scheduled Task\" and select \"Data Export\"",
+          "step4": "Configure Export Details",
+          "step4Description": "Specify what data to export and in what format",
+          "step5": "Set Schedule",
+          "step5Description": "Define when and how often the export should run",
+          "step6": "Configure Delivery",
+          "step6Description": "Specify where the exported data should be sent or saved",
+          "step7": "Save Schedule",
+          "step7Description": "Click \"Save\" to activate the scheduled export"
+        }
+      },
+      "security": {
+        "title": "Data Security Considerations",
+        "intro": "When exporting data from the system, keep these security considerations in mind:",
+        "guidelines": {
+          "title": "Important Security Guidelines:",
+          "item1": "Always store exported files securely, especially those containing sensitive information",
+          "item2": "Use password protection when sharing exported files via email",
+          "item3": "Delete exported files when they are no longer needed",
+          "item4": "Be aware of data protection regulations applicable to your business",
+          "item5": "Consider anonymizing data when full customer details are not required",
+          "item6": "Limit scheduled exports to essential personnel only",
+          "item7": "Review who has export permissions in your user security settings"
+        }
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "questions": {
+          "customFields": {
+            "question": "Can I customize the fields included in exported data?",
+            "answer": "Yes, most export functions allow you to customize the included fields:",
+            "steps": {
+              "step1": "When initiating an export, look for \"Export Options\" or \"Configure Export\"",
+              "step2": "You'll see a list of available fields with checkboxes",
+              "step3": "Select only the fields you need for your specific purpose",
+              "step4": "Some exports also allow you to reorder the columns"
+            },
+            "additional": "You can also save your customized export settings as templates for future use."
+          },
+          "fileFormats": {
+            "question": "What's the difference between CSV and Excel exports?",
+            "answer": {
+              "csv": {
+                "title": "CSV (Comma-Separated Values):",
+                "item1": "Simple text format compatible with almost any software",
+                "item2": "Limited to a single data sheet",
+                "item3": "No formatting, formulas, or complex features",
+                "item4": "Smaller file size, faster to generate"
+              },
+              "excel": {
+                "title": "Excel (XLSX):",
+                "item1": "Native Microsoft Excel format",
+                "item2": "Can include multiple sheets, formatting, and formulas",
+                "item3": "Supports charts, conditional formatting, and data validation",
+                "item4": "Larger file size, may take longer to generate for large datasets"
+              },
+              "conclusion": "Choose CSV for simple data export or when using with other software. Choose Excel when you need formatting or plan to work extensively with the data in Excel."
+            }
+          },
+          "numberFormat": {
+            "question": "Why are my exported numbers appearing as text in Excel?",
+            "answer": "This commonly happens with CSV files. To fix numeric formatting issues:",
+            "solution1": {
+              "intro": "",
+              "step1": "In Excel, select the column containing numeric data",
+              "step2": "Right-click and select \"Format Cells\"",
+              "step3": "Choose the appropriate number format (Number, Currency, etc.)",
+              "step4": "Click \"OK\" to apply the formatting"
+            },
+            "solution2": {
+              "intro": "Alternatively, when opening a new CSV file in Excel:",
+              "step1": "Use \"Data\" > \"From Text/CSV\" instead of double-clicking the file",
+              "step2": "In the import wizard, select the columns containing numbers",
+              "step3": "Set the column data format to \"Number\" before importing"
+            }
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to Inventory Reports",
+        "next": "Next: User Management →"
+      }
+    },
+    "userManagement": {
+      "title": "User Management",
+      "lastUpdated": "Last updated: {date}",
+      "intro": "Learn how to add, edit, and manage user accounts in MZLAD Billing System. Proper user management is essential for maintaining security, controlling access to sensitive information, and ensuring accountability in your business operations.",
+      "toc": {
+        "title": "On this page:",
+        "accessing": "Accessing User Management",
+        "roles": "Understanding User Roles",
+        "adding": "Adding New Users",
+        "editing": "Editing User Accounts",
+        "deactivating": "Deactivating Users",
+        "permissions": "Managing User Permissions",
+        "security": "Security Best Practices"
+      },
+      "accessing": {
+        "title": "Accessing User Management",
+        "intro": "To access the User Management section:",
+        "steps": {
+          "step1": "Navigate to User Manager",
+          "step1Description": "Click on the \"User Manager\" icon in the main navigation sidebar",
+          "step2": "View User List",
+          "step2Description": "The User Manager displays a list of all registered users with their details",
+          "step3": "Search or Filter Users",
+          "step3Description": "Use the search bar at the top to find specific users by name, email, or role"
+        },
+        "screenshotCaption": "User Manager showing the list of system users and their details"
+      },
+      "roles": {
+        "title": "Understanding User Roles",
+        "intro": "MZLAD Billing System uses a role-based access control system to determine what actions each user can perform:",
+        "table": {
+          "headers": {
+            "role": "Role",
+            "access": "Access Level",
+            "responsibilities": "Typical Responsibilities"
+          },
+          "admin": {
+            "role": "Admin",
+            "access": "Full system access",
+            "responsibilities": {
+              "item1": "User management and system configuration",
+              "item2": "Access to all reports and financial data",
+              "item3": "Full inventory and product management",
+              "item4": "System backups and data maintenance"
+            }
+          },
+          "manager": {
+            "role": "Manager",
+            "access": "Limited administrative access",
+            "responsibilities": {
+              "item1": "Sales and inventory management",
+              "item2": "Report generation and analysis",
+              "item3": "Customer management",
+              "item4": "Limited system settings"
+            }
+          },
+          "cashier": {
+            "role": "Cashier",
+            "access": "Front-end operational access",
+            "responsibilities": {
+              "item1": "Process sales and returns",
+              "item2": "Basic inventory checking",
+              "item3": "Customer lookups",
+              "item4": "Limited reporting access"
+            }
+          }
+        },
+        "note": "User roles determine what parts of the system a user can access and what actions they can perform. Always assign the appropriate role based on the user's job responsibilities and security requirements."
+      },
+      "adding": {
+        "title": "Adding New Users",
+        "intro": "To add a new user to MZLAD Billing System:",
+        "steps": {
+          "step1": "Go to Register New User",
+          "step1Description": "Click on the \"Register new User\" option in the sidebar menu",
+          "step2": "Fill in User Details",
+          "step2Description": "Enter the required information:",
+          "details": {
+            "item1": "Full name",
+            "item2": "Email address (will be used for login)",
+            "item3": "Password (or option to generate a secure password)",
+            "item4": "Role (Admin, Manager, or Cashier)"
+          },
+          "step3": "Set User Status",
+          "step3Description": "Choose whether the user should be Active immediately or Inactive until later activation",
+          "step4": "Save User",
+          "step4Description": "Click the \"Save\" or \"Create User\" button to add the new user to the system"
+        },
+        "tip": "Consider setting up new users with an Inactive status first, then activating them only when they're ready to begin using the system. This approach gives you time to properly configure their permissions before they start working."
+      },
+      "editing": {
+        "title": "Editing User Accounts",
+        "intro": "To modify an existing user account:",
+        "steps": {
+          "step1": "Find the User",
+          "step1Description": "In the User Manager, locate the user you want to edit",
+          "step2": "Access Edit Mode",
+          "step2Description": "Click the edit icon (pencil symbol) in the Actions column for that user",
+          "step3": "Modify User Details",
+          "step3Description": "Update any of the user's information as needed:",
+          "details": {
+            "item1": "Name",
+            "item2": "Email address",
+            "item3": "Role",
+            "item4": "Status (Active/Inactive)"
+          },
+          "step4": "Reset Password (if needed)",
+          "step4Description": "If the user needs a password reset, use the reset password option",
+          "step5": "Save Changes",
+          "step5Description": "Click \"Save\" or \"Update User\" to apply the changes"
+        },
+        "screenshotCaption": "User edit screen showing editable fields and options"
+      },
+      "deactivating": {
+        "title": "Deactivating Users",
+        "intro": "When an employee leaves or no longer needs access to the system:",
+        "steps": {
+          "step1": "Find the User",
+          "step1Description": "Locate the user in the User Manager",
+          "step2": "Edit User",
+          "step2Description": "Click the edit icon for that user",
+          "step3": "Change Status",
+          "step3Description": "Set the user's status from \"Active\" to \"Inactive\"",
+          "step4": "Save Changes",
+          "step4Description": "Click \"Save\" to apply the change"
+        },
+        "warning": "Deactivating a user prevents them from logging into the system but preserves their account and history. This is preferable to deleting the user, which might remove important historical data associated with their account."
+      },
+      "permissions": {
+        "title": "Managing User Permissions",
+        "intro": "For more granular control over what users can do:",
+        "features": {
+          "custom": {
+            "title": "Custom Permissions",
+            "description": "Create custom permission sets that go beyond the standard roles to tailor access precisely to job requirements."
+          },
+          "feature": {
+            "title": "Feature Access",
+            "description": "Control access to specific features, such as the ability to offer discounts, void transactions, or access sensitive reports."
+          },
+          "data": {
+            "title": "Data Access",
+            "description": "Restrict access to certain data categories or limit visibility to specific departments or locations."
+          }
+        },
+        "configuration": {
+          "intro": "To configure advanced permissions:",
+          "step1": "Access Advanced Permissions",
+          "step1Description": "In User Manager, click \"Manage Permissions\" in the top menu",
+          "step2": "Select User or Role",
+          "step2Description": "Choose to edit permissions for an individual user or an entire role",
+          "step3": "Configure Permissions",
+          "step3Description": "Use the permissions matrix to enable or disable specific actions",
+          "step4": "Save Configuration",
+          "step4Description": "Click \"Save Permissions\" to apply the changes"
+        },
+        "note": "Changes to user permissions take effect immediately. Users currently logged into the system may need to log out and log back in to see the changes to their access."
+      },
+      "security": {
+        "title": "Security Best Practices",
+        "intro": "To maintain a secure system, follow these user management best practices:",
+        "practices": {
+          "title": "Recommended Security Practices:",
+          "item1": {
+            "title": "Least Privilege Principle:",
+            "description": "Give users only the minimum access required for their job"
+          },
+          "item2": {
+            "title": "Regular Audits:",
+            "description": "Periodically review user accounts and remove or deactivate unused ones"
+          },
+          "item3": {
+            "title": "Strong Passwords:",
+            "description": "Enforce strong password policies with minimum complexity requirements"
+          },
+          "item4": {
+            "title": "Password Rotation:",
+            "description": "Require password changes at regular intervals (e.g., every 90 days)"
+          },
+          "item5": {
+            "title": "Unique Accounts:",
+            "description": "Never share login credentials among multiple employees"
+          },
+          "item6": {
+            "title": "Access Logs:",
+            "description": "Regularly review system access logs for unusual activity"
+          },
+          "item7": {
+            "title": "Off-boarding Process:",
+            "description": "Establish a clear process for removing system access when employees leave"
+          }
+        }
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "questions": {
+          "forgotPassword": {
+            "question": "What should I do if a user forgets their password?",
+            "answer": {
+              "intro": "To reset a forgotten password:",
+              "steps": {
+                "step1": "Go to User Manager",
+                "step2": "Find the user's account",
+                "step3": "Click the edit icon",
+                "step4": "Select \"Reset Password\"",
+                "step5": "Choose either to:",
+                "options": {
+                  "option1": "Generate a temporary password that the system will email to the user",
+                  "option2": "Set a new password manually and communicate it to the user securely"
+                }
+              },
+              "note": "For security reasons, MZLAD Billing System does not allow administrators to see users' current passwords."
+            }
+          },
+          "multipleAdmins": {
+            "question": "Can I have multiple admin users?",
+            "answer": {
+              "intro": "Yes, you can have multiple administrators in the system. However, for security and accountability reasons, we recommend:",
+              "recommendations": {
+                "item1": "Limiting the number of admin users to only those who absolutely need full system access",
+                "item2": "Creating a custom \"Limited Admin\" role for users who need some but not all administrative privileges",
+                "item3": "Regularly reviewing the admin user list to ensure it remains current and necessary"
+              },
+              "note": "Each admin should use their own unique login credentials rather than sharing a single admin account."
+            }
+          },
+          "trackActivity": {
+            "question": "How do I track user activity in the system?",
+            "answer": {
+              "intro": "MZLAD Billing System maintains comprehensive activity logs that track user actions:",
+              "steps": {
+                "step1": "Go to Settings > System Logs",
+                "step2": "Select \"User Activity Logs\"",
+                "step3": "Use the filters to search by:",
+                "filterOptions": {
+                  "option1": "User name",
+                  "option2": "Date range",
+                  "option3": "Activity type",
+                  "option4": "Section of the system"
+                },
+                "step4": "View detailed information about each action, including timestamps and affected data",
+                "step5": "Export logs as needed for record-keeping or auditing purposes"
+              },
+              "note": "These logs cannot be modified by users and provide an audit trail of all system activity."
+            }
+          }
+        }
+      },
+      "navigation": {
+        "back": "← Back to Exporting Data",
+        "next": "Next: Offline Mode →"
+      }
+    },
+    "offlineMode": {
+      "title": "Offline Mode",
+      "lastUpdated": "Last updated: April 1, 2025",
+      "intro": "Learn how to use MZLAD Billing System when you don't have an internet connection. Offline Mode allows you to continue business operations during internet outages, in locations with poor connectivity, or while on the go, with all changes synchronized when you reconnect.",
+      "tableOfContents": {
+        "title": "On this page:",
+        "items": {
+          "understanding": "Understanding Offline Mode",
+          "enabling": "Enabling Offline Mode",
+          "working": "Working in Offline Mode",
+          "syncing": "Synchronizing When Reconnected",
+          "limitations": "Limitations of Offline Mode",
+          "bestPractices": "Best Practices for Offline Usage",
+          "troubleshooting": "Troubleshooting Offline Issues"
+        }
+      },
+      "understanding": {
+        "title": "Understanding Offline Mode",
+        "description": "MZLAD Billing System's Offline Mode works by:",
+        "features": {
+          "storage": {
+            "title": "Local Storage",
+            "description": "Storing a copy of essential data in a local database on your device for access without an internet connection."
+          },
+          "processing": {
+            "title": "Background Processing",
+            "description": "Processing transactions locally while you're offline and preparing them for synchronization when you reconnect."
+          },
+          "sync": {
+            "title": "Automatic Sync",
+            "description": "Automatically detecting when you're back online and synchronizing all offline changes with the main database."
+          }
+        },
+        "note": "Note: Offline Mode is designed to provide uninterrupted access to essential business functions during temporary internet outages or in locations with poor connectivity. It's not intended as a permanent substitute for online operation."
+      },
+      "enabling": {
+        "title": "Enabling Offline Mode",
+        "description": "Offline Mode can be enabled manually or will activate automatically when connectivity is lost:",
+        "steps": {
+          "manual": {
+            "title": "Manual Activation",
+            "description": "To manually switch to Offline Mode:",
+            "steps": [
+              "Click on the connectivity indicator in the top-right corner of the screen",
+              "Select \"Switch to Offline Mode\" from the dropdown menu",
+              "Confirm the switch when prompted"
+            ]
+          },
+          "automatic": {
+            "title": "Automatic Activation",
+            "description": "When the system detects a loss of internet connection:",
+            "steps": [
+              "A notification will appear informing you of the connection loss",
+              "The system will automatically switch to Offline Mode",
+              "The connectivity indicator will change to show you're working offline"
+            ]
+          },
+          "initialSetup": {
+            "title": "Initial Setup",
+            "description": "The first time you use Offline Mode, the system will:",
+            "steps": [
+              "Download necessary data to your local device",
+              "Set up the local database structure",
+              "Confirm when the setup is complete and Offline Mode is ready"
+            ]
+          }
+        },
+        "screenshot": {
+          "alt": "Offline Mode Indicator",
+          "caption": "The connectivity indicator showing that the system is in Offline Mode"
+        }
+      },
+      "working": {
+        "title": "Working in Offline Mode",
+        "description": "While in Offline Mode, you can continue to perform most essential business functions:",
+        "table": {
+          "headers": {
+            "function": "Function",
+            "available": "Available Offline?",
+            "notes": "Notes"
+          },
+          "rows": {
+            "sales": {
+              "function": "Creating Sales",
+              "available": "✓ Yes",
+              "notes": "Full functionality for creating invoices and processing sales"
+            },
+            "inventory": {
+              "function": "Inventory Management",
+              "available": "✓ Yes (Limited)",
+              "notes": "Can view inventory and make basic adjustments; some advanced features unavailable"
+            },
+            "customer": {
+              "function": "Customer Management",
+              "available": "✓ Yes (Limited)",
+              "notes": "Can access existing customer records and create new ones"
+            },
+            "returns": {
+              "function": "Processing Returns",
+              "available": "✓ Yes",
+              "notes": "Can process returns for transactions that exist in the local database"
+            },
+            "reports": {
+              "function": "Reports",
+              "available": "✓ Yes (Limited)",
+              "notes": "Basic reports available; comprehensive reports limited to local data"
+            },
+            "userManagement": {
+              "function": "User Management",
+              "available": "✗ No",
+              "notes": "User management requires online connection"
+            },
+            "settings": {
+              "function": "System Settings",
+              "available": "✗ No",
+              "notes": "Most system settings can only be changed online"
+            }
+          }
+        },
+        "tip": "Pro Tip: While working offline, you'll see an \"Offline\" indicator in the upper right corner of your screen. This serves as a reminder that any changes you make will need to be synchronized when you reconnect to the internet."
+      },
+      "syncing": {
+        "title": "Synchronizing When Reconnected",
+        "description": "When you regain internet connectivity, you'll need to synchronize your offline changes:",
+        "steps": [
+          {
+            "title": "Automatic Detection",
+            "description": "The system will automatically detect when internet connectivity is restored"
+          },
+          {
+            "title": "Sync Notification",
+            "description": "You'll see a notification indicating that data needs to be synchronized"
+          },
+          {
+            "title": "Initiate Sync",
+            "description": "Click on the \"Sync Now\" button in the notification or in the Data Synchronization panel"
+          },
+          {
+            "title": "Sync Process",
+            "description": "The system will:",
+            "subSteps": [
+              "Upload local changes to the main database",
+              "Download any updates made by other users while you were offline",
+              "Reconcile any conflicts between offline and online data"
+            ]
+          },
+          {
+            "title": "Completion",
+            "description": "Once synchronization is complete, you'll receive a confirmation message"
+          }
+        ],
+        "screenshot": {
+          "alt": "Data Synchronization Panel",
+          "caption": "Data Synchronization panel showing items to be synced"
+        }
+      },
+      "limitations": {
+        "title": "Limitations of Offline Mode",
+        "description": "While Offline Mode is designed to be robust, there are some inherent limitations to be aware of:",
+        "warning": {
+          "title": "Offline Mode Limitations:",
+          "items": {
+            "dataAvailability": {
+              "title": "Data Availability:",
+              "description": "Only data that was previously downloaded to your device is accessible offline"
+            },
+            "storage": {
+              "title": "Storage Constraints:",
+              "description": "Large databases may be partially available due to device storage limitations"
+            },
+            "features": {
+              "title": "Feature Restrictions:",
+              "description": "Some advanced features require an online connection"
+            },
+            "updates": {
+              "title": "Real-time Updates:",
+              "description": "You won't receive updates made by other users until you synchronize"
+            },
+            "conflicts": {
+              "title": "Conflict Potential:",
+              "description": "Changes to the same data by different offline users may cause conflicts"
+            },
+            "extendedPeriods": {
+              "title": "Extended Offline Periods:",
+              "description": "Long periods offline increase the complexity of synchronization"
+            }
+          }
+        }
+      },
+      "bestPractices": {
+        "title": "Best Practices for Offline Usage",
+        "description": "To make the most of Offline Mode while minimizing potential issues:",
+        "practices": [
+          {
+            "title": "Regular Synchronization",
+            "description": "Sync your data whenever you have internet connectivity to minimize the amount of offline changes"
+          },
+          {
+            "title": "Pre-Download Data",
+            "description": "If you know you'll be working offline, manually initiate a full data sync before going offline"
+          },
+          {
+            "title": "Limit User Count",
+            "description": "When possible, limit the number of users working offline simultaneously to reduce conflict potential"
+          },
+          {
+            "title": "Manage Storage",
+            "description": "Ensure your device has adequate storage space for the local database"
+          },
+          {
+            "title": "Regular Backups",
+            "description": "If working offline extensively, consider exporting critical data periodically as a backup"
+          }
+        ]
+      },
+      "troubleshooting": {
+        "title": "Troubleshooting Offline Issues",
+        "description": "If you encounter problems with Offline Mode, try these solutions:",
+        "issues": {
+          "switching": {
+            "question": "System won't switch to Offline Mode automatically",
+            "solutions": {
+              "title": "Possible solutions:",
+              "items": [
+                "Check if Offline Mode is enabled in System Settings > Offline Mode > Enable Automatic Offline Mode",
+                "Verify that the initial offline data download has been completed",
+                "Try manually switching to Offline Mode",
+                "Restart the application and try again"
+              ]
+            }
+          },
+          "syncing": {
+            "question": "Data isn't syncing when reconnecting",
+            "solutions": {
+              "title": "Troubleshooting steps:",
+              "items": [
+                "Check your internet connection stability",
+                "Manually open the Data Synchronization panel and click \"Refresh Status\"",
+                "Try clicking \"Sync Now\" to force the synchronization process",
+                "If problems persist, go to Settings > Maintenance > Repair Database Connections",
+                "As a last resort, export any critical offline data and restart the application"
+              ]
+            }
+          },
+          "conflicts": {
+            "question": "Conflicts during synchronization",
+            "solutions": {
+              "description": "When the system detects conflicts between offline and online data:",
+              "steps": [
+                "A conflict resolution dialog will appear",
+                "Review each conflict carefully",
+                {
+                  "text": "For each item, choose whether to:",
+                  "options": [
+                    "Keep your offline changes",
+                    "Use the online version",
+                    "Merge the changes where possible"
+                  ]
+                },
+                "For complex conflicts, consider exporting both versions for manual reconciliation"
+              ],
+              "note": "To minimize conflicts, synchronize frequently and coordinate with other users when working offline."
+            }
+          }
+        }
+      },
+      "navigation": {
+        "previous": "← Back to User Management",
+        "next": "Next: Syncing Data →"
+      }
+    },
+    "syncingData": {
+      "title": "Syncing Data",
+      "lastUpdated": "Last updated: March 29, 2025",
+      "intro": "Learn how to synchronize data between devices and ensure all your business information stays up-to-date across multiple locations or devices using MZLAD Billing System. Data synchronization is essential for businesses operating with multiple terminals or in different locations.",
+      "tableOfContents": {
+        "title": "On this page:",
+        "items": {
+          "overview": "Data Synchronization Overview",
+          "process": "The Synchronization Process",
+          "manual": "Manual Synchronization",
+          "auto": "Automatic Synchronization",
+          "conflicts": "Handling Synchronization Conflicts",
+          "monitoring": "Monitoring Sync Status",
+          "settings": "Configuring Sync Settings"
+        }
+      },
+      "overview": {
+        "title": "Data Synchronization Overview",
+        "description": "Data synchronization in MZLAD Billing System ensures that all your devices and locations have access to the same, up-to-date information. This is particularly important when:",
+        "features": {
+          "locations": {
+            "title": "Multiple Locations",
+            "description": "Running your business across different physical locations while maintaining a single, consolidated database."
+          },
+          "devices": {
+            "title": "Multiple Devices",
+            "description": "Using multiple terminals, computers, or mobile devices to access your business data."
+          },
+          "transitions": {
+            "title": "Offline/Online Transitions",
+            "description": "Switching between offline and online operations, ensuring all offline changes are properly integrated."
+          }
+        },
+        "note": "Data synchronization includes all aspects of your business data, including inventory, sales transactions, customer information, pricing updates, and system settings. The synchronization process is designed to be efficient, transferring only the data that has changed since the last sync."
+      },
+      "process": {
+        "title": "The Synchronization Process",
+        "description": "Data synchronization in MZLAD Billing System follows these general steps:",
+        "steps": [
+          {
+            "title": "Change Detection",
+            "description": "The system identifies new or modified data on both the local device and the central database"
+          },
+          {
+            "title": "Data Transmission",
+            "description": "Changes are securely transmitted between the device and the server"
+          },
+          {
+            "title": "Conflict Identification",
+            "description": "The system checks for any conflicting changes (same data modified differently in multiple places)"
+          },
+          {
+            "title": "Conflict Resolution",
+            "description": "Conflicts are resolved either automatically using predefined rules or manually by user intervention"
+          },
+          {
+            "title": "Data Integration",
+            "description": "All changes are integrated into both the local and central databases"
+          },
+          {
+            "title": "Verification",
+            "description": "The system verifies that synchronization was successful"
+          }
+        ]
+      },
+      "manual": {
+        "title": "Manual Synchronization",
+        "description": "To manually initiate a data synchronization:",
+        "steps": [
+          {
+            "title": "Access Sync Panel",
+            "description": "Click on the Data Synchronization icon in the bottom right corner of the application"
+          },
+          {
+            "title": "Review Sync Status",
+            "description": "The panel will show the current sync status, including:",
+            "items": [
+              "Number of items pending synchronization",
+              "Categories of data that need to be synced (Products, Invoices, etc.)",
+              "Direction of sync (upload, download, or both)",
+              "Any potential conflicts"
+            ]
+          },
+          {
+            "title": "Initiate Sync",
+            "description": "Click the \"Sync Now\" button to start the synchronization process"
+          },
+          {
+            "title": "Monitor Progress",
+            "description": "A progress indicator will display the status of the synchronization"
+          },
+          {
+            "title": "Review Results",
+            "description": "Once complete, the system will provide a summary of the synchronized items"
+          }
+        ],
+        "screenshot": {
+          "alt": "Data Synchronization Panel with Details",
+          "caption": "Data Synchronization panel showing details of items to be synced and the Sync Now button"
+        },
+        "tip": "Before starting a large manual sync, consider saving any open work and closing other applications to ensure your device has adequate resources for the synchronization process."
+      },
+      "auto": {
+        "title": "Automatic Synchronization",
+        "description": "MZLAD Billing System can also perform automatic synchronization:",
+        "table": {
+          "headers": {
+            "trigger": "Auto-Sync Trigger",
+            "description": "Description",
+            "configurable": "Configurable?"
+          },
+          "rows": {
+            "timed": {
+              "trigger": "Timed Intervals",
+              "description": "System automatically syncs at regular intervals (e.g., every 15 minutes)",
+              "configurable": "Yes - Customize frequency in Settings"
+            },
+            "connection": {
+              "trigger": "Connection Restored",
+              "description": "Automatic sync when internet connection is restored after being offline",
+              "configurable": "Yes - Can be enabled/disabled"
+            },
+            "startup": {
+              "trigger": "Application Start",
+              "description": "Sync occurs when the application is launched",
+              "configurable": "Yes - Can be enabled/disabled"
+            },
+            "events": {
+              "trigger": "Critical Events",
+              "description": "Sync after critical operations (e.g., large inventory adjustments)",
+              "configurable": "Partially - Some events are always synced"
+            },
+            "scheduled": {
+              "trigger": "Scheduled Times",
+              "description": "Sync at specific times of day (e.g., opening, closing)",
+              "configurable": "Yes - Fully customizable schedule"
+            }
+          }
+        },
+        "configuration": {
+          "title": "To configure automatic synchronization:",
+          "steps": [
+            {
+              "title": "Go to Settings",
+              "description": "Navigate to Settings > System Settings > Data Synchronization"
+            },
+            {
+              "title": "Configure Auto-Sync Options",
+              "description": "Set your preferred automatic synchronization options:",
+              "items": [
+                "Enable/disable different types of automatic syncs",
+                "Set the frequency for timed synchronization",
+                "Configure specific scheduled sync times",
+                "Set conditions for critical event synchronization"
+              ]
+            },
+            {
+              "title": "Save Settings",
+              "description": "Click \"Save\" to apply your auto-sync configuration"
+            }
+          ]
+        }
+      },
+      "conflicts": {
+        "title": "Handling Synchronization Conflicts",
+        "description": "Sometimes, the same data may be modified in different ways on multiple devices before synchronization. When this happens, a conflict occurs that needs resolution:",
+        "steps": [
+          {
+            "title": "Conflict Detection",
+            "description": "During synchronization, the system will identify any conflicting changes"
+          },
+          {
+            "title": "Notification",
+            "description": "If conflicts are detected, you'll see a notification and the number of conflicts in the sync panel"
+          },
+          {
+            "title": "Conflict Resolution Dialog",
+            "description": "Click on \"Resolve Conflicts\" to open the resolution dialog"
+          },
+          {
+            "title": "Review Each Conflict",
+            "description": "For each conflict, you'll see:",
+            "items": [
+              "The type of data involved (product, invoice, etc.)",
+              "The specific item with a conflict",
+              "The differences between the local and server versions"
+            ]
+          },
+          {
+            "title": "Choose Resolution",
+            "description": "For each conflict, select one of these options:",
+            "items": [
+              "\"Use Local Version\" - Keep the changes from your device",
+              "\"Use Server Version\" - Discard local changes in favor of the server version",
+              "\"Merge Changes\" - Combine changes where possible (available for some data types)",
+              "\"Review Details\" - See a detailed comparison to make an informed decision"
+            ]
+          },
+          {
+            "title": "Apply Resolutions",
+            "description": "After resolving all conflicts, click \"Apply Resolutions\" to complete the sync"
+          }
+        ],
+        "warning": "Resolving conflicts requires careful consideration to avoid data loss. If you're unsure about which version to keep, click \"Review Details\" to see the specific differences before making a decision."
+      },
+      "monitoring": {
+        "title": "Monitoring Sync Status",
+        "description": "You can monitor the synchronization status of your system at any time:",
+        "features": {
+          "indicator": {
+            "title": "Sync Indicator",
+            "description": "The sync icon in the application shows the current sync status with color coding (green: in sync, yellow: pending changes, red: sync issues)."
+          },
+          "history": {
+            "title": "Sync History",
+            "description": "View detailed synchronization history, including times, volumes, and any issues that occurred."
+          },
+          "notifications": {
+            "title": "Sync Notifications",
+            "description": "Receive notifications about important sync events, such as completed syncs or conflicts requiring attention."
+          }
+        },
+        "access": {
+          "title": "To access detailed sync history:",
+          "steps": [
+            {
+              "title": "Open Sync Panel",
+              "description": "Click on the Data Synchronization icon in the bottom right corner"
+            },
+            {
+              "title": "View Sync History",
+              "description": "Click on \"Sync History\" to see a record of past synchronizations"
+            },
+            {
+              "title": "Review Details",
+              "description": "Click on any history entry to view detailed information about that synchronization"
+            }
+          ]
+        }
+      },
+      "settings": {
+        "title": "Configuring Sync Settings",
+        "description": "Advanced users can customize various aspects of the synchronization system:",
+        "table": {
+          "headers": {
+            "setting": "Setting",
+            "description": "Description",
+            "recommended": "Recommended For"
+          },
+          "rows": {
+            "frequency": {
+              "setting": "Sync Frequency",
+              "description": "How often automatic synchronization occurs",
+              "recommended": "All users - Adjust based on business volume"
+            },
+            "rules": {
+              "setting": "Conflict Resolution Rules",
+              "description": "Default rules for handling different types of conflicts",
+              "recommended": "Advanced users - Critical for multi-location setups"
+            },
+            "bandwidth": {
+              "setting": "Bandwidth Usage",
+              "description": "Controls for limiting sync bandwidth during busy periods",
+              "recommended": "Users with limited internet bandwidth"
+            },
+            "categories": {
+              "setting": "Sync Categories",
+              "description": "Which types of data should synchronize automatically",
+              "recommended": "All users - Based on business priorities"
+            },
+            "network": {
+              "setting": "Network Requirements",
+              "description": "Network conditions required for sync (e.g., Wi-Fi only)",
+              "recommended": "Mobile users or those with metered connections"
+            }
+          }
+        },
+        "configuration": {
+          "title": "To access and configure these settings:",
+          "steps": [
+            {
+              "title": "Go to Settings",
+              "description": "Navigate to Settings > System Settings > Data Synchronization"
+            },
+            {
+              "title": "Select Advanced Settings",
+              "description": "Click on \"Advanced Sync Settings\" to access the detailed configuration options"
+            },
+            {
+              "title": "Configure Options",
+              "description": "Adjust the various settings according to your business needs"
+            },
+            {
+              "title": "Save Changes",
+              "description": "Click \"Save\" to apply your configuration"
+            }
+          ]
+        },
+        "tip": "If you operate multiple locations with different internet connectivity qualities, consider setting up location-specific sync schedules. For example, locations with slower internet might sync less frequently but during off-peak hours."
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "items": {
+          "bandwidth": {
+            "question": "Does synchronization use a lot of internet bandwidth?",
+            "answer": {
+              "intro": "MZLAD Billing System is designed to be bandwidth-efficient:",
+              "points": [
+                "Only changed data is transferred during synchronization, not the entire database",
+                "Data is compressed before transmission to reduce bandwidth usage",
+                "Large image files and attachments can be set to synchronize only during specified time periods",
+                "You can configure bandwidth limits in the advanced sync settings"
+              ],
+              "conclusion": "Typical daily sync operations for a small to medium business usually consume less than 10-50 MB of data per day, depending on transaction volume."
+            }
+          },
+          "security": {
+            "question": "Is my data secure during synchronization?",
+            "answer": {
+              "intro": "Yes, MZLAD Billing System employs several security measures during data synchronization:",
+              "points": [
+                "All data is encrypted using industry-standard TLS/SSL protocols during transmission",
+                "User authentication is required before any synchronization can occur",
+                "Synchronized data is verified using checksums to ensure integrity",
+                "The system maintains detailed logs of all synchronization activities for audit purposes",
+                "Sensitive data elements can be configured to synchronize only over secure networks"
+              ]
+            }
+          },
+          "verification": {
+            "question": "How do I know if my system is properly synchronized?",
+            "answer": {
+              "intro": "There are several ways to verify synchronization status:",
+              "points": [
+                "Check the sync indicator icon - Green indicates everything is synchronized",
+                "Open the Data Synchronization panel to see if there are any pending items",
+                "Review the sync history to see the last successful synchronization time",
+                "Perform a manual \"Refresh Status\" in the sync panel to check for any undetected changes",
+                "For a comprehensive check, go to Settings > System Maintenance > Database Status to run a full verification"
+              ],
+              "conclusion": "If you're working across multiple locations, you can also compare transaction IDs or inventory counts as a quick sanity check."
+            }
+          }
+        }
+      },
+      "navigation": {
+        "previous": "← Back to Offline Mode",
+        "next": "Next: Contact Support →"
+      }
+    },
+    "contactSupport": {
+      "title": "Contact Support",
+      "lastUpdated": "Last updated: March 15, 2025",
+      "intro": "Need help with MZLAD Billing System? Our support team is ready to assist you.",
+      "options": {
+        "email": {
+          "title": "Email Support",
+          "description": "Send us a detailed description of your issue.",
+          "address": "support@mzlad.com"
+        },
+        "phone": {
+          "title": "Phone Support",
+          "description": "Call us for immediate assistance.",
+          "number": "+970 569482508"
+        }
+      },
+      "hours": {
+        "title": "Support Hours",
+        "schedule": {
+          "weekdays": {
+            "days": "Monday - Friday",
+            "hours": "9:00 AM - 6:00 PM EST"
+          },
+          "saturday": {
+            "days": "Saturday",
+            "hours": "10:00 AM - 4:00 PM EST"
+          },
+          "sunday": {
+            "days": "Sunday",
+            "hours": "Closed"
+          }
+        }
+      },
+      "faq": {
+        "title": "Frequently Asked Support Questions",
+        "items": {
+          "responseTime": {
+            "question": "How long does it typically take to get a response?",
+            "answer": "We aim to respond to all support tickets within 24 business hours. For urgent issues, we recommend using the live chat or phone support options for faster assistance."
+          },
+          "remoteAssistance": {
+            "question": "Do you offer remote assistance?",
+            "answer": "Yes, our support team can provide remote assistance for complex technical issues. This service is available for customers with active support plans."
+          },
+          "reportingInfo": {
+            "question": "What information should I include when reporting an issue?",
+            "answer": {
+              "intro": "To help us resolve your issue quickly, please include:",
+              "items": [
+                "Your operating system and version",
+                "The version of MZLAD Billing System you're using",
+                "Step-by-step details of what you were doing when the issue occurred",
+                "Any error messages you received",
+                "Screenshots if applicable"
+              ]
+            }
+          }
+        }
+      }
     }
   }
 }
