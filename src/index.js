@@ -889,7 +889,31 @@ function setupIpcHandlers() {
 
   ipcMain.handle("get-products", async (event, options = {}) => {
     try {
-      const { page = 1, pageSize = 0, filters = {} } = options;
+      const { page = 1, pageSize = 0, filters = {}, stats = false } = options;
+
+      // If stats requested, return just the stats
+      if (stats) {
+        const allProducts = localStore.get("products") || [];
+        return {
+          stats: {
+            totalProducts: allProducts.length,
+            totalValue: allProducts.reduce((sum, p) => sum + (p.price || 0) * (p.stock || 0), 0),
+            lowStockCount: allProducts.filter(p => (p.stock || 0) <= 5).length
+          }
+        };
+      }
+
+      // Handle low stock filter specially
+      if (filters.lowStock) {
+        const allProducts = localStore.get("products") || [];
+        const lowStockProducts = allProducts.filter(p => (p.stock || 0) <= 5);
+        return {
+          items: lowStockProducts,
+          totalCount: lowStockProducts.length,
+          page: 1,
+          totalPages: 1
+        };
+      }
 
       if (firebaseService && typeof firebaseService.getAll === "function") {
         // If pageSize is 0, get all products (backward compatibility)
@@ -899,10 +923,10 @@ function setupIpcHandlers() {
 
         // Otherwise use the new paginated method
         return await firebaseService.getPagedProducts(
-          "products",
-          page,
-          pageSize,
-          filters
+            "products",
+            page,
+            pageSize,
+            filters
         );
       } else {
         throw new Error("Firebase service not available");
@@ -922,9 +946,9 @@ function setupIpcHandlers() {
         if (filters.search) {
           const search = filters.search.toLowerCase();
           products = products.filter(
-            (p) =>
-              p.name?.toLowerCase().includes(search) ||
-              p.sku?.toLowerCase().includes(search)
+              (p) =>
+                  p.name?.toLowerCase().includes(search) ||
+                  p.sku?.toLowerCase().includes(search)
           );
         }
       }
