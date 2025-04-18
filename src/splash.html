@@ -178,7 +178,7 @@
       <div class="progress-container">
         <div class="progress-bar"></div>
       </div>
-      <div class="version">v1.0.0</div>
+      <div class="version">Loading version...</div>
     </div>
 
     <script>
@@ -190,6 +190,24 @@
         const savedTheme = localStorage.getItem("theme");
         if (savedTheme === "dark") {
           document.body.classList.add("dark-mode");
+        }
+
+        // Get and display the current app version
+        const versionElement = document.querySelector(".version");
+        if (
+          window.updates &&
+          typeof window.updates.getCurrentVersion === "function"
+        ) {
+          window.updates
+            .getCurrentVersion()
+            .then((version) => {
+              versionElement.textContent = `v${version}`;
+              console.log("App version:", version);
+            })
+            .catch((error) => {
+              console.error("Error getting app version:", error);
+              versionElement.textContent = "v1.0.0"; // Fallback version
+            });
         }
 
         // Notify main process that splash is ready
@@ -214,14 +232,22 @@
         }
 
         // Add this inside your existing DOMContentLoaded listener in splash.html
-        if (window.api && typeof window.api.onUpdateStatus === "function") {
-          window.api.onUpdateStatus((status) => {
+        if (
+          window.updates &&
+          typeof window.updates.onUpdateStatus === "function"
+        ) {
+          window.updates.onUpdateStatus((status) => {
             const loadingText = document.querySelector(".loading-text");
+            const versionElement = document.querySelector(".version");
 
             if (status.status === "checking") {
               loadingText.textContent = "Checking for updates...";
             } else if (status.status === "available") {
               loadingText.textContent = `Update available (v${status.version})`;
+              // Show the new version that's available
+              versionElement.textContent = `Current: v${window.updates.getCurrentVersion()}, Available: v${
+                status.version
+              }`;
             } else if (status.status === "downloading") {
               const percent = Math.round(status.progress.percent);
               loadingText.textContent = `Downloading update: ${percent}%`;
