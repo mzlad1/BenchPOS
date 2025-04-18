@@ -322,7 +322,7 @@
     "no": "No",
     "ok": "OK",
     "error": "Error",
-    "note" : "Note:",
+    "note": "Note:",
     "important": "Important:",
     "proTip": "Pro Tip:",
     "success": "Success",
@@ -741,6 +741,38 @@
       "contactInfoSection": "Contact Information",
       "contentSection": "Receipt Content",
       "styleSection": "Receipt Style & Printing"
+    },
+    "updates": {
+      "title": "Software Updates",
+      "currentVersion": "Current Version",
+      "checkButton": "Check for Updates",
+      "downloadButton": "Download Update",
+      "installButton": "Install Update",
+      "checking": "Checking for updates...",
+      "available": "Update available (v{{version}})",
+      "notAvailable": "You are using the latest version",
+      "downloading": "Downloading update...",
+      "downloaded": "Update downloaded. Ready to install.",
+      "error": "Update error: {{message}}",
+      "installPrompt": "Would you like to install the update now?",
+      "restartRequired": "A restart is required to install the update",
+      "updateNow": "Update Now",
+      "updateLater": "Remind Me Later",
+      "releaseNotes": "Release Notes"
+    }
+  },
+  "updates": {
+    "splash": {
+      "checking": "Checking for updates...",
+      "downloading": "Downloading update: {{percent}}%",
+      "installing": "Installing update...",
+      "restart": "Restarting...",
+      "error": "Update error"
+    },
+    "notification": {
+      "available": "A new version is available",
+      "downloaded": "Update is ready to install",
+      "error": "Update error"
     }
   },
   "notifications": {

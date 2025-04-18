@@ -174,7 +174,7 @@
         <img src="assets/logo.png" alt="MZLAD Logo" class="logo" />
       </div>
       <div class="spinner"></div>
-      <p class="loading-text">Initializing App...</p>
+      <p class="loading-text">Loading the app...</p>
       <div class="progress-container">
         <div class="progress-bar"></div>
       </div>
@@ -210,6 +210,35 @@
               "Splash complete signal received, redirecting to login"
             );
             window.location.href = "views/login.html";
+          });
+        }
+
+        // Add this inside your existing DOMContentLoaded listener in splash.html
+        if (window.api && typeof window.api.onUpdateStatus === "function") {
+          window.api.onUpdateStatus((status) => {
+            const loadingText = document.querySelector(".loading-text");
+
+            if (status.status === "checking") {
+              loadingText.textContent = "Checking for updates...";
+            } else if (status.status === "available") {
+              loadingText.textContent = `Update available (v${status.version})`;
+            } else if (status.status === "downloading") {
+              const percent = Math.round(status.progress.percent);
+              loadingText.textContent = `Downloading update: ${percent}%`;
+
+              // Update progress bar if it exists
+              const progressBar = document.querySelector(".progress-bar");
+              if (progressBar) {
+                progressBar.style.width = `${percent}%`;
+              }
+            } else if (status.status === "downloaded") {
+              loadingText.textContent = "Update downloaded. Restarting...";
+
+              // Auto restart after 2 seconds
+              setTimeout(() => {
+                window.api.quitAndInstall();
+              }, 2000);
+            }
           });
         }
 

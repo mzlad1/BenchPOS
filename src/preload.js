@@ -8,7 +8,15 @@ const safeIpcInvoke = async (channel, ...args) => {
     throw error;
   }
 };
-
+// Auto-Update API
+contextBridge.exposeInMainWorld("updates", {
+  checkForUpdates: () => ipcRenderer.invoke("check-for-updates"),
+  downloadUpdate: () => ipcRenderer.invoke("download-update"),
+  quitAndInstall: () => ipcRenderer.invoke("quit-and-install"),
+  getCurrentVersion: () => ipcRenderer.invoke("get-current-version"),
+  onUpdateStatus: (callback) =>
+    ipcRenderer.on("update-status", (_, status) => callback(status)),
+});
 // Simple preload script that exposes ipcRenderer functions
 contextBridge.exposeInMainWorld("api", {
   // Database operations

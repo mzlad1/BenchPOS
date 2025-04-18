@@ -1,6 +1,6 @@
 {
   "name": "mzlad",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Offline-ready shop billing and inventory management system",
   "main": "src/index.js",
   "scripts": {
@@ -11,7 +11,8 @@
     "build": "NODE_ENV=production electron-builder",
     "build:win": "set NODE_ENV=production && electron-builder",
     "build:mac": "electron-builder --mac",
-    "build:linux": "electron-builder --linux"
+    "build:linux": "electron-builder --linux",
+    "publish": "cross-env NODE_ENV=production GH_TOKEN=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 electron-builder --publish always"
   },
   "keywords": [
     "billing",
@@ -27,7 +28,9 @@
     "bcryptjs": "^3.0.2",
     "chart.js": "^4.4.8",
     "dotenv": "^16.4.7",
+    "electron-log": "^5.3.4",
     "electron-store": "^8.1.0",
+    "electron-updater": "^6.6.2",
     "firebase": "^10.14.1",
     "moment": "^2.29.4",
     "uuid": "^9.0.0"
@@ -53,6 +56,12 @@
       ".env",
       "!**/node_modules/*"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "mzlad1",
+      "repo": "BenchPOS",
+      "private": false
+    },
     "win": {
       "target": "nsis",
       "icon": "src/assets/icon.ico"

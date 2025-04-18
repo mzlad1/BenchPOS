@@ -9,6 +9,34 @@ const https = require("https");
 const localStore = new Store({
   name: "shop-billing-local-data",
 });
+// Near the top of your file with other imports
+const dotenv = require("dotenv");
+// Load environment variables
+try {
+  // In development
+  if (process.env.NODE_ENV === "development") {
+    dotenv.config();
+  } else {
+    // In production, load from extraResources
+    dotenv.config({
+      path: path.join(process.resourcesPath, ".env"),
+    });
+  }
+
+  // Log that we loaded the environment variables (optional)
+  console.log("Environment variables loaded");
+} catch (error) {
+  console.error("Error loading .env file:", error);
+}
+
+// Then your auto-updater code
+const { autoUpdater } = require("electron-updater");
+const log = require("electron-log");
+
+// Configure logging for auto-updater
+log.transports.file.level = "info";
+autoUpdater.logger = log;
+autoUpdater.autoDownload = false;
 // Load database service
 let dbService = null;
 // Variables for tracking status
@@ -424,9 +452,74 @@ async function verifyFirebaseSetup() {
     return false;
   }
 }
+
+// Initialize auto-updater
+function initAutoUpdater() {
+  // Check for updates during splash screen
+  autoUpdater.on("checking-for-update", () => {
+    log.info("Checking for update...");
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("update-status", { status: "checking" });
+    }
+  });
+
+  autoUpdater.on("update-available", (info) => {
+    log.info("Update available:", info);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("update-status", {
+        status: "available",
+        version: info.version,
+      });
+    }
+  });
+
+  autoUpdater.on("update-not-available", () => {
+    log.info("No updates available");
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("update-status", { status: "not-available" });
+    }
+  });
+
+  autoUpdater.on("download-progress", (progress) => {
+    log.info(`Download progress: ${progress.percent}%`);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("update-status", {
+        status: "downloading",
+        progress: progress,
+      });
+    }
+  });
+
+  autoUpdater.on("update-downloaded", () => {
+    log.info("Update downloaded");
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("update-status", { status: "downloaded" });
+    }
+  });
+
+  autoUpdater.on("error", (err) => {
+    log.error("Update error:", err);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("update-status", {
+        status: "error",
+        message: err.toString(),
+      });
+    }
+  });
+}
 app.on("ready", async () => {
   console.log("App is ready, creating window...");
   createWindow();
+
+  // Initialize Auto-Updater
+  initAutoUpdater();
+
+  // Check for updates in 3 seconds (after splash screen shows)
+  setTimeout(() => {
+    if (isOnline) {
+      autoUpdater.checkForUpdates();
+    }
+  }, 3000);
 
   // Initialize Firebase directly here, remove from createWindow()
   if (
@@ -709,6 +802,37 @@ setupIpcHandlers();
 
 function setupIpcHandlers() {
   // Online status and sync handlers
+  // Auto-update handlers
+  ipcMain.handle("check-for-updates", async () => {
+    log.info("Manually checking for updates...");
+    try {
+      return await autoUpdater.checkForUpdates();
+    } catch (error) {
+      log.error("Error checking for updates:", error);
+      return { error: error.message };
+    }
+  });
+
+  ipcMain.handle("download-update", async () => {
+    log.info("Downloading update...");
+    try {
+      autoUpdater.downloadUpdate();
+      return { success: true };
+    } catch (error) {
+      log.error("Error downloading update:", error);
+      return { error: error.message };
+    }
+  });
+
+  ipcMain.handle("quit-and-install", () => {
+    log.info("Installing update...");
+    autoUpdater.quitAndInstall(false, true);
+    return true;
+  });
+
+  ipcMain.handle("get-current-version", () => {
+    return app.getVersion();
+  });
 
   ipcMain.handle("check-online-status", async () => {
     return new Promise((resolve) => {
@@ -732,6 +856,43 @@ function setupIpcHandlers() {
         resolve(false);
       });
     });
+  });
+
+  // Add this to your setupIpcHandlers function
+  ipcMain.handle("batch-add-products", async (event, products) => {
+    try {
+      console.log(`Processing batch of ${products.length} products`);
+
+      if (firebaseService && typeof firebaseService.batchAdd === "function") {
+        return await firebaseService.batchAdd("products", products);
+      } else {
+        // Fallback to local storage batch operation
+        const existingProducts = localStore.get("products") || [];
+        const timestamp = new Date().toISOString();
+
+        // Prepare products with timestamps
+        const productsWithTimestamps = products.map((product) => ({
+          ...product,
+          id:
+            product.id ||
+            Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        }));
+
+        // Add to storage in one operation
+        localStore.set("products", [
+          ...existingProducts,
+          ...productsWithTimestamps,
+        ]);
+
+        // Return the count of added products
+        return productsWithTimestamps.length;
+      }
+    } catch (error) {
+      console.error("Error in batch-add-products handler:", error);
+      return 0;
+    }
   });
   // Add this handler for splash screen
   ipcMain.handle("splash-ready", () => {
@@ -897,21 +1058,25 @@ function setupIpcHandlers() {
         return {
           stats: {
             totalProducts: allProducts.length,
-            totalValue: allProducts.reduce((sum, p) => sum + (p.price || 0) * (p.stock || 0), 0),
-            lowStockCount: allProducts.filter(p => (p.stock || 0) <= 5).length
-          }
+            totalValue: allProducts.reduce(
+              (sum, p) => sum + (p.price || 0) * (p.stock || 0),
+              0
+            ),
+            lowStockCount: allProducts.filter((p) => (p.stock || 0) <= 5)
+              .length,
+          },
         };
       }
 
       // Handle low stock filter specially
       if (filters.lowStock) {
         const allProducts = localStore.get("products") || [];
-        const lowStockProducts = allProducts.filter(p => (p.stock || 0) <= 5);
+        const lowStockProducts = allProducts.filter((p) => (p.stock || 0) <= 5);
         return {
           items: lowStockProducts,
           totalCount: lowStockProducts.length,
           page: 1,
-          totalPages: 1
+          totalPages: 1,
         };
       }
 
@@ -923,10 +1088,10 @@ function setupIpcHandlers() {
 
         // Otherwise use the new paginated method
         return await firebaseService.getPagedProducts(
-            "products",
-            page,
-            pageSize,
-            filters
+          "products",
+          page,
+          pageSize,
+          filters
         );
       } else {
         throw new Error("Firebase service not available");
@@ -946,9 +1111,9 @@ function setupIpcHandlers() {
         if (filters.search) {
           const search = filters.search.toLowerCase();
           products = products.filter(
-              (p) =>
-                  p.name?.toLowerCase().includes(search) ||
-                  p.sku?.toLowerCase().includes(search)
+            (p) =>
+              p.name?.toLowerCase().includes(search) ||
+              p.sku?.toLowerCase().includes(search)
           );
         }
       }

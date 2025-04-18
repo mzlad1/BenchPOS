@@ -323,7 +323,7 @@
     "ok": "موافق",
     "error": "خطأ",
     "success": "نجاح",
-    "note" : "ملاحظة:",
+    "note": "ملاحظة:",
     "important": "مهم:",
     "proTip": "نصيحة احترافية:",
     "warning": "تحذير",
@@ -741,6 +741,38 @@
       "contactInfoSection": "معلومات الاتصال",
       "contentSection": "محتوى الإيصال",
       "styleSection": "نمط الإيصال والطباعة"
+    },
+    "updates": {
+      "title": "تحديثات البرنامج",
+      "currentVersion": "الإصدار الحالي",
+      "checkButton": "البحث عن تحديثات",
+      "downloadButton": "تنزيل التحديث",
+      "installButton": "تثبيت التحديث",
+      "checking": "جارٍ التحقق من التحديثات...",
+      "available": "تحديث متاح (الإصدار {{version}})",
+      "notAvailable": "أنت تستخدم أحدث إصدار",
+      "downloading": "جارٍ تنزيل التحديث...",
+      "downloaded": "تم تنزيل التحديث. جاهز للتثبيت.",
+      "error": "خطأ في التحديث: {{message}}",
+      "installPrompt": "هل ترغب في تثبيت التحديث الآن؟",
+      "restartRequired": "مطلوب إعادة تشغيل لتثبيت التحديث",
+      "updateNow": "التحديث الآن",
+      "updateLater": "ذكرني لاحقًا",
+      "releaseNotes": "ملاحظات الإصدار"
+    }
+  },
+  "updates": {
+    "splash": {
+      "checking": "جارٍ التحقق من التحديثات...",
+      "downloading": "جارٍ تنزيل التحديث: {{percent}}%",
+      "installing": "جارٍ تثبيت التحديث...",
+      "restart": "جارٍ إعادة التشغيل...",
+      "error": "خطأ في التحديث"
+    },
+    "notification": {
+      "available": "إصدار جديد متاح",
+      "downloaded": "التحديث جاهز للتثبيت",
+      "error": "خطأ في التحديث"
     }
   },
   "notifications": {

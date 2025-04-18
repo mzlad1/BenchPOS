@@ -152,7 +152,7 @@
               </div>
 
               <!-- Data Management -->
-              <div class="settings-section">
+              <!-- <div class="settings-section">
                 <div class="settings-section-header">
                   <div class="settings-icon">💾</div>
                   <h3 data-i18n="settings.dataManagement.title">
@@ -223,6 +223,66 @@
                       Browse
                     </button>
                   </div>
+                </div>
+              </div> -->
+
+              <!-- Add this to your settings.html page -->
+              <div class="settings-section">
+                <div class="settings-section-header">
+                  <div class="settings-icon">🔄</div>
+                  <h3 data-i18n="settings.updates.title">Software Updates</h3>
+                </div>
+
+                <div class="settings-option">
+                  <p>
+                    <span data-i18n="settings.updates.currentVersion"
+                      >Current Version</span
+                    >: <span id="current-version">1.0.0</span>
+                  </p>
+                  <div id="update-status-message">
+                    <!-- Status messages will appear here -->
+                  </div>
+                </div>
+
+                <div class="settings-option" id="update-actions">
+                  <button
+                    class="btn btn-primary"
+                    id="check-updates-btn"
+                    data-i18n="settings.updates.checkButton"
+                  >
+                    Check for Updates
+                  </button>
+                  <button
+                    class="btn btn-success"
+                    id="download-update-btn"
+                    style="display: none"
+                    data-i18n="settings.updates.downloadButton"
+                  >
+                    Download Update
+                  </button>
+                  <button
+                    class="btn btn-success"
+                    id="install-update-btn"
+                    style="display: none"
+                    data-i18n="settings.updates.installButton"
+                  >
+                    Install Update
+                  </button>
+                </div>
+
+                <div
+                  class="settings-option"
+                  id="update-progress-container"
+                  style="display: none"
+                >
+                  <div class="progress-container">
+                    <div
+                      class="progress-bar"
+                      id="update-progress-bar"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                  <p id="update-progress-text">0%</p>
                 </div>
               </div>
             </div>

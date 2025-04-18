@@ -10,7 +10,7 @@ const pageSize = 10; // Number of products per page
 let totalPages = 1;
 let selectedProductIds = [];
 let searchTimeout;
-document.addEventListener('pageCacheCleared', resetInventoryState);
+document.addEventListener("pageCacheCleared", resetInventoryState);
 function resetInventoryState() {
   console.log("Resetting inventory state variables");
 
@@ -413,18 +413,25 @@ function showNotification(message, type = "info") {
 // Load products from database
 async function loadProducts() {
   try {
-    console.log("Loading products for page:", currentPage , ' page size:', pageSize);
+    console.log(
+      "Loading products for page:",
+      currentPage,
+      " page size:",
+      pageSize
+    );
 
     // Define pagination options
     const options = {
       page: currentPage,
       pageSize: pageSize,
-      filters: {} // We'll use this for search/filtering later
+      filters: {}, // We'll use this for search/filtering later
     };
 
     // Get search term if any
     const searchElement = document.getElementById("product-search");
-    const searchTerm = searchElement ? searchElement.value.toLowerCase().trim() : "";
+    const searchTerm = searchElement
+      ? searchElement.value.toLowerCase().trim()
+      : "";
     const filterElement = document.getElementById("search-filter");
     const filterField = filterElement ? filterElement.value : "all";
 
@@ -466,9 +473,9 @@ async function loadProducts() {
   } catch (error) {
     console.error("Error loading products:", error);
     document.getElementById("products-table-body").innerHTML =
-        '<tr><td colspan="9">' +
-        window.t("reports.messages.dataLoadError") +
-        "</td></tr>";
+      '<tr><td colspan="9">' +
+      window.t("reports.messages.dataLoadError") +
+      "</td></tr>";
     // Initialize empty products array to prevent further errors
     products = [];
   }
@@ -481,16 +488,16 @@ async function getLowStockCount() {
     // For now, we'll make a request with a filter
     const options = {
       filters: {
-        lowStock: true
-      }
+        lowStock: true,
+      },
     };
 
     const result = await window.api.getProducts(options);
 
-    if (result && typeof result.totalCount === 'number') {
+    if (result && typeof result.totalCount === "number") {
       return result.totalCount;
     } else if (Array.isArray(result)) {
-      return result.filter(product => product.stock <= 5).length;
+      return result.filter((product) => product.stock <= 5).length;
     }
 
     return 0;
@@ -508,9 +515,9 @@ function renderProducts(productsToRender, isPaginated = false, totalCount = 0) {
   if (!productsToRender || productsToRender.length === 0) {
     // Empty state handling
     tableBody.innerHTML =
-        '<tr><td colspan="9">' +
-        window.t("inventory.table.noProducts") +
-        "</td></tr>";
+      '<tr><td colspan="9">' +
+      window.t("inventory.table.noProducts") +
+      "</td></tr>";
 
     if (!isPaginated) {
       currentPage = 1;
@@ -522,7 +529,9 @@ function renderProducts(productsToRender, isPaginated = false, totalCount = 0) {
   }
 
   // Use total count from server if provided, otherwise use local length
-  const effectiveTotalCount = isPaginated ? totalCount : productsToRender.length;
+  const effectiveTotalCount = isPaginated
+    ? totalCount
+    : productsToRender.length;
 
   // If not paginated, calculate pagination locally
   if (!isPaginated) {
@@ -540,17 +549,20 @@ function renderProducts(productsToRender, isPaginated = false, totalCount = 0) {
   // Get search term and filter (keep this part)
   const searchElement = document.getElementById("product-search");
   const searchTerm = searchElement
-      ? searchElement.value.toLowerCase().trim()
-      : "";
+    ? searchElement.value.toLowerCase().trim()
+    : "";
   const filterElement = document.getElementById("search-filter");
   const filterField = filterElement ? filterElement.value : "all";
 
   // Display a loading indicator for large datasets
-  if (effectiveTotalCount > 1000 && !tableBody.querySelector(".loading-indicator")) {
+  if (
+    effectiveTotalCount > 1000 &&
+    !tableBody.querySelector(".loading-indicator")
+  ) {
     const loadingRow = document.createElement("tr");
     loadingRow.className = "loading-indicator";
     loadingRow.innerHTML = `<td colspan="9">${
-        window.t("inventory.loading") || "Loading products..."
+      window.t("inventory.loading") || "Loading products..."
     }</td>`;
     tableBody.appendChild(loadingRow);
 
@@ -593,7 +605,7 @@ function renderProductRows(products, tableBody, searchTerm, filterField) {
         }
       } else {
         selectedProductIds = selectedProductIds.filter(
-            (id) => id !== product.id
+          (id) => id !== product.id
         );
       }
       updateBulkActionsUI();
@@ -604,24 +616,24 @@ function renderProductRows(products, tableBody, searchTerm, filterField) {
     // SKU column - MOVED TO MATCH HTML ORDER
     const skuCell = document.createElement("td");
     skuCell.innerHTML = highlightSearchTerms(
-        product.sku || "",
-        filterField === "sku" || filterField === "all" ? searchTerm : ""
+      product.sku || "",
+      filterField === "sku" || filterField === "all" ? searchTerm : ""
     );
     row.appendChild(skuCell);
 
     // Name column - MOVED TO MATCH HTML ORDER
     const nameCell = document.createElement("td");
     nameCell.innerHTML = highlightSearchTerms(
-        product.name || "",
-        filterField === "name" || filterField === "all" ? searchTerm : ""
+      product.name || "",
+      filterField === "name" || filterField === "all" ? searchTerm : ""
     );
     row.appendChild(nameCell);
 
     // Category column
     const categoryCell = document.createElement("td");
     categoryCell.innerHTML = highlightSearchTerms(
-        product.category || "",
-        filterField === "category" || filterField === "all" ? searchTerm : ""
+      product.category || "",
+      filterField === "category" || filterField === "all" ? searchTerm : ""
     );
     row.appendChild(categoryCell);
 
@@ -671,7 +683,6 @@ function renderProductRows(products, tableBody, searchTerm, filterField) {
     tableBody.appendChild(row);
   });
 }
-
 
 // Update selection state based on visible products
 function updateSelectionState(visibleProducts) {
@@ -738,7 +749,6 @@ function updateBulkActionsUI() {
 function renderCurrentPage() {
   loadProducts(); // Call loadProducts with the current page
 }
-
 
 // Filter products based on search input
 function filterProducts() {
@@ -1727,8 +1737,8 @@ function setupPagination(totalCount = 0) {
     // Add it after the table-container
     const tableContainer = document.querySelector(".table-container");
     tableContainer.parentNode.insertBefore(
-        paginationContainer,
-        tableContainer.nextSibling
+      paginationContainer,
+      tableContainer.nextSibling
     );
   }
 
@@ -1743,7 +1753,7 @@ function setupPagination(totalCount = 0) {
   const prevButton = document.createElement("button");
   prevButton.className = "btn pagination-btn";
   prevButton.textContent =
-      window.t("inventory.pagination.previous") || "« Previous";
+    window.t("inventory.pagination.previous") || "« Previous";
   prevButton.disabled = currentPage === 1;
   prevButton.addEventListener("click", () => {
     if (currentPage > 1) {
@@ -1768,10 +1778,10 @@ function setupPagination(totalCount = 0) {
   const pageInfo = document.createElement("span");
   pageInfo.className = "page-info";
   pageInfo.textContent =
-      window.t("inventory.pagination.page", {
-        current: currentPage,
-        total: totalPages,
-      }) || `Page ${currentPage} of ${totalPages}`;
+    window.t("inventory.pagination.page", {
+      current: currentPage,
+      total: totalPages,
+    }) || `Page ${currentPage} of ${totalPages}`;
 
   // Add page selector for larger data sets
   const pageSelector = document.createElement("select");
@@ -1785,12 +1795,12 @@ function setupPagination(totalCount = 0) {
     const option = document.createElement("option");
     option.value = i;
     option.textContent =
-        window
-            .t("inventory.pagination.page", {
-              current: i,
-              total: totalPages,
-            })
-            .replace(` ${totalPages}`, "") || `Page ${i}`;
+      window
+        .t("inventory.pagination.page", {
+          current: i,
+          total: totalPages,
+        })
+        .replace(` ${totalPages}`, "") || `Page ${i}`;
     option.selected = i === currentPage;
     pageSelector.appendChild(option);
   }
@@ -1826,35 +1836,42 @@ function updateProductStats() {
   // For now, we'll show stats for the current page only
   const pageProducts = products.length;
   const pageValue = products.reduce(
-      (sum, product) => sum + product.price * product.stock,
-      0
+    (sum, product) => sum + product.price * product.stock,
+    0
   );
   const pageLowStock = products.filter((product) => product.stock <= 5).length;
 
   // Try to get total counts asynchronously
-  getTotalProductStats().then(stats => {
-    document.getElementById("total-products").textContent = stats.totalProducts;
-    document.getElementById("inventory-value").textContent = formatCurrency(stats.totalValue);
-    document.getElementById("low-stock-count").textContent = stats.lowStockCount;
+  getTotalProductStats()
+    .then((stats) => {
+      document.getElementById("total-products").textContent =
+        stats.totalProducts;
+      document.getElementById("inventory-value").textContent = formatCurrency(
+        stats.totalValue
+      );
+      document.getElementById("low-stock-count").textContent =
+        stats.lowStockCount;
 
-    // Update badge in sidebar if LayoutManager is available
-    if (window.LayoutManager) {
-      window.LayoutManager.updateInventoryBadge(stats.lowStockCount);
-    }
-  }).catch(error => {
-    console.error("Error getting total stats:", error);
-    // Fallback to page stats
-    document.getElementById("total-products").textContent = pageProducts;
-    document.getElementById("inventory-value").textContent = formatCurrency(pageValue);
-    document.getElementById("low-stock-count").textContent = pageLowStock;
-  });
+      // Update badge in sidebar if LayoutManager is available
+      if (window.LayoutManager) {
+        window.LayoutManager.updateInventoryBadge(stats.lowStockCount);
+      }
+    })
+    .catch((error) => {
+      console.error("Error getting total stats:", error);
+      // Fallback to page stats
+      document.getElementById("total-products").textContent = pageProducts;
+      document.getElementById("inventory-value").textContent =
+        formatCurrency(pageValue);
+      document.getElementById("low-stock-count").textContent = pageLowStock;
+    });
 }
 async function getTotalProductStats() {
   try {
     // This would ideally be a specialized API endpoint that returns just the stats
     // For now, we'll make a request with a special option
     const options = {
-      stats: true
+      stats: true,
     };
 
     const result = await window.api.getProducts(options);
@@ -1865,15 +1882,21 @@ async function getTotalProductStats() {
 
     // Fallback: If the API doesn't support stats,
     // we'll need to load all products once to get accurate counts
-    const allProducts = await window.api.getProducts({ page: 1, pageSize: 1000000 });
+    const allProducts = await window.api.getProducts({
+      page: 1,
+      pageSize: 1000000,
+    });
 
-    const products = Array.isArray(allProducts) ? allProducts :
-        (allProducts && allProducts.items ? allProducts.items : []);
+    const products = Array.isArray(allProducts)
+      ? allProducts
+      : allProducts && allProducts.items
+      ? allProducts.items
+      : [];
 
     return {
       totalProducts: products.length,
       totalValue: products.reduce((sum, p) => sum + p.price * p.stock, 0),
-      lowStockCount: products.filter(p => p.stock <= 5).length
+      lowStockCount: products.filter((p) => p.stock <= 5).length,
     };
   } catch (error) {
     console.error("Error getting product stats:", error);
@@ -1881,7 +1904,7 @@ async function getTotalProductStats() {
     return {
       totalProducts: products.length,
       totalValue: products.reduce((sum, p) => sum + p.price * p.stock, 0),
-      lowStockCount: products.filter(p => p.stock <= 5).length
+      lowStockCount: products.filter((p) => p.stock <= 5).length,
     };
   }
 }

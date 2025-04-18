@@ -1,5 +1,185 @@
 // settings.js - Manages application settings functionality
+// Update management in settings.js
+let updateAvailable = false;
+let updateDownloaded = false;
 
+// Initialize update section
+async function initUpdateSection() {
+  // Get current version
+  if (window.updates && window.updates.getCurrentVersion) {
+    const version = await window.updates.getCurrentVersion();
+    document.getElementById("current-version").textContent = version;
+  }
+
+  // Set up update status listener
+  if (window.updates && window.updates.onUpdateStatus) {
+    window.updates.onUpdateStatus(handleUpdateStatus);
+  }
+
+  // Set up button event listeners
+  const checkButton = document.getElementById("check-updates-btn");
+  const downloadButton = document.getElementById("download-update-btn");
+  const installButton = document.getElementById("install-update-btn");
+
+  if (checkButton) {
+    checkButton.addEventListener("click", checkForUpdates);
+  }
+
+  if (downloadButton) {
+    downloadButton.addEventListener("click", downloadUpdate);
+  }
+
+  if (installButton) {
+    installButton.addEventListener("click", installUpdate);
+  }
+}
+
+// Check for updates
+async function checkForUpdates() {
+  const statusMessage = document.getElementById("update-status-message");
+
+  try {
+    statusMessage.textContent = window.t
+      ? window.t("settings.updates.checking")
+      : "Checking for updates...";
+    statusMessage.className = "info-message";
+
+    if (window.updates && window.updates.checkForUpdates) {
+      await window.updates.checkForUpdates();
+    }
+  } catch (error) {
+    console.error("Error checking for updates:", error);
+    statusMessage.textContent = error.message || "Error checking for updates";
+    statusMessage.className = "error-message";
+  }
+}
+
+// Download the update
+async function downloadUpdate() {
+  if (!updateAvailable) return;
+
+  try {
+    if (window.updates && window.updates.downloadUpdate) {
+      await window.updates.downloadUpdate();
+
+      // Show progress container
+      const progressContainer = document.getElementById(
+        "update-progress-container"
+      );
+      if (progressContainer) {
+        progressContainer.style.display = "block";
+      }
+    }
+  } catch (error) {
+    console.error("Error downloading update:", error);
+    const statusMessage = document.getElementById("update-status-message");
+    statusMessage.textContent = error.message || "Error downloading update";
+    statusMessage.className = "error-message";
+  }
+}
+
+// Install the update
+function installUpdate() {
+  if (!updateDownloaded) return;
+
+  try {
+    if (window.updates && window.updates.quitAndInstall) {
+      window.updates.quitAndInstall();
+    }
+  } catch (error) {
+    console.error("Error installing update:", error);
+    const statusMessage = document.getElementById("update-status-message");
+    statusMessage.textContent = error.message || "Error installing update";
+    statusMessage.className = "error-message";
+  }
+}
+
+// Handle update status changes
+function handleUpdateStatus(status) {
+  const statusMessage = document.getElementById("update-status-message");
+  const downloadButton = document.getElementById("download-update-btn");
+  const installButton = document.getElementById("install-update-btn");
+  const progressBar = document.getElementById("update-progress-bar");
+  const progressText = document.getElementById("update-progress-text");
+  const progressContainer = document.getElementById(
+    "update-progress-container"
+  );
+
+  switch (status.status) {
+    case "checking":
+      statusMessage.textContent = window.t
+        ? window.t("settings.updates.checking")
+        : "Checking for updates...";
+      statusMessage.className = "info-message";
+      break;
+
+    case "available":
+      updateAvailable = true;
+      statusMessage.textContent = window.t
+        ? window.t("settings.updates.available", { version: status.version })
+        : `Update available (v${status.version})`;
+      statusMessage.className = "success-message";
+
+      if (downloadButton) {
+        downloadButton.style.display = "inline-block";
+      }
+      break;
+
+    case "not-available":
+      updateAvailable = false;
+      statusMessage.textContent = window.t
+        ? window.t("settings.updates.notAvailable")
+        : "You are using the latest version";
+      statusMessage.className = "info-message";
+
+      if (downloadButton) {
+        downloadButton.style.display = "none";
+      }
+      break;
+
+    case "downloading":
+      if (progressBar && status.progress) {
+        const percent = Math.round(status.progress.percent);
+        progressBar.style.width = `${percent}%`;
+        progressText.textContent = `${percent}%`;
+      }
+
+      if (progressContainer) {
+        progressContainer.style.display = "block";
+      }
+
+      statusMessage.textContent = window.t
+        ? window.t("settings.updates.downloading")
+        : "Downloading update...";
+      break;
+
+    case "downloaded":
+      updateDownloaded = true;
+
+      if (progressContainer) {
+        progressContainer.style.display = "none";
+      }
+
+      if (downloadButton) {
+        downloadButton.style.display = "none";
+      }
+
+      if (installButton) {
+        installButton.style.display = "inline-block";
+      }
+
+      statusMessage.textContent = window.t
+        ? window.t("settings.updates.downloaded")
+        : "Update downloaded. Ready to install.";
+      statusMessage.className = "success-message";
+      break;
+
+    case "error":
+      statusMessage.textContent = status.message || "Update error";
+      statusMessage.className = "error-message";
+      break;
+  }
+}
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize layout
@@ -47,7 +227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateI18nForDynamicContent();
     }
     initialLoadTranslations();
-
+    initUpdateSection();
     console.log("Settings page initialized");
   } catch (error) {
     console.error("Error initializing settings page:", error);
