@@ -12,7 +12,7 @@
     "build:win": "set NODE_ENV=production && electron-builder",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
-    "publish": "cross-env NODE_ENV=production GH_TOKEN=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 electron-builder --publish always"
+    "publish": "cross-env NODE_ENV=production electron-builder --publish always"
   },
   "keywords": [
     "billing",
