@@ -1,6 +1,6 @@
 {
   "name": "mzlad",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Offline-ready shop billing and inventory management system",
   "main": "src/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "build:win": "set NODE_ENV=production && electron-builder",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
-    "publish": "cross-env NODE_ENV=production GH_TOKEN=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 electron-builder --publish always"
+    "publish": "cross-env NODE_ENV=production GH_TOKEN=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 electron-builder --publish always"
   },
   "keywords": [
     "billing",
