@@ -826,7 +826,7 @@ function setupIpcHandlers() {
 
   ipcMain.handle("quit-and-install", () => {
     log.info("Installing update...");
-    autoUpdater.quitAndInstall(false, true);
+    autoUpdater.quitAndInstall(true, true); // Changed from false to true for isSilent
     return true;
   });
 

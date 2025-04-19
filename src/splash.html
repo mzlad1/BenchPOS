@@ -258,12 +258,51 @@
                 progressBar.style.width = `${percent}%`;
               }
             } else if (status.status === "downloaded") {
-              loadingText.textContent = "Update downloaded. Restarting...";
+              loadingText.textContent = "Update downloaded. Click to install.";
 
-              // Auto restart after 2 seconds
-              setTimeout(() => {
-                window.api.quitAndInstall();
-              }, 2000);
+              // Create install button instead of auto-restart
+              const installBtn = document.createElement("button");
+              installBtn.textContent = "Install Now";
+              installBtn.style.marginTop = "15px";
+              installBtn.style.padding = "8px 16px";
+              installBtn.style.backgroundColor = "#4299e1";
+              installBtn.style.color = "white";
+              installBtn.style.border = "none";
+              installBtn.style.borderRadius = "4px";
+              installBtn.style.cursor = "pointer";
+
+              // Add hover effect
+              installBtn.onmouseover = () => {
+                installBtn.style.backgroundColor = "#3182ce";
+              };
+              installBtn.onmouseout = () => {
+                installBtn.style.backgroundColor = "#4299e1";
+              };
+
+              // Add click handler
+              installBtn.onclick = () => {
+                loadingText.textContent = "Installing update...";
+                installBtn.remove();
+                // Use the proper parameters for quitAndInstall to avoid showing installer
+                if (
+                  window.api &&
+                  typeof window.api.quitAndInstall === "function"
+                ) {
+                  // Parameter explanation:
+                  // isSilent: true - don't ask user for confirmation
+                  // isForceRunAfter: true - force restart app after update
+                  window.api.quitAndInstall(true, true);
+                } else {
+                  // Fallback if the specific method isn't available
+                  window.api.quitAndInstall();
+                }
+              };
+
+              // Add button after the loading text
+              loadingText.parentNode.insertBefore(
+                installBtn,
+                loadingText.nextSibling
+              );
             }
           });
         }
