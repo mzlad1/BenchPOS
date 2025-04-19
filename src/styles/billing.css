@@ -177,7 +177,6 @@ body {
 /* === Product Cards and Grid === */
 .product-selection {
   background-color: var(--card-bg);
-  border-radius: var(--rounded-xl);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   border: none;
@@ -225,7 +224,6 @@ body {
 }
 
 .search-bar::before {
-  content: "🔍";
   position: absolute;
   left: calc(var(--spacing-lg) + 0.75rem);
   top: 50%;
@@ -1474,8 +1472,8 @@ body {
 .invoice-summary {
   background-color: var(--card-bg);
   border-radius: var(--rounded-xl);
-  overflow: hidden;
-  border: 1px solid;
+  /* overflow: hidden;
+  border: 1px solid; */
   margin-bottom: var(--spacing-lg);
   transform: translateZ(0); /* Hardware acceleration for smooth animations */
   transition: box-shadow var(--transition-slow),
@@ -2999,7 +2997,7 @@ body {
   }
 
   .product-selection {
-    flex: 1.2; /* Give product selection slightly more width */
+    /* flex: 1.2; Give product selection slightly more width */
     height: auto;
   }
 

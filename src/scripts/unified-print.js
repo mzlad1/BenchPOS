@@ -338,7 +338,7 @@
       return `
         <div style="font-family: Arial, sans-serif; max-width: 300px; padding: 10px;">
           <div style="text-align: center; margin-bottom: 15px;">
-            <h2 style="margin: 0;">MZLAD Billing System</h2>
+            <h2 style="margin: 0;">BenchPOS</h2>
             <p style="margin: 5px 0;">Receipt #${invoice.id}</p>
             <p style="margin: 5px 0;">${new Date(
               invoice.date
@@ -379,7 +379,7 @@
           
           <div style="text-align: center; margin-top: 20px;">
             <p>Thank you for your purchase!</p>
-            <p style="font-size: 0.8em;">Powered by MZLAD Billing System</p>
+            <p style="font-size: 0.8em;">Powered by BenchPOS</p>
           </div>
         </div>
       `;

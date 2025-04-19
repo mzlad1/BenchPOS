@@ -351,19 +351,13 @@ function updateDateDisplay() {
     day: "numeric",
   };
 
-  // Get current language
-  const lang = localStorage.getItem("language") || "en";
-
-  // Format date according to language
+  // Always use 'en-US' locale regardless of the app's language setting
   const dateDisplay = document.getElementById("current-date");
   if (dateDisplay) {
     const date = new Date();
     try {
-      // Try language-specific formatting
-      dateDisplay.textContent = date.toLocaleDateString(
-        lang === "ar" ? "ar-SA" : "en-US",
-        dateOptions
-      );
+      // Force English date format
+      dateDisplay.textContent = date.toLocaleDateString("en-US", dateOptions);
     } catch (e) {
       // Fallback to default
       dateDisplay.textContent = date.toLocaleDateString("en-US", dateOptions);

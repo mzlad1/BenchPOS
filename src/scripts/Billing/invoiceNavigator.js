@@ -792,6 +792,7 @@ function formatDate(dateStr) {
     const month = String(dateStr.getMonth() + 1).padStart(2, "0");
     const day = String(dateStr.getDate()).padStart(2, "0");
     const year = dateStr.getFullYear();
+    // Always using English format MM/DD/YYYY
     return `${month}/${day}/${year}`;
   }
 
@@ -809,7 +810,7 @@ function formatDate(dateStr) {
         const year = parseInt(yearMonth[0]);
         const month = parseInt(yearMonth[1]) || 1; // Default to 1 if month is missing
 
-        // Create a new date and format it
+        // Create a new date and format it in English format
         const date = new Date(year, month - 1, day);
         if (!isNaN(date)) {
           return `${String(month).padStart(2, "0")}/${String(day).padStart(

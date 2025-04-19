@@ -24,6 +24,7 @@ const receiptContainerEl = document.getElementById("receipt-container");
 const printReceiptBtn = document.getElementById("print-receipt");
 const emailReceiptBtn = document.getElementById("email-receipt");
 const newSaleBtn = document.getElementById("new-sale");
+
 function formatDate(date) {
   if (!(date instanceof Date) || isNaN(date)) {
     return window.t("billing.core.invalidDate");
@@ -33,13 +34,10 @@ function formatDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
   const year = date.getFullYear();
 
-  // Use the template from translations for different locales
-  const format = window.t("billing.core.dateFormat");
-  return format
-    .replace("{month}", month)
-    .replace("{day}", day)
-    .replace("{year}", year);
+  // Always use English format (MM/DD/YYYY) regardless of translation
+  return `${month}/${day}/${year}`;
 }
+
 // Initialize the page
 async function initPage() {
   const hasPermission = await checkPermission();

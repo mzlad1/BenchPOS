@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "MZLAD Billing System",
+    "name": "BenchPOS",
     "tagline": "Simple. Efficient. Reliable."
   },
   "screenFit": {
@@ -179,7 +179,7 @@
     }
   },
   "billing": {
-    "pageTitle": "New Sale - MZLAD Billing System",
+    "pageTitle": "New Sale - BenchPOS",
     "products": "Products",
     "currentInvoice": "Current Invoice",
     "invoiceNumber": "Invoice #:",
@@ -285,12 +285,16 @@
       }
     },
     "receipt": {
-      "header": "MZLAD Billing System",
+      "header": "BenchPOS",
       "address": "123 Main Street, Anytown, USA",
       "phone": "Tel: (555) 123-4567",
+      "email": "Email",
       "receiptNumber": "Receipt #:",
       "date": "Date:",
+      "time": "Time:",
       "customer": "Customer:",
+      "cashier": "Cashier:",
+      "storeStaff": "Store Staff",
       "item": "Item",
       "qty": "Qty",
       "price": "Price",
@@ -298,11 +302,15 @@
       "subtotal": "Subtotal",
       "discount": "Discount",
       "tax": "Tax",
+      "paymentMethod": "Payment Method:",
+      "cash": "Cash",
+      "amountTendered": "Amount Tendered:",
+      "change": "Change:",
+      "customerSupport": "Customer Support",
+      "poweredBy": "Powered by BenchPOS ",
       "thankYou": "Thank you for your purchase!",
-      "transactionType": {
-        "sale": "SALE",
-        "refund": "REFUND"
-      }
+      "sale": "SALE",
+      "refund": "REFUND"
     }
   },
   "common": {
@@ -337,7 +345,7 @@
     }
   },
   "register": {
-    "pageTitle": "Register User - MZLAD Billing System",
+    "pageTitle": "Register User - BenchPOS",
     "title": "Create New Account",
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your name",
@@ -358,7 +366,7 @@
     "permissionDenied": "You do not have permission to access the Register User page."
   },
   "userManager": {
-    "pageTitle": "User Manager - MZLAD Billing System",
+    "pageTitle": "User Manager - BenchPOS",
     "searchPlaceholder": "Search users by name, email or role...",
     "filters": {
       "allRoles": "All Roles",
@@ -423,7 +431,7 @@
     }
   },
   "dashboard": {
-    "pageTitle": "MZLAD Billing System",
+    "pageTitle": "BenchPOS",
     "welcome": "Welcome back",
     "syncData": "Sync Data",
     "newSale": "New Sale",
@@ -954,9 +962,9 @@
     "refreshStatus": "Refresh Status"
   },
   "login": {
-    "pageTitle": "MZLAD Billing System - Login",
+    "pageTitle": "BenchPOS - Login",
     "tagline": "The complete solution for managing your small business inventory and sales with precision.",
-    "whyChoose": "Why Choose MZLAD?",
+    "whyChoose": "Why Choose BenchPOS?",
     "features": {
       "inventory": "Real-time inventory tracking",
       "invoicing": "Smart invoicing & billing",
@@ -994,7 +1002,7 @@
     }
   },
   "forgotPassword": {
-    "pageTitle": "MZLAD Billing System - Reset Password",
+    "pageTitle": "BenchPOS - Reset Password",
     "tagline": "Reset your password to regain access to your account and continue managing your business.",
     "resetProcess": "Password Reset Process",
     "steps": {
@@ -1025,7 +1033,7 @@
     }
   },
   "help": {
-    "pageTitle": "Help Center - MZLAD Billing System",
+    "pageTitle": "Help Center - BenchPOS",
     "search": {
       "placeholder": "Search help topics..."
     },
@@ -1048,7 +1056,7 @@
         "contact": "Contact"
       },
       "items": {
-        "welcome": "Welcome to MZLAD",
+        "welcome": "Welcome to BenchPOS",
         "quickStart": "Quick Start Guide",
         "systemRequirements": "System Requirements",
         "createInvoice": "Creating Invoices",
@@ -1067,8 +1075,8 @@
       }
     },
     "welcome": {
-      "title": "Welcome to MZLAD Billing System",
-      "intro": "Welcome to MZLAD Billing System, your all-in-one solution for managing sales, inventory, and business reporting. This help center will guide you through all the features and functions of the application.",
+      "title": "Welcome to BenchPOS",
+      "intro": "Welcome to BenchPOS, your all-in-one solution for managing sales, inventory, and business reporting. This help center will guide you through all the features and functions of the application.",
       "features": {
         "sales": {
           "icon": "💵",
@@ -1093,7 +1101,7 @@
       },
       "gettingStarted": {
         "title": "Getting Started",
-        "intro": "To begin using MZLAD Billing System, we recommend following these steps:",
+        "intro": "To begin using BenchPOS, we recommend following these steps:",
         "step1": {
           "title": "Set up your business information",
           "description": "Configure your business details in the Settings section."
@@ -1153,7 +1161,7 @@
     "quickStart": {
       "title": "Quick Start Guide",
       "lastUpdated": "Last updated: {date}",
-      "intro": "This guide will help you quickly set up and start using MZLAD Billing System for your business operations.",
+      "intro": "This guide will help you quickly set up and start using BenchPOS for your business operations.",
       "toc": {
         "title": "On this page:",
         "installation": "Installation",
@@ -1164,7 +1172,7 @@
       },
       "installation": {
         "title": "Installation",
-        "intro": "MZLAD Billing System is a desktop application that requires installation on your computer:",
+        "intro": "BenchPOS is a desktop application that requires installation on your computer:",
         "step1": {
           "title": "Download the installer",
           "description": "Visit our website and download the appropriate installer for your operating system (Windows, macOS, or Linux)."
@@ -1179,7 +1187,7 @@
         },
         "step4": {
           "title": "Launch the application",
-          "description": "Use the desktop shortcut or start menu entry to launch MZLAD Billing System."
+          "description": "Use the desktop shortcut or start menu entry to launch BenchPOS."
         },
         "note": {
           "title": "Note:",
@@ -1188,7 +1196,7 @@
       },
       "firstLogin": {
         "title": "First Login",
-        "intro": "When you launch MZLAD Billing System for the first time, you'll need to create an admin account:",
+        "intro": "When you launch BenchPOS for the first time, you'll need to create an admin account:",
         "step1": {
           "title": "Create admin account",
           "description": "Enter your name, email, and create a secure password for the administrator account."
@@ -1201,7 +1209,7 @@
           "title": "Login with admin credentials",
           "description": "Use your email and password to log into the system."
         },
-        "screenshot": "Login screen of MZLAD Billing System"
+        "screenshot": "Login screen of BenchPOS"
       },
       "businessSetup": {
         "title": "Business Setup",
@@ -1295,7 +1303,7 @@
     "systemRequirements": {
       "title": "System Requirements",
       "lastUpdated": "Last updated: {date}",
-      "intro": "MZLAD Billing System is designed to run efficiently on modern computers. Check if your system meets the requirements below.",
+      "intro": "BenchPOS is designed to run efficiently on modern computers. Check if your system meets the requirements below.",
       "minimumRequirements": {
         "title": "Minimum Requirements",
         "table": {
@@ -1381,11 +1389,11 @@
       },
       "importantNote": {
         "title": "Important:",
-        "content": "While MZLAD Billing System can operate offline, an internet connection is required for initial setup, updates, and data synchronization between devices."
+        "content": "While BenchPOS can operate offline, an internet connection is required for initial setup, updates, and data synchronization between devices."
       },
       "performanceConsiderations": {
         "title": "Performance Considerations",
-        "intro": "The performance of MZLAD Billing System may vary based on:",
+        "intro": "The performance of BenchPOS may vary based on:",
         "factors": {
           "item1": "The size of your product database (5,000+ products may require more RAM)",
           "item2": "The number of concurrent users if multiple terminals are in use",
@@ -1402,7 +1410,7 @@
     "createInvoice": {
       "title": "Creating Invoices",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to create and manage invoices for your customers in MZLAD Billing System. Creating accurate invoices is essential for tracking sales, managing inventory, and maintaining financial records.",
+      "intro": "Learn how to create and manage invoices for your customers in BenchPOS. Creating accurate invoices is essential for tracking sales, managing inventory, and maintaining financial records.",
       "toc": {
         "title": "On this page:",
         "accessingSale": "Accessing the New Sale Screen",
@@ -1667,7 +1675,7 @@
     "manageTransactions": {
       "title": "Managing Transactions",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to view, filter, edit, and manage your sales transactions in MZLAD Billing System. Efficient transaction management helps you keep track of your business activities and maintain accurate financial records.",
+      "intro": "Learn how to view, filter, edit, and manage your sales transactions in BenchPOS. Efficient transaction management helps you keep track of your business activities and maintain accurate financial records.",
       "toc": {
         "title": "On this page:",
         "accessingTransactions": "Accessing Transaction History",
@@ -1908,7 +1916,7 @@
     "processReturns": {
       "title": "Processing Returns",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to process product returns and issue refunds to customers in MZLAD Billing System. Properly handling returns helps maintain accurate inventory records and ensures customer satisfaction.",
+      "intro": "Learn how to process product returns and issue refunds to customers in BenchPOS. Properly handling returns helps maintain accurate inventory records and ensures customer satisfaction.",
       "toc": {
         "title": "On this page:",
         "understandingReturns": "Understanding Returns Process",
@@ -1920,7 +1928,7 @@
       },
       "understandingReturns": {
         "title": "Understanding Returns Process",
-        "description": "The MZLAD Billing System handles returns by referencing the original sales transaction. This approach ensures proper inventory tracking and maintains the connection between sales and returns for accurate reporting.",
+        "description": "The BenchPOS handles returns by referencing the original sales transaction. This approach ensures proper inventory tracking and maintains the connection between sales and returns for accurate reporting.",
         "note": "Note: Returns can only be processed for items that were sold through the system. For each return, you'll need to reference the original sale by invoice number or by finding the transaction."
       },
       "accessingReturns": {
@@ -2045,7 +2053,7 @@
       },
       "returnsReporting": {
         "title": "Returns Reporting",
-        "intro": "MZLAD Billing System provides detailed reports on returns to help analyze trends:",
+        "intro": "BenchPOS provides detailed reports on returns to help analyze trends:",
         "reports": {
           "summary": {
             "title": "Returns Summary",
@@ -2105,7 +2113,7 @@
     "addProducts": {
       "title": "Adding Products",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to add products to your inventory in MZLAD Billing System. Maintaining a complete and accurate product database is essential for efficient sales processing and inventory management.",
+      "intro": "Learn how to add products to your inventory in BenchPOS. Maintaining a complete and accurate product database is essential for efficient sales processing and inventory management.",
       "toc": {
         "title": "On this page:",
         "accessingInventory": "Accessing Inventory Management",
@@ -2173,7 +2181,7 @@
       },
       "productFields": {
         "title": "Understanding Product Fields",
-        "intro": "Each product in MZLAD Billing System has several important fields:",
+        "intro": "Each product in BenchPOS has several important fields:",
         "table": {
           "headers": {
             "field": "Field",
@@ -2348,7 +2356,7 @@
     "updateStock": {
       "title": "Updating Stock",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to update stock levels and manage inventory quantities in MZLAD Billing System. Keeping accurate stock information is crucial for smooth business operations and avoiding stockouts or overstock situations.",
+      "intro": "Learn how to update stock levels and manage inventory quantities in BenchPOS. Keeping accurate stock information is crucial for smooth business operations and avoiding stockouts or overstock situations.",
       "toc": {
         "title": "On this page:",
         "overview": "Stock Management Overview",
@@ -2360,7 +2368,7 @@
       },
       "overview": {
         "title": "Stock Management Overview",
-        "intro": "MZLAD Billing System automatically updates stock levels during normal business operations:",
+        "intro": "BenchPOS automatically updates stock levels during normal business operations:",
         "features": {
           "reduction": {
             "title": "Automatic Stock Reduction",
@@ -2515,7 +2523,7 @@
       },
       "lowStockAlerts": {
         "title": "Managing Low Stock Alerts",
-        "intro": "MZLAD Billing System can alert you when stock levels fall below specified thresholds:",
+        "intro": "BenchPOS can alert you when stock levels fall below specified thresholds:",
         "steps": {
           "step1": {
             "title": "Set Low Stock Threshold",
@@ -2645,7 +2653,7 @@
     "importExport": {
       "title": "Import & Export",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to import and export data in MZLAD Billing System. These powerful features allow you to easily update your inventory in bulk, migrate data from other systems, and create backups of your product information.",
+      "intro": "Learn how to import and export data in BenchPOS. These powerful features allow you to easily update your inventory in bulk, migrate data from other systems, and create backups of your product information.",
       "toc": {
         "title": "On this page:",
         "importOverview": "Importing Data Overview",
@@ -2657,7 +2665,7 @@
       },
       "importOverview": {
         "title": "Importing Data Overview",
-        "intro": "MZLAD Billing System allows you to import various types of data using CSV (Comma Separated Values) files:",
+        "intro": "BenchPOS allows you to import various types of data using CSV (Comma Separated Values) files:",
         "features": {
           "productImport": {
             "title": "Product Import",
@@ -2801,7 +2809,7 @@
       },
       "dataTemplates": {
         "title": "Using Data Templates",
-        "intro": "MZLAD Billing System provides templates to make data import easier:",
+        "intro": "BenchPOS provides templates to make data import easier:",
         "features": {
           "downloadTemplates": {
             "title": "Download Templates",
@@ -2878,7 +2886,7 @@
       },
       "advancedOptions": {
         "title": "Advanced Import/Export Options",
-        "intro": "MZLAD Billing System offers several advanced options for data management:",
+        "intro": "BenchPOS offers several advanced options for data management:",
         "options": {
           "option1": "Scheduled Exports: Automatically export data on a regular schedule for backup purposes",
           "option2": "Custom Field Mapping: Map columns from your existing data files to system fields",
@@ -2912,7 +2920,7 @@
     "salesReports": {
       "title": "Sales Reports",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to access and interpret sales reports in MZLAD Billing System. These powerful reporting tools provide insights into your sales performance, helping you make data-driven decisions to grow your business.",
+      "intro": "Learn how to access and interpret sales reports in BenchPOS. These powerful reporting tools provide insights into your sales performance, helping you make data-driven decisions to grow your business.",
       "toc": {
         "title": "On this page:",
         "accessingReports": "Accessing Sales Reports",
@@ -2993,7 +3001,7 @@
       },
       "detailedReports": {
         "title": "Detailed Sales Reports",
-        "intro": "MZLAD Billing System offers several detailed sales report views:",
+        "intro": "BenchPOS offers several detailed sales report views:",
         "table": {
           "headers": {
             "reportType": "Report Type",
@@ -3178,7 +3186,7 @@
     "inventoryReports": {
       "title": "Inventory Reports",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to access and utilize inventory reports in MZLAD Billing System. These reports provide valuable insights into your product performance, stock levels, and inventory valuation, helping you make informed decisions about purchasing and stock management.",
+      "intro": "Learn how to access and utilize inventory reports in BenchPOS. These reports provide valuable insights into your product performance, stock levels, and inventory valuation, helping you make informed decisions about purchasing and stock management.",
       "toc": {
         "title": "On this page:",
         "accessingReports": "Accessing Inventory Reports",
@@ -3410,7 +3418,7 @@
     "exportingData": {
       "title": "Exporting Data",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to export data from MZLAD Billing System for analysis, backup, or use in other business applications. Exporting data allows you to create custom reports, share information with stakeholders, and perform advanced analysis using your preferred tools.",
+      "intro": "Learn how to export data from BenchPOS for analysis, backup, or use in other business applications. Exporting data allows you to create custom reports, share information with stakeholders, and perform advanced analysis using your preferred tools.",
       "toc": {
         "title": "On this page:",
         "exportOverview": "Data Export Overview",
@@ -3423,7 +3431,7 @@
       },
       "overview": {
         "title": "Data Export Overview",
-        "intro": "MZLAD Billing System allows you to export various types of data in multiple formats:",
+        "intro": "BenchPOS allows you to export various types of data in multiple formats:",
         "formats": {
           "csv": {
             "title": "CSV Format",
@@ -3559,7 +3567,7 @@
       },
       "scheduled": {
         "title": "Scheduled Exports",
-        "intro": "MZLAD Billing System allows you to schedule automatic exports:",
+        "intro": "BenchPOS allows you to schedule automatic exports:",
         "features": {
           "recurring": {
             "title": "Recurring Exports",
@@ -3667,7 +3675,7 @@
     "userManagement": {
       "title": "User Management",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Learn how to add, edit, and manage user accounts in MZLAD Billing System. Proper user management is essential for maintaining security, controlling access to sensitive information, and ensuring accountability in your business operations.",
+      "intro": "Learn how to add, edit, and manage user accounts in BenchPOS. Proper user management is essential for maintaining security, controlling access to sensitive information, and ensuring accountability in your business operations.",
       "toc": {
         "title": "On this page:",
         "accessing": "Accessing User Management",
@@ -3693,7 +3701,7 @@
       },
       "roles": {
         "title": "Understanding User Roles",
-        "intro": "MZLAD Billing System uses a role-based access control system to determine what actions each user can perform:",
+        "intro": "BenchPOS uses a role-based access control system to determine what actions each user can perform:",
         "table": {
           "headers": {
             "role": "Role",
@@ -3735,7 +3743,7 @@
       },
       "adding": {
         "title": "Adding New Users",
-        "intro": "To add a new user to MZLAD Billing System:",
+        "intro": "To add a new user to BenchPOS:",
         "steps": {
           "step1": "Go to Register New User",
           "step1Description": "Click on the \"Register new User\" option in the sidebar menu",
@@ -3875,7 +3883,7 @@
                   "option2": "Set a new password manually and communicate it to the user securely"
                 }
               },
-              "note": "For security reasons, MZLAD Billing System does not allow administrators to see users' current passwords."
+              "note": "For security reasons, BenchPOS does not allow administrators to see users' current passwords."
             }
           },
           "multipleAdmins": {
@@ -3893,7 +3901,7 @@
           "trackActivity": {
             "question": "How do I track user activity in the system?",
             "answer": {
-              "intro": "MZLAD Billing System maintains comprehensive activity logs that track user actions:",
+              "intro": "BenchPOS maintains comprehensive activity logs that track user actions:",
               "steps": {
                 "step1": "Go to Settings > System Logs",
                 "step2": "Select \"User Activity Logs\"",
@@ -3920,7 +3928,7 @@
     "offlineMode": {
       "title": "Offline Mode",
       "lastUpdated": "Last updated: April 1, 2025",
-      "intro": "Learn how to use MZLAD Billing System when you don't have an internet connection. Offline Mode allows you to continue business operations during internet outages, in locations with poor connectivity, or while on the go, with all changes synchronized when you reconnect.",
+      "intro": "Learn how to use BenchPOS when you don't have an internet connection. Offline Mode allows you to continue business operations during internet outages, in locations with poor connectivity, or while on the go, with all changes synchronized when you reconnect.",
       "tableOfContents": {
         "title": "On this page:",
         "items": {
@@ -3935,7 +3943,7 @@
       },
       "understanding": {
         "title": "Understanding Offline Mode",
-        "description": "MZLAD Billing System's Offline Mode works by:",
+        "description": "BenchPOS's Offline Mode works by:",
         "features": {
           "storage": {
             "title": "Local Storage",
@@ -4191,7 +4199,7 @@
     "syncingData": {
       "title": "Syncing Data",
       "lastUpdated": "Last updated: March 29, 2025",
-      "intro": "Learn how to synchronize data between devices and ensure all your business information stays up-to-date across multiple locations or devices using MZLAD Billing System. Data synchronization is essential for businesses operating with multiple terminals or in different locations.",
+      "intro": "Learn how to synchronize data between devices and ensure all your business information stays up-to-date across multiple locations or devices using BenchPOS. Data synchronization is essential for businesses operating with multiple terminals or in different locations.",
       "tableOfContents": {
         "title": "On this page:",
         "items": {
@@ -4206,7 +4214,7 @@
       },
       "overview": {
         "title": "Data Synchronization Overview",
-        "description": "Data synchronization in MZLAD Billing System ensures that all your devices and locations have access to the same, up-to-date information. This is particularly important when:",
+        "description": "Data synchronization in BenchPOS ensures that all your devices and locations have access to the same, up-to-date information. This is particularly important when:",
         "features": {
           "locations": {
             "title": "Multiple Locations",
@@ -4225,7 +4233,7 @@
       },
       "process": {
         "title": "The Synchronization Process",
-        "description": "Data synchronization in MZLAD Billing System follows these general steps:",
+        "description": "Data synchronization in BenchPOS follows these general steps:",
         "steps": [
           {
             "title": "Change Detection",
@@ -4292,7 +4300,7 @@
       },
       "auto": {
         "title": "Automatic Synchronization",
-        "description": "MZLAD Billing System can also perform automatic synchronization:",
+        "description": "BenchPOS can also perform automatic synchronization:",
         "table": {
           "headers": {
             "trigger": "Auto-Sync Trigger",
@@ -4494,7 +4502,7 @@
           "bandwidth": {
             "question": "Does synchronization use a lot of internet bandwidth?",
             "answer": {
-              "intro": "MZLAD Billing System is designed to be bandwidth-efficient:",
+              "intro": "BenchPOS is designed to be bandwidth-efficient:",
               "points": [
                 "Only changed data is transferred during synchronization, not the entire database",
                 "Data is compressed before transmission to reduce bandwidth usage",
@@ -4507,7 +4515,7 @@
           "security": {
             "question": "Is my data secure during synchronization?",
             "answer": {
-              "intro": "Yes, MZLAD Billing System employs several security measures during data synchronization:",
+              "intro": "Yes, BenchPOS employs several security measures during data synchronization:",
               "points": [
                 "All data is encrypted using industry-standard TLS/SSL protocols during transmission",
                 "User authentication is required before any synchronization can occur",
@@ -4541,12 +4549,12 @@
     "contactSupport": {
       "title": "Contact Support",
       "lastUpdated": "Last updated: March 15, 2025",
-      "intro": "Need help with MZLAD Billing System? Our support team is ready to assist you.",
+      "intro": "Need help with BenchPOS? Our support team is ready to assist you.",
       "options": {
         "email": {
           "title": "Email Support",
           "description": "Send us a detailed description of your issue.",
-          "address": "support@mzlad.com"
+          "address": "support@BenchPOS.com"
         },
         "phone": {
           "title": "Phone Support",
@@ -4588,7 +4596,7 @@
               "intro": "To help us resolve your issue quickly, please include:",
               "items": [
                 "Your operating system and version",
-                "The version of MZLAD Billing System you're using",
+                "The version of BenchPOS you're using",
                 "Step-by-step details of what you were doing when the issue occurred",
                 "Any error messages you received",
                 "Screenshots if applicable"

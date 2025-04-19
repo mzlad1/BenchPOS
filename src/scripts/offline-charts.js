@@ -1,5 +1,5 @@
 // offline-charts.js
-// A self-contained chart module for the MZLAD Billing System
+// A self-contained chart module for the BenchPOS
 // This module doesn't require external CDN connections
 
 // Constants for chart colors - using CSS variables for theme consistency

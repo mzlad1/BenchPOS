@@ -4,10 +4,16 @@ function initBarcodeFeature() {
   const barcodeForm = document.createElement("div");
   barcodeForm.className = "barcode-form";
   barcodeForm.innerHTML = `
-    <h3>${window.t("billing.barcode.title")} <span class="shortcut-indicator">(B)</span></h3>
+    <h3>${window.t(
+      "billing.barcode.title"
+    )} <span class="shortcut-indicator">(B)</span></h3>
     <div class="barcode-input-container">
-      <input type="text" id="barcode-input" placeholder="${window.t("billing.barcode.placeholder")}" autofocus>
-      <button type="button" id="barcode-submit" class="btn primary-btn">${window.t("billing.barcode.addItem")}</button>
+      <input type="text" id="barcode-input" placeholder="${window.t(
+        "billing.barcode.placeholder"
+      )}" autofocus>
+      <button type="button" id="barcode-submit" class="btn primary-btn">${window.t(
+        "billing.barcode.addItem"
+      )}</button>
     </div>
     <div id="barcode-status"></div>
   `;
@@ -352,11 +358,16 @@ function processBarcodeInput() {
     // Check if product is in stock
     if (exactMatch.stock <= 0) {
       // Show error for out of stock
-      barcodeStatus.textContent = window.t("billing.barcode.outOfStock", { name: exactMatch.name });
+      barcodeStatus.textContent = window.t("billing.barcode.outOfStock", {
+        name: exactMatch.name,
+      });
       barcodeStatus.style.color = "red";
 
       // Show toast notification
-      showToastNotification(window.t("billing.barcode.sorryOutOfStock", { name: exactMatch.name }), true);
+      showToastNotification(
+        window.t("notifications.productOutOfStock", { name: exactMatch.name }),
+        true
+      );
 
       return;
     }
@@ -367,11 +378,20 @@ function processBarcodeInput() {
 
     if (currentQuantity + 1 > exactMatch.stock) {
       // Show error for exceeding stock
-      barcodeStatus.textContent = window.t("billing.barcode.limitedStock", { stock: exactMatch.stock, name: exactMatch.name });
+      barcodeStatus.textContent = window.t("billing.barcode.limitedStock", {
+        stock: exactMatch.stock,
+        name: exactMatch.name,
+      });
       barcodeStatus.style.color = "red";
 
       // Show toast notification
-      showToastNotification(window.t("billing.barcode.cantAddMore", { stock: exactMatch.stock, name: exactMatch.name }), true);
+      showToastNotification(
+        window.t("notifications.limitedStock", {
+          stock: exactMatch.stock,
+          name: exactMatch.name,
+        }),
+        true
+      );
       return;
     }
 
@@ -388,7 +408,9 @@ function processBarcodeInput() {
     addToCart(exactMatch);
 
     // Success message
-    barcodeStatus.textContent = window.t("billing.barcode.added", { name: exactMatch.name });
+    barcodeStatus.textContent = window.t("billing.barcode.added", {
+      name: exactMatch.name,
+    });
     barcodeStatus.style.color = "green";
 
     // Clear input for next scan
@@ -407,11 +429,18 @@ function processBarcodeInput() {
       // Check if in stock
       if (firstMatch.stock <= 0) {
         // Show error for out of stock
-        barcodeStatus.textContent = window.t("billing.barcode.outOfStock", { name: exactMatch.name });
+        barcodeStatus.textContent = window.t("billing.barcode.outOfStock", {
+          name: exactMatch.name,
+        });
         barcodeStatus.style.color = "red";
 
         // Show toast notification
-        showToastNotification(window.t("billing.barcode.sorryOutOfStock", { name: exactMatch.name }), true);
+        showToastNotification(
+          window.t("notifications.productOutOfStock", {
+            name: exactMatch.name,
+          }),
+          true
+        );
 
         return;
       }
@@ -422,11 +451,20 @@ function processBarcodeInput() {
 
       if (currentQuantity + 1 > firstMatch.stock) {
         // Show error for exceeding stock
-        barcodeStatus.textContent = window.t("billing.barcode.limitedStock", { stock: exactMatch.stock, name: exactMatch.name });
+        barcodeStatus.textContent = window.t("billing.barcode.limitedStock", {
+          stock: exactMatch.stock,
+          name: exactMatch.name,
+        });
         barcodeStatus.style.color = "red";
 
         // Show toast notification
-        showToastNotification(window.t("billing.barcode.cantAddMore", { stock: exactMatch.stock, name: exactMatch.name }), true);
+        showToastNotification(
+          window.t("notifications.limitedStock", {
+            stock: exactMatch.stock,
+            name: exactMatch.name,
+          }),
+          true
+        );
 
         return;
       }
@@ -444,7 +482,9 @@ function processBarcodeInput() {
       addToCart(firstMatch);
 
       // Success message with additional info for partial match
-      barcodeStatus.textContent = window.t("billing.barcode.addedBestMatch", { name: firstMatch.name });
+      barcodeStatus.textContent = window.t("billing.barcode.addedBestMatch", {
+        name: firstMatch.name,
+      });
       barcodeStatus.style.color = "green";
 
       // Display matching products in case user wants to see alternatives

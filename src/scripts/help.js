@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   });
   document.querySelectorAll("[data-target]").forEach((element) => {
-    element.addEventListener("click", function(e) {
+    element.addEventListener("click", function (e) {
       // Prevent default for links
       if (this.tagName === "A") {
         e.preventDefault();
@@ -56,13 +56,14 @@ document.addEventListener("DOMContentLoaded", async function () {
       const targetId = this.getAttribute("data-target");
 
       // Find the matching section
-      const targetSection = document.getElementById(targetId) ||
-          document.getElementById("syncing-data"); // Special case for sync-data/syncing-data
+      const targetSection =
+        document.getElementById(targetId) ||
+        document.getElementById("syncing-data"); // Special case for sync-data/syncing-data
 
       if (targetSection) {
         // Find the matching nav item
         const targetNav = Array.from(navItems).find(
-            (item) => item.getAttribute("data-target") === targetId
+          (item) => item.getAttribute("data-target") === targetId
         );
 
         if (targetNav) {
@@ -241,9 +242,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Simulate agent response
   function simulateAgentResponse() {
     const agentResponses = [
-      "Thanks for reaching out! How can I help you with MZLAD Billing System today?",
+      "Thanks for reaching out! How can I help you with BenchPOS today?",
       "I understand your question. Let me check that for you.",
-      "That's a good question! In MZLAD Billing System, you can find that feature in the Settings section.",
+      "That's a good question! In BenchPOS, you can find that feature in the Settings section.",
       "I'd be happy to help you with that. Could you provide more details about what you're trying to accomplish?",
       "Have you tried updating to the latest version? That often resolves this type of issue.",
       "Let me guide you through this process step by step. First, navigate to the Inventory section.",

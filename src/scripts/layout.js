@@ -1,6 +1,6 @@
 // layout.js - Handles loading shared components (header, sidebar)
 
-// Layout Manager for MZLAD Billing System
+// Layout Manager for BenchPOS
 const LayoutManager = {
   // Current page identifier
   currentPage: "dashboard",
@@ -208,7 +208,7 @@ const LayoutManager = {
         const products = await window.api.getProducts();
         if (Array.isArray(products)) {
           const lowStockCount = products.filter(
-              (product) => product.stock <= 5
+            (product) => product.stock <= 5
           ).length;
           this.updateInventoryBadge(lowStockCount);
         }
@@ -222,15 +222,24 @@ const LayoutManager = {
   getPageTitle() {
     if (window.t) {
       switch (this.currentPage) {
-        case "dashboard": return window.t("sidebar.dashboard");
-        case "inventory": return window.t("sidebar.inventory");
-        case "billing": return window.t("sidebar.newSale");
-        case "reports": return window.t("sidebar.reports");
-        case "register": return window.t("sidebar.registerUser");
-        case "user-manager": return window.t("sidebar.userManager");
-        case "settings": return window.t("sidebar.settings");
-        case "help": return window.t("sidebar.helpCenter");
-        default: return window.t("app.name");
+        case "dashboard":
+          return window.t("sidebar.dashboard");
+        case "inventory":
+          return window.t("sidebar.inventory");
+        case "billing":
+          return window.t("sidebar.newSale");
+        case "reports":
+          return window.t("sidebar.reports");
+        case "register":
+          return window.t("sidebar.registerUser");
+        case "user-manager":
+          return window.t("sidebar.userManager");
+        case "settings":
+          return window.t("sidebar.settings");
+        case "help":
+          return window.t("sidebar.helpCenter");
+        default:
+          return window.t("app.name");
       }
     } else {
       // Fallback to English if translations are not available
@@ -252,7 +261,7 @@ const LayoutManager = {
         case "help":
           return "Help Center";
         default:
-          return "MZLAD Billing System";
+          return "BenchPOS";
       }
     }
   },
@@ -286,7 +295,8 @@ const LayoutManager = {
       if (window.t && this.user.role) {
         const roleKey = this.user.role.toLowerCase();
         // Use user.roles prefix explicitly as defined in the translation files
-        userRoleEl.textContent = window.t(`user.roles.${roleKey}`) || this.user.role;
+        userRoleEl.textContent =
+          window.t(`user.roles.${roleKey}`) || this.user.role;
       } else {
         userRoleEl.textContent = this.user.role || "Guest";
       }
@@ -294,8 +304,8 @@ const LayoutManager = {
 
     if (userAvatarEl)
       userAvatarEl.textContent = (this.user.name || "U")
-          .charAt(0)
-          .toUpperCase();
+        .charAt(0)
+        .toUpperCase();
   },
 
   // Set up event listeners for interactive elements
@@ -322,7 +332,7 @@ const LayoutManager = {
       menuItems.forEach((item) => {
         item.addEventListener("click", (event) => {
           // Only add the special handling for links to different pages
-          const targetPage = item.id.replace('nav-', '');
+          const targetPage = item.id.replace("nav-", "");
           if (targetPage !== this.currentPage) {
             console.log(`Navigating from ${this.currentPage} to ${targetPage}`);
 
@@ -330,7 +340,7 @@ const LayoutManager = {
             this.clearPageCache();
 
             // Clear page-specific cache if needed
-            if (this.currentPage === 'inventory') {
+            if (this.currentPage === "inventory") {
               this.clearInventoryCache();
             }
           }
@@ -341,9 +351,9 @@ const LayoutManager = {
     this.setupOnlineListeners();
 
     // Setup language change listener
-    window.addEventListener('languageChanged', () => {
+    window.addEventListener("languageChanged", () => {
       // Update page title with new language
-      const pageTitleEl = document.getElementById('page-title');
+      const pageTitleEl = document.getElementById("page-title");
       if (pageTitleEl) {
         pageTitleEl.textContent = this.getPageTitle();
       }
@@ -382,7 +392,9 @@ const LayoutManager = {
 
     if (themePreference === "system") {
       // Use system preference
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
       document.body.classList.toggle("dark-mode", prefersDark);
       document.body.classList.toggle("light-mode", !prefersDark);
     } else {
@@ -398,7 +410,7 @@ const LayoutManager = {
 
     // Load sidebar state preference
     const sidebarCollapsed =
-        localStorage.getItem("sidebarCollapsed") === "true";
+      localStorage.getItem("sidebarCollapsed") === "true";
     const sidebar = document.getElementById("sidebar");
     if (sidebar && sidebarCollapsed) {
       sidebar.classList.add("collapsed");
@@ -411,31 +423,41 @@ const LayoutManager = {
       console.log("Logging out...");
 
       // Create confirm message with translation if available
-      const confirmMessage = window.t ? window.t("user.confirmLogout") : "Are you sure you want to log out?";
+      const confirmMessage = window.t
+        ? window.t("user.confirmLogout")
+        : "Are you sure you want to log out?";
 
       if (confirm(confirmMessage)) {
         if (window.api && typeof window.api.logoutUser === "function") {
           const result = await window.api.logoutUser();
 
           // Use the correct path based on current location
-          const loginPath = this.isDashboard() ? "views/login.html" : "../views/login.html";
+          const loginPath = this.isDashboard()
+            ? "views/login.html"
+            : "../views/login.html";
 
           if (result && result.success) {
             window.location.href = loginPath;
           } else {
             console.error("Logout failed:", result);
-            const errorMessage = window.t ? window.t("user.logoutFailed") : "Logout failed. Please try again.";
+            const errorMessage = window.t
+              ? window.t("user.logoutFailed")
+              : "Logout failed. Please try again.";
             alert(errorMessage);
           }
         } else {
           // Fallback for when API is not available
-          const loginPath = this.isDashboard() ? "views/login.html" : "../views/login.html";
+          const loginPath = this.isDashboard()
+            ? "views/login.html"
+            : "../views/login.html";
           window.location.href = loginPath;
         }
       }
     } catch (error) {
       console.error("Logout error:", error);
-      const errorMessage = window.t ? window.t("user.logoutError") : "An error occurred during logout.";
+      const errorMessage = window.t
+        ? window.t("user.logoutError")
+        : "An error occurred during logout.";
       alert(errorMessage);
     }
   },
@@ -474,13 +496,18 @@ const LayoutManager = {
     if (statusText) {
       // Use translations if available
       if (window.t) {
-        statusText.textContent = isOnline ? window.t("header.onlineMode") : window.t("header.offlineMode");
+        statusText.textContent = isOnline
+          ? window.t("header.onlineMode")
+          : window.t("header.offlineMode");
       } else {
         statusText.textContent = isOnline ? "Online Mode" : "Offline Mode";
       }
 
       // Update data-i18n attribute for future translations
-      statusText.setAttribute("data-i18n", isOnline ? "header.onlineMode" : "header.offlineMode");
+      statusText.setAttribute(
+        "data-i18n",
+        isOnline ? "header.onlineMode" : "header.offlineMode"
+      );
     }
   },
 
@@ -567,7 +594,7 @@ const LayoutManager = {
       console.error("Error applying language direction:", error);
     }
   },
-  clearPageCache: function() {
+  clearPageCache: function () {
     console.log("Clearing page cache during navigation");
 
     // Reset global variables that should be cleared between page views
@@ -579,10 +606,10 @@ const LayoutManager = {
     }
 
     // Fire a custom event that specific pages can listen for
-    const event = new CustomEvent('pageCacheCleared');
+    const event = new CustomEvent("pageCacheCleared");
     document.dispatchEvent(event);
   },
-  clearInventoryCache: function() {
+  clearInventoryCache: function () {
     console.log("Clearing inventory cache");
 
     // Reset inventory-specific variables to default state

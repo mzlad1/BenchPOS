@@ -179,6 +179,20 @@ function applyDateFilter() {
   }
 }
 
+// Add this new function to ensure dates are displayed in English format
+function formatReportDate(date) {
+  if (!(date instanceof Date) || isNaN(date)) {
+    return "Invalid Date";
+  }
+
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const year = date.getFullYear();
+
+  // Always return in English format MM/DD/YYYY
+  return `${month}/${day}/${year}`;
+}
+
 // Generate all report sections
 function generateAllReports() {
   try {

@@ -54,7 +54,7 @@ class TranslationCache {
 const CORE_TRANSLATIONS = {
   en: {
     // App
-    // "app.name": "MZLAD Billing System",
+    // "app.name": "BenchPOS",
     // // Sidebar
     // "sidebar.dashboard": "Dashboard",
     // "sidebar.newSale": "New Sale",

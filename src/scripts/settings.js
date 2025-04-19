@@ -727,6 +727,10 @@ function resetSettings() {
 // Add this to settings.js
 // Add this to settings.js
 function previewReceiptTemplate(invoice) {
+  // Get language setting
+  const language = localStorage.getItem("language") || "en";
+  const isRTL = language === "ar";
+
   // Get custom settings from localStorage
   const companyName = localStorage.getItem("companyName") || "ShopSmart";
   const companyTagline =
@@ -750,8 +754,17 @@ function previewReceiptTemplate(invoice) {
 
   // Format the date
   const receiptDate = new Date(invoice.date);
-  const formattedDate = receiptDate.toLocaleDateString();
-  const formattedTime = receiptDate.toLocaleTimeString();
+  const dateOptions = { year: "numeric", month: "long", day: "numeric" };
+  const timeOptions = { hour: "2-digit", minute: "2-digit" };
+
+  // Format date based on language
+  const formattedDate = isRTL
+    ? receiptDate.toLocaleDateString("ar-SA", dateOptions)
+    : receiptDate.toLocaleDateString("en-US", dateOptions);
+
+  const formattedTime = isRTL
+    ? receiptDate.toLocaleTimeString("ar-SA", timeOptions)
+    : receiptDate.toLocaleTimeString("en-US", timeOptions);
 
   // Prepare logo - either custom or text
   let logoHtml;
@@ -764,38 +777,102 @@ function previewReceiptTemplate(invoice) {
                 <div style="font-size: 12px; color: #666;">${companyTagline}</div>`;
   }
 
-  // Generate receipt HTML
+  // Apply RTL direction for Arabic
+  const rtlStyle = isRTL ? "direction: rtl; text-align: right;" : "";
+  const textAlignEnd = isRTL ? "text-align: left;" : "text-align: right;";
+  const textAlignStart = isRTL ? "text-align: right;" : "text-align: left;";
+
+  // Generate receipt items HTML with translations
+  const itemsHtml = invoice.items
+    .map(
+      (item) => `
+      <tr>
+        <td style="${textAlignStart}">${item.name}</td>
+        <td style="text-align: center;">${item.quantity}</td>
+        <td style="${textAlignEnd}">${formatCurrency(item.price)}</td>
+        <td style="${textAlignEnd}">${formatCurrency(
+        item.price * item.quantity
+      )}</td>
+      </tr>
+    `
+    )
+    .join("");
+
+  // Translate static text using t() function
+  const receiptLabel = window.t ? window.t("billing.receipt.sale") : "RECEIPT";
+  const receiptNumberLabel = window.t
+    ? window.t("billing.receipt.receiptNumber")
+    : "Receipt #:";
+  const dateLabel = window.t ? window.t("billing.receipt.date") : "Date:";
+  const timeLabel = window.t ? window.t("billing.receipt.time") : "Time:";
+  const customerLabel = window.t
+    ? window.t("billing.receipt.customer")
+    : "Customer:";
+  const itemLabel = window.t ? window.t("billing.receipt.item") : "Item";
+  const qtyLabel = window.t ? window.t("billing.receipt.qty") : "Qty";
+  const priceLabel = window.t ? window.t("billing.receipt.price") : "Price";
+  const totalLabel = window.t ? window.t("billing.receipt.total") : "Total";
+  const subtotalLabel = window.t
+    ? window.t("billing.receipt.subtotal")
+    : "Subtotal:";
+  const discountLabel = window.t
+    ? window.t("billing.receipt.discount")
+    : "Discount:";
+  const taxLabel = window.t ? window.t("billing.receipt.tax") : "Tax:";
+  const totalLabelBold = window.t
+    ? window.t("billing.receipt.total")
+    : "TOTAL:";
+  const paymentMethodLabel = window.t
+    ? window.t("billing.receipt.paymentMethod")
+    : "Payment Method:";
+  const cashLabel = window.t ? window.t("billing.receipt.cash") : "Cash";
+  const amountTenderedLabel = window.t
+    ? window.t("billing.receipt.amountTendered")
+    : "Amount Tendered:";
+  const changeLabel = window.t ? window.t("billing.receipt.change") : "Change:";
+  const customerSupportLabel = window.t
+    ? window.t("billing.receipt.customerSupport")
+    : "Customer support:";
+  const poweredByLabel = window.t
+    ? window.t("billing.receipt.poweredBy")
+    : "Powered by MZLAD Billing System v2.1";
+  const phoneLabel = window.t ? window.t("billing.receipt.phone") : "Tel:";
+  const emailLabel = window.t ? window.t("billing.receipt.email") : "Email:";
+
+  // Generate receipt HTML with proper RTL support
   return `
-    <div class="professional-receipt" style="font-family: Arial, sans-serif; max-width: 300px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+    <div class="professional-receipt" style="font-family: ${
+      isRTL ? "Amiri, Arial" : "Arial"
+    }, sans-serif; max-width: 300px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; ${rtlStyle}">
       <div style="text-align: center; margin-bottom: 15px;">
         ${logoHtml}
       </div>
       
       <div style="text-align: center; margin-bottom: 10px; font-size: 11px;">
         <p style="margin: 2px 0;">${companyAddress}</p>
-        <p style="margin: 2px 0;">Tel: ${companyPhone} | Email: ${companyEmail}</p>
+        <p style="margin: 2px 0;">${phoneLabel} ${companyPhone} | ${emailLabel} ${companyEmail}</p>
         <p style="margin: 2px 0;">${companyWebsite}</p>
       </div>
       
       <div style="background-color: #f0f0f0; padding: 3px; text-align: center; font-weight: bold; border-radius: 4px; margin: 8px 0;">
-        RECEIPT
+        ${receiptLabel}
       </div>
       
       <div style="margin-bottom: 15px;">
         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
-          <div style="font-weight: bold;">Receipt #:</div>
+          <div style="font-weight: bold;">${receiptNumberLabel}</div>
           <div>${invoice.id}</div>
         </div>
         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
-          <div style="font-weight: bold;">Date:</div>
+          <div style="font-weight: bold;">${dateLabel}</div>
           <div>${formattedDate}</div>
         </div>
         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
-          <div style="font-weight: bold;">Time:</div>
+          <div style="font-weight: bold;">${timeLabel}</div>
           <div>${formattedTime}</div>
         </div>
         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
-          <div style="font-weight: bold;">Customer:</div>
+          <div style="font-weight: bold;">${customerLabel}</div>
           <div>${invoice.customer}</div>
         </div>
       </div>
@@ -804,57 +881,44 @@ function previewReceiptTemplate(invoice) {
       
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
         <tr>
-          <th style="text-align: left; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Item</th>
-          <th style="text-align: center; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Qty</th>
-          <th style="text-align: right; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Price</th>
-          <th style="text-align: right; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">Total</th>
+          <th style="${textAlignStart} padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">${itemLabel}</th>
+          <th style="text-align: center; padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">${qtyLabel}</th>
+          <th style="${textAlignEnd} padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">${priceLabel}</th>
+          <th style="${textAlignEnd} padding-bottom: 5px; border-bottom: 1px solid ${themeColor};">${totalLabel}</th>
         </tr>
         
-        ${invoice.items
-          .map(
-            (item) => `
-          <tr>
-            <td>${item.name}</td>
-            <td style="text-align: center;">${item.quantity}</td>
-            <td style="text-align: right;">${formatCurrency(item.price)}</td>
-            <td style="text-align: right;">${formatCurrency(
-              item.price * item.quantity
-            )}</td>
-          </tr>
-        `
-          )
-          .join("")}
+        ${itemsHtml}
         
         <tr>
-          <td colspan="3" style="text-align: right; padding-top: 5px;">Subtotal:</td>
-          <td style="text-align: right; padding-top: 5px;">${formatCurrency(
-            invoice.subtotal
-          )}</td>
+          <td colspan="3" style="${textAlignEnd} padding-top: 5px;">${subtotalLabel}</td>
+          <td style="${textAlignEnd} padding-top: 5px;">${formatCurrency(
+    invoice.subtotal
+  )}</td>
         </tr>
         
         ${
           invoice.discount
             ? `
         <tr>
-          <td colspan="3" style="text-align: right; padding-top: 5px;">Discount:</td>
-          <td style="text-align: right; padding-top: 5px; color: #d32f2f;">-${formatCurrency(
-            invoice.discount
-          )}</td>
+          <td colspan="3" style="${textAlignEnd} padding-top: 5px;">${discountLabel}</td>
+          <td style="${textAlignEnd} padding-top: 5px; color: #d32f2f;">-${formatCurrency(
+                invoice.discount
+              )}</td>
         </tr>
         `
             : ""
         }
         
         <tr>
-          <td colspan="3" style="text-align: right; padding-top: 5px;">Tax:</td>
-          <td style="text-align: right; padding-top: 5px;">${formatCurrency(
-            invoice.tax
-          )}</td>
+          <td colspan="3" style="${textAlignEnd} padding-top: 5px;">${taxLabel}</td>
+          <td style="${textAlignEnd} padding-top: 5px;">${formatCurrency(
+    invoice.tax
+  )}</td>
         </tr>
         
         <tr>
-          <td colspan="3" style="text-align: right; padding-top: 8px; font-weight: bold;">TOTAL:</td>
-          <td style="text-align: right; padding-top: 8px; font-weight: bold; color: ${themeColor};">${formatCurrency(
+          <td colspan="3" style="${textAlignEnd} padding-top: 8px; font-weight: bold;">${totalLabelBold}</td>
+          <td style="${textAlignEnd} padding-top: 8px; font-weight: bold; color: ${themeColor};">${formatCurrency(
     invoice.total
   )}</td>
         </tr>
@@ -864,15 +928,15 @@ function previewReceiptTemplate(invoice) {
       
       <div style="margin-bottom: 15px;">
         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
-          <div style="font-weight: bold;">Payment Method:</div>
-          <div>Cash</div>
+          <div style="font-weight: bold;">${paymentMethodLabel}</div>
+          <div>${cashLabel}</div>
         </div>
         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
-          <div style="font-weight: bold;">Amount Tendered:</div>
+          <div style="font-weight: bold;">${amountTenderedLabel}</div>
           <div>${formatCurrency(Math.ceil(invoice.total / 5) * 5)}</div>
         </div>
         <div style="display: flex; justify-content: space-between; margin: 3px 0;">
-          <div style="font-weight: bold;">Change:</div>
+          <div style="font-weight: bold;">${changeLabel}</div>
           <div>${formatCurrency(
             Math.ceil(invoice.total / 5) * 5 - invoice.total
           )}</div>
@@ -884,21 +948,32 @@ function previewReceiptTemplate(invoice) {
       <div style="text-align: center; font-size: 10px;">
         <p style="font-size: 12px; font-weight: bold; margin: 10px 0 5px; color: ${themeColor};">${receiptFooter}</p>
         <p style="margin: 5px 0;">${returnPolicy}</p>
-        <p style="margin: 5px 0;">Customer support: ${companyEmail}</p>
-        <p style="margin-top: 15px; font-size: 9px; color: #999;">Powered by MZLAD Billing System v2.1</p>
+        <p style="margin: 5px 0;">${customerSupportLabel} ${companyEmail}</p>
+        <p style="margin-top: 15px; font-size: 9px; color: #999;">${poweredByLabel}</p>
       </div>
     </div>
   `;
 }
-function formatCurrency(amount) {
-  const currency = localStorage.getItem("currency") || "USD";
-  const symbol = currency === "ILS" ? "₪" : "$";
-  return `${symbol}${parseFloat(amount).toFixed(2)}`;
-}
-// Update the updateReceiptPreview function
+
+// Update function to load Arabic font if needed
 function updateReceiptPreview() {
   const previewContainer = document.getElementById("receipt-preview-container");
   if (!previewContainer) return;
+
+  // Add Arabic font if language is Arabic
+  const language = localStorage.getItem("language") || "en";
+  if (language === "ar") {
+    // Check if Arabic font is already loaded
+    const fontLink = document.getElementById("arabic-font-link-preview");
+    if (!fontLink) {
+      const link = document.createElement("link");
+      link.id = "arabic-font-link-preview";
+      link.rel = "stylesheet";
+      link.href =
+        "https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap";
+      document.head.appendChild(link);
+    }
+  }
 
   // Create sample invoice data for preview
   const sampleInvoice = {
@@ -923,7 +998,7 @@ function updateReceiptPreview() {
     total: 32.97,
   };
 
-  // Use our simplified preview function
+  // Use our enhanced preview function
   try {
     const receiptHtml = previewReceiptTemplate(sampleInvoice);
     previewContainer.innerHTML = receiptHtml;
@@ -937,6 +1012,53 @@ function updateReceiptPreview() {
       "</div>";
   }
 }
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount).toFixed(2)}`;
+}
+// Update the updateReceiptPreview function
+// function updateReceiptPreview() {
+//   const previewContainer = document.getElementById("receipt-preview-container");
+//   if (!previewContainer) return;
+
+//   // Create sample invoice data for preview
+//   const sampleInvoice = {
+//     id: "PREVIEW-1234",
+//     date: new Date().toISOString(),
+//     customer: "Sample Customer",
+//     items: [
+//       {
+//         name: "Product Sample",
+//         price: 19.99,
+//         quantity: 1,
+//       },
+//       {
+//         name: "Second Item",
+//         price: 9.99,
+//         quantity: 2,
+//       },
+//     ],
+//     subtotal: 39.97,
+//     discount: 10.0,
+//     tax: 3.0,
+//     total: 32.97,
+//   };
+
+//   // Use our simplified preview function
+//   try {
+//     const receiptHtml = previewReceiptTemplate(sampleInvoice);
+//     previewContainer.innerHTML = receiptHtml;
+//   } catch (error) {
+//     console.error("Error generating receipt preview:", error);
+//     previewContainer.innerHTML =
+//       "<div style='padding: 20px; color: red;'>" +
+//       (window.t
+//         ? window.t("receipt.previewError")
+//         : "Could not generate receipt preview") +
+//       "</div>";
+//   }
+// }
 function setupTabsNavigation() {
   const tabButtons = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".tab-content");
@@ -963,6 +1085,14 @@ function setupTabsNavigation() {
 }
 // Setup all event listeners
 function setupEventListeners() {
+  // Add language change listener for receipt preview
+  const languageSelect = document.getElementById("language-select");
+  if (languageSelect) {
+    languageSelect.addEventListener("change", function () {
+      // Update receipt preview after language change
+      setTimeout(updateReceiptPreview, 300);
+    });
+  }
   // Logo upload handlers
   // Logo upload handlers
   const browseLogoButton = document.getElementById("browse-logo");

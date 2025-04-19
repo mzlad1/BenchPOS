@@ -124,12 +124,12 @@ function renderProducts(productsToRender) {
       document.querySelector(".loading-indicator")?.remove();
 
       // Create pagination after products are loaded
-      createPaginationControls(productsToRender.length, totalPages);
+      // createPaginationControls(productsToRender.length, totalPages);
     }, 10);
   } else {
     // For smaller datasets, render synchronously
     renderProductBatch(productsToRender.slice(startIndex, endIndex));
-    createPaginationControls(productsToRender.length, totalPages);
+    // createPaginationControls(productsToRender.length, totalPages);
   }
 }
 
@@ -168,75 +168,75 @@ function renderProductBatch(products) {
 }
 
 // Add this new function to create pagination controls
-function createPaginationControls(totalProducts, totalPages) {
-  // Check if pagination already exists and remove it
-  const existingPagination = document.querySelector(".pagination-controls");
-  if (existingPagination) {
-    existingPagination.remove();
-  }
+// function createPaginationControls(totalProducts, totalPages) {
+//   // Check if pagination already exists and remove it
+//   const existingPagination = document.querySelector(".pagination-controls");
+//   if (existingPagination) {
+//     existingPagination.remove();
+//   }
 
-  // Create pagination container
-  const paginationEl = document.createElement("div");
-  paginationEl.className = "pagination-controls";
+//   // Create pagination container
+//   const paginationEl = document.createElement("div");
+//   paginationEl.className = "pagination-controls";
 
-  // Add product count information
-  const productCountEl = document.createElement("div");
-  productCountEl.className = "product-count";
-  productCountEl.textContent = t("pagination.showing", {
-    shown: Math.min(productsPerPage, totalProducts),
-    total: totalProducts,
-  });
-  paginationEl.appendChild(productCountEl);
+//   // Add product count information
+//   const productCountEl = document.createElement("div");
+//   productCountEl.className = "product-count";
+//   productCountEl.textContent = t("pagination.showing", {
+//     shown: Math.min(productsPerPage, totalProducts),
+//     total: totalProducts,
+//   });
+//   paginationEl.appendChild(productCountEl);
 
-  // Create page controls
-  const pageControlsEl = document.createElement("div");
-  pageControlsEl.className = "page-controls";
+//   // Create page controls
+//   const pageControlsEl = document.createElement("div");
+//   pageControlsEl.className = "page-controls";
 
-  // Previous button
-  const prevBtn = document.createElement("button");
-  prevBtn.className = "btn page-btn prev-btn";
-  prevBtn.textContent = t("pagination.previous");
-  prevBtn.disabled = currentPage === 1;
-  prevBtn.addEventListener("click", () => {
-    if (currentPage > 1) {
-      currentPage--;
-      renderProducts(products); // Re-render with the same products but on a new page
-    }
-  });
-  pageControlsEl.appendChild(prevBtn);
+//   // Previous button
+//   const prevBtn = document.createElement("button");
+//   prevBtn.className = "btn page-btn prev-btn";
+//   prevBtn.textContent = t("pagination.previous");
+//   prevBtn.disabled = currentPage === 1;
+//   prevBtn.addEventListener("click", () => {
+//     if (currentPage > 1) {
+//       currentPage--;
+//       renderProducts(products); // Re-render with the same products but on a new page
+//     }
+//   });
+//   pageControlsEl.appendChild(prevBtn);
 
-  // Page indicator
-  const pageIndicator = document.createElement("span");
-  pageIndicator.className = "page-indicator";
-  pageIndicator.textContent = t("pagination.pageOf", {
-    current: currentPage,
-    total: totalPages,
-  });
-  pageControlsEl.appendChild(pageIndicator);
+//   // Page indicator
+//   const pageIndicator = document.createElement("span");
+//   pageIndicator.className = "page-indicator";
+//   pageIndicator.textContent = t("pagination.pageOf", {
+//     current: currentPage,
+//     total: totalPages,
+//   });
+//   pageControlsEl.appendChild(pageIndicator);
 
-  // Next button
-  const nextBtn = document.createElement("button");
-  nextBtn.className = "btn page-btn next-btn";
-  nextBtn.textContent = t("pagination.next");
-  nextBtn.disabled = currentPage === totalPages;
-  nextBtn.addEventListener("click", () => {
-    if (currentPage < totalPages) {
-      currentPage++;
-      renderProducts(products); // Re-render with the same products but on a new page
-    }
-  });
-  pageControlsEl.appendChild(nextBtn);
+//   // Next button
+//   const nextBtn = document.createElement("button");
+//   nextBtn.className = "btn page-btn next-btn";
+//   nextBtn.textContent = t("pagination.next");
+//   nextBtn.disabled = currentPage === totalPages;
+//   nextBtn.addEventListener("click", () => {
+//     if (currentPage < totalPages) {
+//       currentPage++;
+//       renderProducts(products); // Re-render with the same products but on a new page
+//     }
+//   });
+//   pageControlsEl.appendChild(nextBtn);
 
-  paginationEl.appendChild(pageControlsEl);
+//   paginationEl.appendChild(pageControlsEl);
 
-  // Insert pagination controls after the products list
-  if (productsListEl && productsListEl.parentNode) {
-    productsListEl.parentNode.insertBefore(
-      paginationEl,
-      productsListEl.nextSibling
-    );
-  }
-}
+//   // Insert pagination controls after the products list
+//   if (productsListEl && productsListEl.parentNode) {
+//     productsListEl.parentNode.insertBefore(
+//       paginationEl,
+//       productsListEl.nextSibling
+//     );
+//   }
+// }
 
 function showToastNotification(message, isError = false, duration = 3000) {
   let notification = document.getElementById("toast-notification");
@@ -462,7 +462,7 @@ function fixProductCardHeight() {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 20px;
-      align-items: start; /* Prevent stretching */
+      // align-items: start; 
       height: auto; /* Don't force a specific height */
       max-height: 65vh; /* Limit maximum height */
     }

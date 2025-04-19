@@ -424,7 +424,13 @@ async function loadProducts() {
     const options = {
       page: currentPage,
       pageSize: pageSize,
-      filters: {}, // We'll use this for search/filtering later
+      filters: {},
+      sort: {
+        field: "sku",
+        order: "asc",
+      },
+      // Add a flag to indicate that sorting should be applied to the entire dataset
+      globalSort: true,
     };
 
     // Get search term if any
@@ -454,11 +460,21 @@ async function loadProducts() {
       totalPages = result.totalPages;
       currentPage = result.page;
 
+      // We don't need to sort here if the API handles global sorting correctly
+      // Only sort as a fallback if we know the API isn't sorting globally
+      if (!options.globalSort) {
+        products.sort(compareSKU);
+      }
+
       // Pass only the items for rendering
       renderProducts(products, true, result.totalCount);
     } else {
       // Fallback for backward compatibility if server didn't return paginated format
       products = result || [];
+
+      // Always sort locally in this case since we have all products
+      products.sort(compareSKU);
+
       renderProducts(products);
     }
 
@@ -482,6 +498,21 @@ async function loadProducts() {
 
   window.LayoutManager.refreshInventoryBadge();
 }
+
+// Utility function to compare SKUs for sorting
+function compareSKU(a, b) {
+  const skuA = (a.sku || "").toString().toLowerCase();
+  const skuB = (b.sku || "").toString().toLowerCase();
+
+  // Try to compare as numbers if both SKUs are numeric
+  if (!isNaN(skuA) && !isNaN(skuB)) {
+    return parseFloat(skuA) - parseFloat(skuB);
+  }
+
+  // Otherwise compare as strings
+  return skuA.localeCompare(skuB);
+}
+
 async function getLowStockCount() {
   try {
     // This could be a specialized API call that just returns the count

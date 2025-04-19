@@ -823,7 +823,7 @@
 
 //   return `
 //     <div class="receipt-header">
-//       <h2>MZLAD Billing System</h2>
+//       <h2>BenchPOS</h2>
 //       <p>123 Main Street, Anytown, USA</p>
 //       <p>Tel: (555) 123-4567</p>
 //     </div>
@@ -3745,7 +3745,7 @@
 
 //   return `
 //     <div class="receipt-header">
-//       <h2>MZLAD Billing System</h2>
+//       <h2>BenchPOS</h2>
 //       <p>123 Main Street, Anytown, USA</p>
 //       <p>Tel: (555) 123-4567</p>
 //       <h3>${transactionType}</h3>
