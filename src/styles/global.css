@@ -376,13 +376,19 @@ a {
 }
 
 .user-role {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
 }
 
+.user-role {
+  background-color: rgba(86, 83, 163, 0.1);
+  color: var(--primary-color, #5653a3);
+}
 .logout-btn {
   position: absolute;
   right: 0.75rem;

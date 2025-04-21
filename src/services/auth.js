@@ -27,7 +27,9 @@ let currentUser = null;
 // Get user credentials from secure store
 const getUserCredentials = () => {
   try {
-    return secureStore.load();
+    const credentials = secureStore.load();
+    console.log("Loaded credentials:", credentials ? "exists" : "none");
+    return credentials;
   } catch (error) {
     console.error("Error loading credentials from secure store:", error);
     return null;
@@ -236,15 +238,17 @@ async function loginUser({
 
             // Create success result
             const result = { success: true, user: userData };
-
             if (remember) {
-              // Store encrypted credentials using secureStore
-              secureStore.set("userCredentials", {
+              // Store encrypted password (not hash) for auto-login
+              const encryptedPassword = secureStore.encrypt(password);
+              const userCredentials = {
                 email: email.toLowerCase(),
-                passwordHash: password ? bcrypt.hashSync(password, salt) : null,
+                encryptedPassword: encryptedPassword,
                 timestamp: new Date().toISOString(),
-              });
+              };
 
+              // Save the credentials object directly
+              secureStore.save(userCredentials);
               console.log("User credentials saved for auto-login");
             }
 
@@ -974,10 +978,10 @@ async function logoutUser() {
     // IMPORTANT: Clear secure storage
     try {
       secureStore.save(null); // Clear the secure store
+      console.log("Cleared secure store");
     } catch (error) {
       console.error("Error clearing secure storage:", error);
     }
-
     // Don't try to use localStorage in the main process
     // Instead, you can clear user settings in electron-store if needed
     try {
@@ -1025,12 +1029,18 @@ function checkPermission(permission) {
 async function restoreSession() {
   try {
     const credentials = getUserCredentials();
+    console.log("Restoring session with credentials:", credentials);
 
-    if (credentials && credentials.email) {
+    if (credentials && credentials.email && credentials.encryptedPassword) {
       console.log("Attempting to restore session for:", credentials.email);
+
+      // Decrypt the password
+      const password = secureStore.decrypt(credentials.encryptedPassword);
+      console.log("Decrypted password:", password ? "exists" : "none");
+
       return await loginUser({
         email: credentials.email,
-        password: credentials.password,
+        password: password,
         remember: true,
         isRestoring: true,
       });
@@ -1076,5 +1086,6 @@ module.exports = {
   deleteUser,
   updateUser,
   diagnoseFBAuth,
+  restoreSession, // Add this line
   db,
 };

@@ -197,6 +197,11 @@ function generateReceiptHtml(invoice) {
   `;
 }
 
+// Explicitly expose the functions to the global window object to ensure they're accessible across files
+window.generateReceiptHtml = generateReceiptHtml;
+window.formatCurrency = formatCurrency;
+window.showToastNotification = showToastNotification;
+
 // Print receipt
 // Completely revised print receipt function that bypasses the API
 async function printReceipt() {

@@ -399,10 +399,16 @@
           }
 
           // Initialize layout with current page identifier
+          // Initialize layout with current page identifier
           await LayoutManager.init("dashboard");
 
-          console.log("Layout initialized for dashboard");
-
+          // Initialize login sync dialog
+          if (window.initLoginSyncDialog) {
+            window.initLoginSyncDialog();
+            console.log("Login sync dialog initialized");
+          } else {
+            console.warn("Login sync dialog initialization function not found");
+          }
           // Force apply translations after layout is loaded
           if (
             window.forceApplyTranslations &&

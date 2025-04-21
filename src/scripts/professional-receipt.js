@@ -281,7 +281,7 @@ function generateProfessionalReceipt(invoice) {
     </div>
   `;
 }
-
+window.generateProfessionalReceipt = generateProfessionalReceipt;
 // Update styles function to support RTL for Arabic
 function updateReceiptStyles() {
   // Get theme color and language from localStorage

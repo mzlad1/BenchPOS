@@ -9,6 +9,9 @@ const https = require("https");
 const localStore = new Store({
   name: "shop-billing-local-data",
 });
+
+// Existing import in your index.js
+
 // Near the top of your file with other imports
 const dotenv = require("dotenv");
 // Load environment variables
@@ -82,7 +85,7 @@ try {
 }
 
 // Add near the top where you initialize services (around line 100)
-
+let syncService = require("./services/simplified-sync");
 // Create a global auth request handler that firebase.js can use
 global.requestFirebaseAuth = async () => {
   return new Promise((resolve) => {
@@ -194,7 +197,6 @@ global.requestFirebaseAuth = async () => {
 };
 
 // Initialize sync service
-let syncService = null;
 try {
   syncService = require("./services/simplified-sync");
   console.log("Sync service loaded successfully");
@@ -802,6 +804,9 @@ setupIpcHandlers();
 
 function setupIpcHandlers() {
   // Online status and sync handlers
+  ipcMain.handle("restore-session", async () => {
+    return await authService.restoreSession();
+  });
   // Auto-update handlers
   ipcMain.handle("check-for-updates", async () => {
     log.info("Manually checking for updates...");
@@ -1050,10 +1055,17 @@ function setupIpcHandlers() {
 
   ipcMain.handle("get-products", async (event, options = {}) => {
     try {
-      const { page = 1, pageSize = 0, filters = {}, stats = false } = options;
+      const {
+        page = 1,
+        pageSize = 0,
+        filters = {},
+        sort = { field: "sku", order: "asc" },
+        stats = false,
+        statsOnly = false,
+      } = options;
 
-      // If stats requested, return just the stats
-      if (stats) {
+      // If we only need stats, return just that
+      if (stats && statsOnly) {
         const allProducts = localStore.get("products") || [];
         return {
           stats: {
@@ -1072,6 +1084,23 @@ function setupIpcHandlers() {
       if (filters.lowStock) {
         const allProducts = localStore.get("products") || [];
         const lowStockProducts = allProducts.filter((p) => (p.stock || 0) <= 5);
+
+        // Sort the products by SKU
+        lowStockProducts.sort((a, b) => {
+          const skuA = (a.sku || "").toString().toLowerCase();
+          const skuB = (b.sku || "").toString().toLowerCase();
+
+          // Try to compare as numbers if both SKUs are numeric
+          if (!isNaN(skuA) && !isNaN(skuB)) {
+            return parseFloat(skuA) - parseFloat(skuB);
+          }
+
+          // Otherwise compare as strings
+          return sort.order === "asc"
+            ? skuA.localeCompare(skuB)
+            : skuB.localeCompare(skuA);
+        });
+
         return {
           items: lowStockProducts,
           totalCount: lowStockProducts.length,
@@ -1080,59 +1109,190 @@ function setupIpcHandlers() {
         };
       }
 
+      // Try to use Firebase if available
       if (firebaseService && typeof firebaseService.getAll === "function") {
-        // If pageSize is 0, get all products (backward compatibility)
-        if (pageSize === 0) {
-          return await firebaseService.getAll("products");
+        try {
+          // If pageSize is 0, get all products (backward compatibility)
+          if (pageSize === 0) {
+            const allProducts = await firebaseService.getAll("products");
+
+            // Make sure we return consistent format
+            if (Array.isArray(allProducts)) {
+              // Sort by SKU
+              allProducts.sort((a, b) => {
+                const skuA = (a.sku || "").toString().toLowerCase();
+                const skuB = (b.sku || "").toString().toLowerCase();
+
+                // Try to compare as numbers if both SKUs are numeric
+                if (!isNaN(skuA) && !isNaN(skuB)) {
+                  return parseFloat(skuA) - parseFloat(skuB);
+                }
+
+                // Otherwise compare as strings
+                return sort.order === "asc"
+                  ? skuA.localeCompare(skuB)
+                  : skuB.localeCompare(skuA);
+              });
+
+              return allProducts;
+            }
+            return allProducts;
+          }
+
+          // Pass the sort option to Firebase paged products method
+          const result = await firebaseService.getPagedProducts(
+            "products",
+            page,
+            pageSize,
+            filters,
+            sort // Make sure your Firebase service accepts this parameter
+          );
+
+          // If the result doesn't have the items property, format it properly
+          if (result && !result.items && Array.isArray(result)) {
+            return {
+              items: result,
+              totalCount: result.length,
+              page: page,
+              totalPages: Math.ceil(
+                result.length / (pageSize || result.length)
+              ),
+            };
+          }
+
+          return result;
+        } catch (firebaseError) {
+          console.error(
+            "Firebase error, falling back to local storage:",
+            firebaseError
+          );
+          // Continue to local storage fallback
         }
-
-        // Otherwise use the new paginated method
-        return await firebaseService.getPagedProducts(
-          "products",
-          page,
-          pageSize,
-          filters
-        );
-      } else {
-        throw new Error("Firebase service not available");
       }
-    } catch (error) {
-      console.log("Using local storage for get-products:", error.message);
 
-      // For local storage, we'll implement pagination manually
+      // Local storage fallback with improved filtering and sorting
       let products = localStore.get("products") || [];
 
-      // Apply filters if provided
-      if (options && options.filters) {
-        const filters = options.filters;
+      // Apply filters
+      if (filters) {
         if (filters.category) {
-          products = products.filter((p) => p.category === filters.category);
+          const category = filters.category.toLowerCase();
+          products = products.filter(
+            (p) => p.category && p.category.toLowerCase() === category
+          );
         }
+
+        if (filters.sku) {
+          const sku = filters.sku.toLowerCase();
+          products = products.filter(
+            (p) => p.sku && p.sku.toLowerCase().includes(sku)
+          );
+        }
+
+        if (filters.name) {
+          const name = filters.name.toLowerCase();
+          products = products.filter(
+            (p) => p.name && p.name.toLowerCase().includes(name)
+          );
+        }
+
         if (filters.search) {
           const search = filters.search.toLowerCase();
           products = products.filter(
             (p) =>
-              p.name?.toLowerCase().includes(search) ||
-              p.sku?.toLowerCase().includes(search)
+              (p.name && p.name.toLowerCase().includes(search)) ||
+              (p.sku && p.sku.toLowerCase().includes(search)) ||
+              (p.category && p.category.toLowerCase().includes(search))
           );
         }
       }
 
+      // Sort products by the specified field (default to SKU)
+      const sortField = sort.field || "sku";
+      const sortOrder = sort.order || "asc";
+
+      products.sort((a, b) => {
+        // Handle SKU sorting specially for numeric vs string comparison
+        if (sortField === "sku") {
+          const skuA = (a.sku || "").toString().toLowerCase();
+          const skuB = (b.sku || "").toString().toLowerCase();
+
+          // Try to compare as numbers if both SKUs are numeric
+          if (!isNaN(skuA) && !isNaN(skuB)) {
+            return sortOrder === "asc"
+              ? parseFloat(skuA) - parseFloat(skuB)
+              : parseFloat(skuB) - parseFloat(skuA);
+          }
+
+          // Otherwise compare as strings
+          return sortOrder === "asc"
+            ? skuA.localeCompare(skuB)
+            : skuB.localeCompare(skuA);
+        }
+
+        // For other fields
+        const valA = (a[sortField] || "").toString().toLowerCase();
+        const valB = (b[sortField] || "").toString().toLowerCase();
+
+        // Try numeric sorting if both values are numbers
+        if (!isNaN(valA) && !isNaN(valB)) {
+          return sortOrder === "asc"
+            ? parseFloat(valA) - parseFloat(valB)
+            : parseFloat(valB) - parseFloat(valA);
+        }
+
+        // Default string comparison
+        return sortOrder === "asc"
+          ? valA.localeCompare(valB)
+          : valB.localeCompare(valA);
+      });
+
+      // If stats are requested alongside the data, include them
+      const statsData = stats
+        ? {
+            stats: {
+              totalProducts: products.length,
+              totalValue: products.reduce(
+                (sum, p) => sum + (p.price || 0) * (p.stock || 0),
+                0
+              ),
+              lowStockCount: products.filter((p) => (p.stock || 0) <= 5).length,
+            },
+          }
+        : {};
+
       // Apply pagination if requested
-      if (options && options.page && options.pageSize) {
-        const startIdx = (options.page - 1) * options.pageSize;
-        const endIdx = startIdx + options.pageSize;
+      if (pageSize > 0) {
+        const startIdx = (page - 1) * pageSize;
+        const endIdx = startIdx + pageSize;
+        const totalPages = Math.ceil(products.length / pageSize);
 
         return {
           items: products.slice(startIdx, endIdx),
           totalCount: products.length,
-          page: options.page,
-          totalPages: Math.ceil(products.length / options.pageSize),
+          page: page,
+          totalPages: totalPages,
+          ...statsData,
         };
       }
 
-      // Otherwise return all products
-      return products;
+      // Otherwise return all products with a consistent format
+      return {
+        items: products,
+        totalCount: products.length,
+        page: 1,
+        totalPages: 1,
+        ...statsData,
+      };
+    } catch (error) {
+      console.error("Error in get-products:", error);
+      // Return a safe default on error
+      return {
+        items: [],
+        totalCount: 0,
+        page: 1,
+        totalPages: 0,
+      };
     }
   });
   ipcMain.handle("diagnoseFBAuth", async (event, email) => {
@@ -1342,7 +1502,10 @@ function setupIpcHandlers() {
       );
 
       if (result.success) {
-        // Success handling...
+        // After successful login, check for unsynced data
+        setTimeout(() => {
+          checkForUnsyncedDataAfterLogin();
+        }, 2000); // Give time for the window to load
       } else {
         console.warn("Login failed:", result.message);
       }
@@ -1637,3 +1800,37 @@ app.on("web-contents-created", (event, contents) => {
     }
   );
 });
+async function checkForUnsyncedDataAfterLogin() {
+  if (!isOnline || !db) return;
+
+  try {
+    const result = await syncService.checkUnsyncedData(db);
+
+    // Only show dialog if there are actually items to sync
+    if (
+      result.success &&
+      result.hasUnsyncedData &&
+      result.totalUnsyncedItems > 0
+    ) {
+      // Double-check that at least one collection has items to sync
+      let hasItemsToSync = false;
+      for (const [collection, counts] of Object.entries(
+        result.unsyncedCounts || {}
+      )) {
+        if (counts.total > 0) {
+          hasItemsToSync = true;
+          break;
+        }
+      }
+
+      if (hasItemsToSync) {
+        mainWindow.webContents.send("unsynced-data-available", {
+          unsyncedCounts: result.unsyncedCounts,
+          totalUnsyncedItems: result.totalUnsyncedItems,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Error checking for unsynced data:", error);
+  }
+}

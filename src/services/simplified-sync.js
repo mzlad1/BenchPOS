@@ -48,23 +48,34 @@ async function checkUnsyncedData(db) {
       const localItems = localStore.get(collectionName) || [];
 
       // Get cloud data
-      const querySnapshot = await getDocs(collection(db, collectionName));
-      const cloudItems = querySnapshot.docs.map((doc) => doc.data());
+      let cloudItems = [];
+      try {
+        const querySnapshot = await getDocs(collection(db, collectionName));
+        cloudItems = querySnapshot.docs.map((doc) => doc.data());
+      } catch (error) {
+        console.error(
+          `Error fetching cloud data for ${collectionName}:`,
+          error
+        );
+        // Continue with empty cloud items
+      }
 
       // Find items that only exist locally (need to be uploaded)
-      const cloudIds = cloudItems.map((item) => item.id);
+      const cloudIds = cloudItems.map((item) => item.id).filter((id) => id);
       const localOnlyItems = localItems.filter(
-        (item) => !cloudIds.includes(item.id)
+        (item) => item.id && !cloudIds.includes(item.id)
       );
 
       // Find items that only exist in cloud (need to be downloaded)
-      const localIds = localItems.map((item) => item.id);
+      const localIds = localItems.map((item) => item.id).filter((id) => id);
       const cloudOnlyItems = cloudItems.filter(
-        (item) => !localIds.includes(item.id)
+        (item) => item.id && !localIds.includes(item.id)
       );
 
       // Find conflicting items (exist in both but with different updatedAt)
       const conflictingItems = localItems.filter((localItem) => {
+        if (!localItem.id) return false;
+
         const cloudItem = cloudItems.find((item) => item.id === localItem.id);
         if (!cloudItem) return false;
 
@@ -83,6 +94,7 @@ async function checkUnsyncedData(db) {
       const unsyncedItemCount =
         localOnlyItems.length + cloudOnlyItems.length + conflictingItems.length;
 
+      // Only add to unsyncedCounts if there are actually items to sync
       if (unsyncedItemCount > 0) {
         unsyncedCounts[collectionName] = {
           toUpload: localOnlyItems.length,

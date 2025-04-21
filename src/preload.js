@@ -284,6 +284,7 @@ contextBridge.exposeInMainWorld("api", {
     console.log("Preload: Calling check-permission", permission);
     return await safeIpcInvoke("check-permission", permission);
   },
+  restoreSession: () => ipcRenderer.invoke("restore-session"),
 
   // Utility functions
   printReceipt: async (invoiceData) => {

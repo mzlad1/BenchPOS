@@ -9,7 +9,7 @@ let validationTimers = {};
 let isLoggingIn = false;
 
 // Define translation function (used before i18n is fully loaded)
-const t = function(key, args) {
+const t = function (key, args) {
   // Get the current selected language
   const lang = localStorage.getItem("language") || "en";
 
@@ -24,10 +24,10 @@ const t = function(key, args) {
 
   // First check if i18n is fully initialized and has this key
   if (
-      window.i18n &&
-      window.i18n.translations &&
-      window.i18n.translations[lang] &&
-      window.i18n.translations[lang][key]
+    window.i18n &&
+    window.i18n.translations &&
+    window.i18n.translations[lang] &&
+    window.i18n.translations[lang][key]
   ) {
     return processTemplate(window.i18n.translations[lang][key], args);
   }
@@ -37,16 +37,19 @@ const t = function(key, args) {
 };
 
 // Wrap your code in DOMContentLoaded event to ensure elements exist
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Initialize i18n if available
-  if (window.i18n && typeof window.i18n.init === 'function') {
-    window.i18n.init().then(() => {
-      console.log('i18n initialized successfully');
-    }).catch(err => {
-      console.error('Error initializing i18n:', err);
-    });
+  if (window.i18n && typeof window.i18n.init === "function") {
+    window.i18n
+      .init()
+      .then(() => {
+        console.log("i18n initialized successfully");
+      })
+      .catch((err) => {
+        console.error("Error initializing i18n:", err);
+      });
   } else {
-    console.warn('i18n not available, using fallback translation function');
+    console.warn("i18n not available, using fallback translation function");
   }
 
   // Initialize language switcher
@@ -56,8 +59,11 @@ document.addEventListener("DOMContentLoaded", () => {
   applyLanguageDirection();
 
   // Force logout and clean storage
-  forceLogoutAndCleanStorage();
-
+  const loggedOut = sessionStorage.getItem("forcedLogout");
+  if (loggedOut === "true") {
+    forceLogoutAndCleanStorage();
+    sessionStorage.removeItem("forcedLogout");
+  }
   // Initialize page elements and state
   initPage();
 
@@ -70,7 +76,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize form validations
   initFormValidation();
 
-  // Check remembered user
+  // Attempt to restore session if remember me credentials exist
+  try {
+    if (window.api && typeof window.api.restoreSession === "function") {
+      const result = await window.api.restoreSession();
+      if (result.success) {
+        // Set the flag here since login.js is in the renderer process
+        sessionStorage.setItem("justLoggedIn", "true");
+
+        // Redirect to main app
+        window.location.href = "../index.html";
+        return;
+      }
+    }
+  } catch (error) {
+    console.error("Error restoring session:", error);
+  }
+
+  // If no auto-login, check for remembered email only
   checkRememberedUser();
 });
 
@@ -78,23 +101,23 @@ document.addEventListener("DOMContentLoaded", () => {
  * Initialize language switcher
  */
 function initLanguageSwitcher() {
-  const toggleBtn = document.getElementById('language-toggle-btn');
+  const toggleBtn = document.getElementById("language-toggle-btn");
   if (!toggleBtn) return;
 
-  toggleBtn.addEventListener('click', () => {
+  toggleBtn.addEventListener("click", () => {
     // Get current language
-    const currentLang = localStorage.getItem('language') || 'en';
+    const currentLang = localStorage.getItem("language") || "en";
     // Set new language
-    const newLang = currentLang === 'en' ? 'ar' : 'en';
+    const newLang = currentLang === "en" ? "ar" : "en";
 
-    if (window.i18n && typeof window.i18n.changeLanguage === 'function') {
+    if (window.i18n && typeof window.i18n.changeLanguage === "function") {
       // Use the i18n system if available
       window.i18n.changeLanguage(newLang).then(() => {
         console.log(`Language changed to ${newLang}`);
       });
     } else {
       // Fallback - just save preference and reload
-      localStorage.setItem('language', newLang);
+      localStorage.setItem("language", newLang);
       window.location.reload();
     }
   });
@@ -160,7 +183,10 @@ function setupEventListeners() {
     createAccountLink.addEventListener("click", (e) => {
       e.preventDefault();
       showNotification(
-          t("login.accountCreationDisabled", "Account creation is currently disabled in this version.")
+        t(
+          "login.accountCreationDisabled",
+          "Account creation is currently disabled in this version."
+        )
       );
     });
   }
@@ -211,12 +237,17 @@ function setupEventListeners() {
 function handleSocialLogin(e) {
   e.preventDefault();
   const provider = this.classList.contains("google")
-      ? "Google"
-      : this.classList.contains("microsoft")
-          ? "Microsoft"
-          : "Apple";
+    ? "Google"
+    : this.classList.contains("microsoft")
+    ? "Microsoft"
+    : "Apple";
 
-  showNotification(t("login.providerAvailableLater", `${provider} login will be available in the next release.`));
+  showNotification(
+    t(
+      "login.providerAvailableLater",
+      `${provider} login will be available in the next release.`
+    )
+  );
 }
 
 /**
@@ -406,14 +437,17 @@ function validateInput(input) {
 
   // Validate based on input type or data-validate attribute
   const validateType =
-      inputContainer.getAttribute("data-validate") || input.type;
+    inputContainer.getAttribute("data-validate") || input.type;
 
   switch (validateType) {
     case "email":
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(value)) {
         inputContainer.classList.add("invalid");
-        helperText.textContent = t("login.errors.invalidEmail", "Please enter a valid email address");
+        helperText.textContent = t(
+          "login.errors.invalidEmail",
+          "Please enter a valid email address"
+        );
         helperText.classList.add("error");
         return false;
       }
@@ -422,7 +456,10 @@ function validateInput(input) {
     case "password":
       if (value.length < 8) {
         inputContainer.classList.add("invalid");
-        helperText.textContent = t("login.errors.passwordLength", "Password must be at least 8 characters");
+        helperText.textContent = t(
+          "login.errors.passwordLength",
+          "Password must be at least 8 characters"
+        );
         helperText.classList.add("error");
         return false;
       }
@@ -468,8 +505,8 @@ function forceLogoutAndCleanStorage() {
     // 3. Clear cookies related to authentication
     document.cookie.split(";").forEach(function (c) {
       document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
 
     // 4. Set a local flag to indicate this is a fresh start
@@ -479,8 +516,8 @@ function forceLogoutAndCleanStorage() {
     if (window.api && typeof window.api.logoutUser === "function") {
       console.log("Calling API logout");
       window.api
-          .logoutUser()
-          .catch((e) => console.error("Error during API logout:", e));
+        .logoutUser()
+        .catch((e) => console.error("Error during API logout:", e));
     }
   } catch (error) {
     console.error("Error during forced logout:", error);
@@ -586,7 +623,10 @@ async function handleLogin(e) {
   const loginButton = document.getElementById("login-button");
   const originalText = loginButton.querySelector(".btn-text").textContent;
   loginButton.disabled = true;
-  loginButton.querySelector(".btn-text").textContent = t("login.loggingIn", "Logging in...");
+  loginButton.querySelector(".btn-text").textContent = t(
+    "login.loggingIn",
+    "Logging in..."
+  );
 
   try {
     const email = document.getElementById("email").value;
@@ -603,8 +643,8 @@ async function handleLogin(e) {
     } else {
       onlineStatus = navigator.onLine;
       console.log(
-          "window.api not available, using navigator.onLine:",
-          onlineStatus
+        "window.api not available, using navigator.onLine:",
+        onlineStatus
       );
     }
 
@@ -643,12 +683,20 @@ async function handleLogin(e) {
       window.location.href = "../index.html";
     } else {
       showError(
-          result.message || t("login.errors.checkCredentials", "Login failed. Please check your credentials.")
+        result.message ||
+          t(
+            "login.errors.checkCredentials",
+            "Login failed. Please check your credentials."
+          )
       );
     }
   } catch (error) {
     console.error("Login error:", error);
-    showError(t("login.errors.loginError", "Login error:") + " " + (error.message || t("login.errors.unknown", "Unknown error")));
+    showError(
+      t("login.errors.loginError", "Login error:") +
+        " " +
+        (error.message || t("login.errors.unknown", "Unknown error"))
+    );
   } finally {
     loginButton.disabled = false;
     loginButton.querySelector(".btn-text").textContent = originalText;
@@ -694,7 +742,12 @@ function testFirebaseAuthDirectly() {
   const password = document.getElementById("password").value;
 
   if (!email || !password) {
-    showError(t("login.errors.enterBoth", "Please enter both email and password to test authentication"));
+    showError(
+      t(
+        "login.errors.enterBoth",
+        "Please enter both email and password to test authentication"
+      )
+    );
     return;
   }
 
@@ -715,47 +768,57 @@ function testFirebaseAuthDirectly() {
 
   // Attempt to test Firebase auth directly
   window.api
-      .testFirebaseAuth({ email, password })
-      .then((result) => {
-        console.log("Direct Firebase auth test result:", result);
-        if (result.success) {
-          testButton.textContent = t("login.authTestSuccess", "Auth Test: SUCCESS");
-          testButton.style.backgroundColor = "#4CAF50";
-          testButton.style.color = "white";
-
-          // Show detailed success info
-          showNotification(
-              t("login.firebaseSuccess", "Firebase auth test succeeded! User:") + " " + result.user.email
-          );
-        } else {
-          testButton.textContent = t("login.authTestFailed", "Auth Test: FAILED");
-          testButton.style.backgroundColor = "#F44336";
-          testButton.style.color = "white";
-
-          // Show error details
-          showError(
-              t("login.firebaseError", "Firebase auth error:") + ` ${result.code || "unknown"} - ${
-                  result.message || t("login.noMessage", "No message")
-              }`
-          );
-        }
-      })
-      .catch((error) => {
-        console.error("Error during Firebase auth test:", error);
-        testButton.textContent = t("login.authTestError", "Auth Test: ERROR");
-        testButton.style.backgroundColor = "#FF9800";
+    .testFirebaseAuth({ email, password })
+    .then((result) => {
+      console.log("Direct Firebase auth test result:", result);
+      if (result.success) {
+        testButton.textContent = t(
+          "login.authTestSuccess",
+          "Auth Test: SUCCESS"
+        );
+        testButton.style.backgroundColor = "#4CAF50";
         testButton.style.color = "white";
 
-        showError(t("login.testFailed", "Firebase test failed:") + " " + (error.message || t("login.errors.unknown", "Unknown error")));
-      })
-      .finally(() => {
-        // Remove the button after 5 seconds
-        setTimeout(() => {
-          if (document.body.contains(testButton)) {
-            document.body.removeChild(testButton);
-          }
-        }, 5000);
-      });
+        // Show detailed success info
+        showNotification(
+          t("login.firebaseSuccess", "Firebase auth test succeeded! User:") +
+            " " +
+            result.user.email
+        );
+      } else {
+        testButton.textContent = t("login.authTestFailed", "Auth Test: FAILED");
+        testButton.style.backgroundColor = "#F44336";
+        testButton.style.color = "white";
+
+        // Show error details
+        showError(
+          t("login.firebaseError", "Firebase auth error:") +
+            ` ${result.code || "unknown"} - ${
+              result.message || t("login.noMessage", "No message")
+            }`
+        );
+      }
+    })
+    .catch((error) => {
+      console.error("Error during Firebase auth test:", error);
+      testButton.textContent = t("login.authTestError", "Auth Test: ERROR");
+      testButton.style.backgroundColor = "#FF9800";
+      testButton.style.color = "white";
+
+      showError(
+        t("login.testFailed", "Firebase test failed:") +
+          " " +
+          (error.message || t("login.errors.unknown", "Unknown error"))
+      );
+    })
+    .finally(() => {
+      // Remove the button after 5 seconds
+      setTimeout(() => {
+        if (document.body.contains(testButton)) {
+          document.body.removeChild(testButton);
+        }
+      }, 5000);
+    });
 }
 
 /**

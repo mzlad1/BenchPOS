@@ -156,6 +156,12 @@ function addLoginSyncStyles() {
 
 // Function to show the unsynced data dialog after login
 function showUnsyncedDataDialog(data) {
+  // Check if there are actually items to sync
+  if (!data || !data.totalUnsyncedItems || data.totalUnsyncedItems === 0) {
+    console.log("No items to sync, not showing dialog");
+    return;
+  }
+
   // Create dialog if it doesn't exist
   let syncDialog = document.getElementById("sync-dialog");
   if (!syncDialog) {
@@ -167,34 +173,49 @@ function showUnsyncedDataDialog(data) {
 
   // Build summary of unsynced items
   let unsyncedSummary = "";
+  let hasActualItems = false;
+
   for (const [collection, counts] of Object.entries(
     data.unsyncedCounts || {}
   )) {
-    unsyncedSummary += `<li><strong>${
-      collection.charAt(0).toUpperCase() + collection.slice(1)
-    }:</strong> ${counts.total} items</li>`;
+    if (counts.total > 0) {
+      hasActualItems = true;
+      unsyncedSummary += `<li><strong>${t(
+        `collections.${collection}`
+      )}:</strong> ${counts.total}</li>`;
+    }
+  }
+
+  // If no actual items, don't show dialog
+  if (!hasActualItems) {
+    console.log("No actual items to sync, not showing dialog");
+    return;
   }
 
   // Set dialog content
   syncDialog.innerHTML = `
-    <div class="sync-dialog-content">
-      <div class="sync-dialog-header">
-        <h2>Data Sync Required</h2>
-        <button id="close-sync-dialog" class="close-btn">&times;</button>
-      </div>
-      <div class="sync-dialog-body">
-        <p>We found data that needs to be synchronized:</p>
-        <ul>
-          ${unsyncedSummary || "<li>Some items need syncing</li>"}
-        </ul>
-        <p>Would you like to sync your data now?</p>
-      </div>
-      <div class="sync-dialog-footer">
-        <button id="sync-later-btn" class="btn secondary-btn">Sync Later</button>
-        <button id="sync-now-btn" class="btn primary-btn">Sync Now</button>
-      </div>
+  <div class="sync-dialog-content">
+    <div class="sync-dialog-header">
+      <h2>${t("login.sync.title")}</h2>
+      <button id="close-sync-dialog" class="close-btn">&times;</button>
     </div>
-  `;
+    <div class="sync-dialog-body">
+      <p>${t("login.sync.description")}</p>
+      <ul>
+        ${unsyncedSummary || `<li>${t("login.sync.noItems")}</li>`}
+      </ul>
+      <p>${t("login.sync.wouldYouSync")}</p>
+    </div>
+    <div class="sync-dialog-footer">
+      <button id="sync-later-btn" class="btn secondary-btn">${t(
+        "login.sync.syncLater"
+      )}</button>
+      <button id="sync-now-btn" class="btn primary-btn">${t(
+        "login.sync.syncNow"
+      )}</button>
+    </div>
+  </div>
+`;
 
   // Show the dialog
   syncDialog.style.display = "flex";
@@ -228,19 +249,26 @@ function showUnsyncedDataDialog(data) {
 
         // Show result
         if (result && result.success) {
-          showTemporaryNotification("Sync completed successfully!", "success");
+          showTemporaryNotification(
+            t("login.sync.syncCompletedSuccess"),
+            "success"
+          );
+
+          // Wait a moment for the notification to be visible, then refresh
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500); // Wait 1.5 seconds to let the user see the success message
         } else {
           showTemporaryNotification(
-            "Sync failed: " + (result?.message || "Unknown error"),
+            t("login.sync.syncFailed", {
+              message: result?.message || t("login.sync.unknownError"),
+            }),
             "error"
           );
         }
       } catch (error) {
         console.error("Error during sync:", error);
-        showTemporaryNotification(
-          "Error during sync. Please try again later.",
-          "error"
-        );
+        showTemporaryNotification(t("login.sync.errorDuringSync"), "error");
       }
     });
 }
@@ -315,30 +343,36 @@ function showReAuthDialog(email, callbackChannel) {
 
   // Set dialog content
   reAuthDialog.innerHTML = `
-    <div class="sync-dialog-content">
-      <div class="sync-dialog-header">
-        <h2>Authentication Required</h2>
-        <button id="close-reauth-dialog" class="close-btn">&times;</button>
-      </div>
-      <div class="sync-dialog-body">
-        <p>Please re-enter your password to sync with the cloud.</p>
-        <form id="reauth-form">
-          <div class="form-group">
-            <label for="reauth-email">Email</label>
-            <input type="email" id="reauth-email" value="${email}" readonly>
-          </div>
-          <div class="form-group">
-            <label for="reauth-password">Password</label>
-            <input type="password" id="reauth-password" placeholder="Enter your password" required>
-          </div>
-        </form>
-      </div>
-      <div class="sync-dialog-footer">
-        <button id="cancel-reauth-btn" class="btn secondary-btn">Cancel</button>
-        <button id="submit-reauth-btn" class="btn primary-btn">Authenticate</button>
-      </div>
+  <div class="sync-dialog-content">
+    <div class="sync-dialog-header">
+      <h2>${t("login.sync.authRequired")}</h2>
+      <button id="close-reauth-dialog" class="close-btn">&times;</button>
     </div>
-  `;
+    <div class="sync-dialog-body">
+      <p>${t("login.sync.reEnterPassword")}</p>
+      <form id="reauth-form">
+        <div class="form-group">
+          <label for="reauth-email">${t("login.sync.email")}</label>
+          <input type="email" id="reauth-email" value="${email}" readonly>
+        </div>
+        <div class="form-group">
+          <label for="reauth-password">${t("login.sync.password")}</label>
+          <input type="password" id="reauth-password" placeholder="${t(
+            "login.sync.enterPassword"
+          )}" required>
+        </div>
+      </form>
+    </div>
+    <div class="sync-dialog-footer">
+      <button id="cancel-reauth-btn" class="btn secondary-btn">${t(
+        "login.sync.cancel"
+      )}</button>
+      <button id="submit-reauth-btn" class="btn primary-btn">${t(
+        "login.sync.authenticate"
+      )}</button>
+    </div>
+  </div>
+`;
 
   // Show the dialog
   reAuthDialog.style.display = "flex";

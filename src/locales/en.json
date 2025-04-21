@@ -999,7 +999,32 @@
       "loginError": "Login error:",
       "unknown": "Unknown error",
       "enterBoth": "Please enter both email and password to test authentication"
+    },
+    "sync": {
+      "title": "Data Sync Required",
+      "description": "We found data that needs to be synchronized:",
+      "noItems": "Some items need syncing",
+      "wouldYouSync": "Would you like to sync your data now?",
+      "syncLater": "Sync Later",
+      "syncNow": "Sync Now",
+      "syncAnytime": "You can sync anytime by clicking the Sync button in the bottom right corner.",
+      "syncCompletedSuccess": "Sync completed successfully!",
+      "syncFailed": "Sync failed: {message}",
+      "errorDuringSync": "Error during sync. Please try again later.",
+      "syncing": "Syncing data...",
+      "authRequired": "Authentication Required",
+      "reEnterPassword": "Please re-enter your password to sync with the cloud.",
+      "email": "Email",
+      "password": "Password",
+      "enterPassword": "Enter your password",
+      "cancel": "Cancel",
+      "authenticate": "Authenticate"
     }
+  },
+  "collections": {
+    "products": "Products",
+    "invoices": "Invoices",
+    "settings": "Settings"
   },
   "forgotPassword": {
     "pageTitle": "BenchPOS - Reset Password",

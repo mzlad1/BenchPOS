@@ -67,6 +67,44 @@ class SecureStore {
       return null;
     }
   }
+  // Add these methods to your SecureStore class
+  encrypt(data) {
+    try {
+      const iv = crypto.randomBytes(16);
+      const cipher = crypto.createCipheriv(
+        "aes-256-cbc",
+        Buffer.from(this.key),
+        iv
+      );
+      let encrypted = cipher.update(data);
+      encrypted = Buffer.concat([encrypted, cipher.final()]);
+      return {
+        iv: iv.toString("hex"),
+        data: encrypted.toString("hex"),
+      };
+    } catch (error) {
+      console.error("Error encrypting data:", error);
+      return null;
+    }
+  }
+
+  decrypt(encryptedData) {
+    try {
+      const iv = Buffer.from(encryptedData.iv, "hex");
+      const encrypted = Buffer.from(encryptedData.data, "hex");
+      const decipher = crypto.createDecipheriv(
+        "aes-256-cbc",
+        Buffer.from(this.key),
+        iv
+      );
+      let decrypted = decipher.update(encrypted);
+      decrypted = Buffer.concat([decrypted, decipher.final()]);
+      return decrypted.toString();
+    } catch (error) {
+      console.error("Error decrypting data:", error);
+      return null;
+    }
+  }
 }
 
 module.exports = new SecureStore();

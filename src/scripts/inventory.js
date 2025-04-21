@@ -411,6 +411,7 @@ function showNotification(message, type = "info") {
 }
 
 // Load products from database
+// Modified section in the loadProducts function to ensure SKU sorting
 async function loadProducts() {
   try {
     console.log(
@@ -429,7 +430,7 @@ async function loadProducts() {
         field: "sku",
         order: "asc",
       },
-      // Add a flag to indicate that sorting should be applied to the entire dataset
+      // Always use global sort to ensure consistent SKU sorting
       globalSort: true,
     };
 
@@ -460,11 +461,8 @@ async function loadProducts() {
       totalPages = result.totalPages;
       currentPage = result.page;
 
-      // We don't need to sort here if the API handles global sorting correctly
-      // Only sort as a fallback if we know the API isn't sorting globally
-      if (!options.globalSort) {
-        products.sort(compareSKU);
-      }
+      // Always sort by SKU, regardless of server-side sorting
+      products.sort(compareSKU);
 
       // Pass only the items for rendering
       renderProducts(products, true, result.totalCount);
@@ -496,6 +494,89 @@ async function loadProducts() {
     products = [];
   }
 
+  window.LayoutManager.refreshInventoryBadge();
+}
+
+// Ensure any direct rendering also sorts by SKU first
+function renderProducts(productsToRender, isPaginated = false, totalCount = 0) {
+  const tableBody = document.getElementById("products-table-body");
+  tableBody.innerHTML = "";
+
+  if (!productsToRender || productsToRender.length === 0) {
+    // Empty state handling
+    tableBody.innerHTML =
+      '<tr><td colspan="9">' +
+      window.t("inventory.table.noProducts") +
+      "</td></tr>";
+
+    if (!isPaginated) {
+      currentPage = 1;
+      totalPages = 1;
+    }
+
+    setupPagination();
+    return;
+  }
+
+  // Always sort by SKU before rendering
+  productsToRender.sort(compareSKU);
+
+  // Use total count from server if provided, otherwise use local length
+  const effectiveTotalCount = isPaginated
+    ? totalCount
+    : productsToRender.length;
+
+  // If not paginated, calculate pagination locally
+  if (!isPaginated) {
+    totalPages = Math.ceil(effectiveTotalCount / pageSize);
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    // Get current page products for client-side pagination
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, effectiveTotalCount);
+    productsToRender = productsToRender.slice(startIndex, endIndex);
+  }
+
+  // Rest of the renderProducts function remains the same
+  // Get search term and filter
+  const searchElement = document.getElementById("product-search");
+  const searchTerm = searchElement
+    ? searchElement.value.toLowerCase().trim()
+    : "";
+  const filterElement = document.getElementById("search-filter");
+  const filterField = filterElement ? filterElement.value : "all";
+
+  // Display a loading indicator for large datasets
+  if (
+    effectiveTotalCount > 1000 &&
+    !tableBody.querySelector(".loading-indicator")
+  ) {
+    const loadingRow = document.createElement("tr");
+    loadingRow.className = "loading-indicator";
+    loadingRow.innerHTML = `<td colspan="9">${
+      window.t("inventory.loading") || "Loading products..."
+    }</td>`;
+    tableBody.appendChild(loadingRow);
+
+    // Use setTimeout to prevent UI freezing
+    setTimeout(() => {
+      renderProductRows(productsToRender, tableBody, searchTerm, filterField);
+      tableBody.querySelector(".loading-indicator")?.remove();
+    }, 10);
+  } else {
+    renderProductRows(productsToRender, tableBody, searchTerm, filterField);
+  }
+
+  // Setup pagination controls
+  setupPagination(effectiveTotalCount);
+
+  // Update selection UI
+  updateSelectionState(productsToRender);
+
+  // Update bulk actions UI
+  updateBulkActionsUI();
   window.LayoutManager.refreshInventoryBadge();
 }
 
@@ -536,85 +617,6 @@ async function getLowStockCount() {
     console.error("Error getting low stock count:", error);
     return 0;
   }
-}
-// Update renderProducts function to be more efficient
-
-function renderProducts(productsToRender, isPaginated = false, totalCount = 0) {
-  const tableBody = document.getElementById("products-table-body");
-  tableBody.innerHTML = "";
-
-  if (!productsToRender || productsToRender.length === 0) {
-    // Empty state handling
-    tableBody.innerHTML =
-      '<tr><td colspan="9">' +
-      window.t("inventory.table.noProducts") +
-      "</td></tr>";
-
-    if (!isPaginated) {
-      currentPage = 1;
-      totalPages = 1;
-    }
-
-    setupPagination();
-    return;
-  }
-
-  // Use total count from server if provided, otherwise use local length
-  const effectiveTotalCount = isPaginated
-    ? totalCount
-    : productsToRender.length;
-
-  // If not paginated, calculate pagination locally
-  if (!isPaginated) {
-    totalPages = Math.ceil(effectiveTotalCount / pageSize);
-    if (currentPage > totalPages) {
-      currentPage = totalPages;
-    }
-
-    // Get current page products for client-side pagination
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, effectiveTotalCount);
-    productsToRender = productsToRender.slice(startIndex, endIndex);
-  }
-
-  // Get search term and filter (keep this part)
-  const searchElement = document.getElementById("product-search");
-  const searchTerm = searchElement
-    ? searchElement.value.toLowerCase().trim()
-    : "";
-  const filterElement = document.getElementById("search-filter");
-  const filterField = filterElement ? filterElement.value : "all";
-
-  // Display a loading indicator for large datasets
-  if (
-    effectiveTotalCount > 1000 &&
-    !tableBody.querySelector(".loading-indicator")
-  ) {
-    const loadingRow = document.createElement("tr");
-    loadingRow.className = "loading-indicator";
-    loadingRow.innerHTML = `<td colspan="9">${
-      window.t("inventory.loading") || "Loading products..."
-    }</td>`;
-    tableBody.appendChild(loadingRow);
-
-    // Use setTimeout to prevent UI freezing
-    setTimeout(() => {
-      renderProductRows(productsToRender, tableBody, searchTerm, filterField);
-      tableBody.querySelector(".loading-indicator")?.remove();
-    }, 10);
-  } else {
-    renderProductRows(productsToRender, tableBody, searchTerm, filterField);
-  }
-
-  // Setup pagination controls
-  setupPagination(effectiveTotalCount);
-
-  // Update selection UI
-  updateSelectionState(productsToRender);
-
-  // Update bulk actions UI
-  updateBulkActionsUI();
-  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Extract the row rendering logic to a separate function

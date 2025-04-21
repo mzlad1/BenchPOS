@@ -123,23 +123,6 @@
         }
       }
 
-      /* For glass effect */
-      /* .glass-effect {
-        position: absolute;
-        z-index: -1;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        backdrop-filter: blur(5px);
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.05);
-      }
-
-      .dark-mode .glass-effect {
-        background: rgba(0, 0, 0, 0.05);
-      } */
-
       /* Progress bar */
       .progress-container {
         width: 100%;
@@ -155,17 +138,18 @@
         background-color: #4299e1;
         width: 0%;
         border-radius: 4px;
-        animation: loadProgress 3s ease-in-out;
+        transition: width 0.3s ease-out;
       }
 
-      @keyframes loadProgress {
+      /* Remove the animation that automatically fills the progress bar */
+      /* @keyframes loadProgress {
         0% {
           width: 0%;
         }
         100% {
           width: 100%;
         }
-      }
+      } */
     </style>
   </head>
   <body>
@@ -174,16 +158,20 @@
         <img src="assets/logo.png" alt="MZLAD Logo" class="logo" />
       </div>
       <div class="spinner"></div>
-      <p class="loading-text">Loading the app...</p>
+      <p class="loading-text">Initializing application...</p>
       <div class="progress-container">
-        <div class="progress-bar"></div>
+        <div class="progress-bar" style="width: 10%"></div>
       </div>
       <div class="version">Loading version...</div>
     </div>
 
     <script>
-      // This script handles the transition to the login page
-      document.addEventListener("DOMContentLoaded", () => {
+      // Flag to track if an update is in progress
+      let updateInProgress = false;
+      let appVersion = null;
+
+      // This script handles the app initialization and update checking
+      document.addEventListener("DOMContentLoaded", async () => {
         console.log("Splash screen loaded");
 
         // Apply saved theme preference if it exists
@@ -194,26 +182,148 @@
 
         // Get and display the current app version
         const versionElement = document.querySelector(".version");
-        if (
-          window.updates &&
-          typeof window.updates.getCurrentVersion === "function"
-        ) {
-          window.updates
-            .getCurrentVersion()
-            .then((version) => {
-              versionElement.textContent = `v${version}`;
-              console.log("App version:", version);
-            })
-            .catch((error) => {
-              console.error("Error getting app version:", error);
-              versionElement.textContent = "v1.0.0"; // Fallback version
-            });
-        }
+        const progressBar = document.querySelector(".progress-bar");
+
+        // Update progress to 15%
+        progressBar.style.width = "15%";
+
+        // Add retry mechanism for version check
+        const getAppVersion = async (retries = 3, delay = 500) => {
+          for (let i = 0; i < retries; i++) {
+            try {
+              if (
+                window.updates &&
+                typeof window.updates.getCurrentVersion === "function"
+              ) {
+                const version = await window.updates.getCurrentVersion();
+                console.log("App version retrieved:", version);
+                return version;
+              } else {
+                console.log(
+                  `Attempt ${i + 1}: window.updates not ready yet, waiting...`
+                );
+                // Wait before next attempt
+                await new Promise((resolve) => setTimeout(resolve, delay));
+              }
+            } catch (error) {
+              console.error(
+                `Error getting app version (attempt ${i + 1}):`,
+                error
+              );
+            }
+          }
+          return null; // Failed after retries
+        };
+
+        // Try to get version with retries
+        getAppVersion().then((version) => {
+          if (version) {
+            versionElement.textContent = `v${version}`;
+            appVersion = version;
+          } else {
+            console.warn("Failed to get version after retries");
+            versionElement.textContent = "v1.0.0"; // Fallback version
+          }
+        });
+
+        // Update progress to 30%
+        progressBar.style.width = "30%";
 
         // Notify main process that splash is ready
         if (window.api && typeof window.api.splashReady === "function") {
-          window.api.splashReady().then(() => {
-            console.log("Splash screen reported ready to main process");
+          await window.api.splashReady();
+          console.log("Splash screen reported ready to main process");
+        }
+
+        // Update progress to 40%
+        progressBar.style.width = "40%";
+
+        // Setup event handler for update status changes
+        if (
+          window.updates &&
+          typeof window.updates.onUpdateStatus === "function"
+        ) {
+          window.updates.onUpdateStatus((status) => {
+            const loadingText = document.querySelector(".loading-text");
+
+            if (status.status === "checking") {
+              updateInProgress = true;
+              loadingText.textContent = "Checking for updates...";
+              progressBar.style.width = "50%";
+            } else if (status.status === "available") {
+              updateInProgress = true;
+              loadingText.textContent = `Update available (v${status.version})`;
+              versionElement.textContent = `Current: v${appVersion}, Available: v${status.version}`;
+              progressBar.style.width = "60%";
+
+              // Automatically start downloading the update
+              console.log("Automatically downloading update...");
+              if (
+                window.updates &&
+                typeof window.updates.downloadUpdate === "function"
+              ) {
+                window.updates.downloadUpdate();
+              }
+            } else if (status.status === "not-available") {
+              loadingText.textContent = "No updates available, starting app...";
+              progressBar.style.width = "70%";
+              updateInProgress = false;
+
+              // Continue to normal app startup after a short delay
+              setTimeout(() => {
+                loadingText.textContent = "Launching application...";
+                progressBar.style.width = "100%";
+
+                // Continue to login page after a short delay
+                setTimeout(() => {
+                  window.location.href = "views/login.html";
+                }, 1000);
+              }, 1000);
+            } else if (status.status === "downloading") {
+              updateInProgress = true;
+              const percent = Math.round(status.progress.percent);
+              loadingText.textContent = `Downloading update: ${percent}%`;
+
+              // Update progress bar based on download progress
+              const progressValue = 60 + percent * 0.1; // Scale to use 60-70% of our progress bar
+              progressBar.style.width = `${progressValue}%`;
+            } else if (status.status === "downloaded") {
+              updateInProgress = true;
+              loadingText.textContent = "Update downloaded. Installing...";
+              progressBar.style.width = "90%";
+
+              // Automatically install the update after a short delay
+              setTimeout(() => {
+                if (
+                  window.updates &&
+                  typeof window.updates.quitAndInstall === "function"
+                ) {
+                  loadingText.textContent =
+                    "Installing update. App will restart...";
+                  progressBar.style.width = "100%";
+
+                  // Allow UI to update before quitting
+                  setTimeout(() => {
+                    // Quit and install with silent mode (true) and force run after update (true)
+                    window.updates.quitAndInstall();
+                  }, 1500);
+                }
+              }, 1000);
+            } else if (status.status === "error") {
+              console.error("Update error:", status.message);
+              loadingText.textContent = "Update error, starting app...";
+              updateInProgress = false;
+              progressBar.style.width = "70%";
+
+              // Continue with app launch despite update error
+              setTimeout(() => {
+                loadingText.textContent = "Launching application...";
+                progressBar.style.width = "100%";
+                setTimeout(() => {
+                  window.location.href = "views/login.html";
+                }, 1000);
+              }, 1500);
+            }
           });
         }
 
@@ -224,94 +334,60 @@
         ) {
           console.log("Setting up splash complete listener");
           window.api.onSplashScreenComplete(() => {
-            console.log(
-              "Splash complete signal received, redirecting to login"
-            );
-            window.location.href = "views/login.html";
-          });
-        }
-
-        // Add this inside your existing DOMContentLoaded listener in splash.html
-        if (
-          window.updates &&
-          typeof window.updates.onUpdateStatus === "function"
-        ) {
-          window.updates.onUpdateStatus((status) => {
-            const loadingText = document.querySelector(".loading-text");
-            const versionElement = document.querySelector(".version");
-
-            if (status.status === "checking") {
-              loadingText.textContent = "Checking for updates...";
-            } else if (status.status === "available") {
-              loadingText.textContent = `Update available (v${status.version})`;
-              // Show the new version that's available
-              versionElement.textContent = `Current: v${window.updates.getCurrentVersion()}, Available: v${
-                status.version
-              }`;
-            } else if (status.status === "downloading") {
-              const percent = Math.round(status.progress.percent);
-              loadingText.textContent = `Downloading update: ${percent}%`;
-
-              // Update progress bar if it exists
-              const progressBar = document.querySelector(".progress-bar");
-              if (progressBar) {
-                progressBar.style.width = `${percent}%`;
-              }
-            } else if (status.status === "downloaded") {
-              loadingText.textContent = "Update downloaded. Click to install.";
-
-              // Create install button instead of auto-restart
-              const installBtn = document.createElement("button");
-              installBtn.textContent = "Install Now";
-              installBtn.style.marginTop = "15px";
-              installBtn.style.padding = "8px 16px";
-              installBtn.style.backgroundColor = "#4299e1";
-              installBtn.style.color = "white";
-              installBtn.style.border = "none";
-              installBtn.style.borderRadius = "4px";
-              installBtn.style.cursor = "pointer";
-
-              // Add hover effect
-              installBtn.onmouseover = () => {
-                installBtn.style.backgroundColor = "#3182ce";
-              };
-              installBtn.onmouseout = () => {
-                installBtn.style.backgroundColor = "#4299e1";
-              };
-
-              // Add click handler
-              installBtn.onclick = () => {
-                loadingText.textContent = "Installing update...";
-                installBtn.remove();
-                // Use the proper parameters for quitAndInstall to avoid showing installer
-                if (
-                  window.api &&
-                  typeof window.api.quitAndInstall === "function"
-                ) {
-                  // Parameter explanation:
-                  // isSilent: true - don't ask user for confirmation
-                  // isForceRunAfter: true - force restart app after update
-                  window.api.quitAndInstall(true, true);
-                } else {
-                  // Fallback if the specific method isn't available
-                  window.api.quitAndInstall();
-                }
-              };
-
-              // Add button after the loading text
-              loadingText.parentNode.insertBefore(
-                installBtn,
-                loadingText.nextSibling
+            // Only redirect if no update is in progress
+            if (!updateInProgress) {
+              console.log(
+                "Splash complete signal received, redirecting to login"
               );
+              window.location.href = "views/login.html";
+            } else {
+              console.log("Update in progress, ignoring redirect");
             }
           });
         }
 
-        // Failsafe: If no signal received after animation completes + buffer time, redirect anyway
-        setTimeout(() => {
-          console.log("Failsafe timeout reached, redirecting to login");
-          window.location.href = "../views/login.html";
-        }, 4000); // Animation is 3s, add 1s buffer
+        // Start checking for updates
+        if (
+          window.updates &&
+          typeof window.updates.checkForUpdates === "function"
+        ) {
+          try {
+            console.log("Checking for updates...");
+            const updateResult = await window.updates.checkForUpdates();
+            console.log("Update check result:", updateResult);
+          } catch (error) {
+            console.error("Error checking for updates:", error);
+            // Handle error and continue with app launch
+            progressBar.style.width = "70%";
+            setTimeout(() => {
+              loadingText.textContent = "Launching application...";
+              progressBar.style.width = "100%";
+              setTimeout(() => {
+                window.location.href = "views/login.html";
+              }, 1000);
+            }, 1000);
+          }
+        } else {
+          // If update checking is not available, continue to app
+          progressBar.style.width = "70%";
+          setTimeout(() => {
+            loadingText.textContent = "Launching application...";
+            progressBar.style.width = "100%";
+            setTimeout(() => {
+              window.location.href = "views/login.html";
+            }, 1000);
+          }, 1000);
+        }
+
+        // Only use failsafe if no update is in progress
+        const failsafeTimeout = setTimeout(() => {
+          if (!updateInProgress) {
+            console.log("Failsafe timeout reached, redirecting to login");
+            window.location.href = "views/login.html";
+          } else {
+            console.log("Update in progress, not triggering failsafe redirect");
+          }
+        }, 15000); // Longer failsafe timeout (15s) to allow for update processes
       });
     </script>
   </body>

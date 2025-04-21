@@ -1623,7 +1623,7 @@ async function createAndUpdateChart() {
                 }
                 if (context.parsed.y !== null) {
                   if (currentChartView === "revenue") {
-                    label += "$" + formatCurrency(context.parsed.y);
+                    label += formatCurrency(context.parsed.y);
                   } else {
                     label += context.parsed.y;
                   }
