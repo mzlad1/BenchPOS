@@ -1,4 +1,38 @@
-// User Manager JavaScript with i18n support
+// User Manager JavaScript with i18n support and Enhanced Pagination
+
+// Global variables for user management with pagination support
+let users = [];
+let currentUserPage = 1;
+const userPageSize = 25;
+let totalUserPages = 1;
+let totalUsers = 0;
+let isLoadingUsers = false;
+let userSearchTimeout;
+let lastUserSearchTerm = '';
+let selectedUserIds = [];
+
+// Cache for user data
+const userCache = new Map();
+const maxUserCacheSize = 500;
+
+// Performance monitoring for user management
+const userPerformanceMonitor = {
+  startTime: 0,
+  endTime: 0,
+  lastLoadTime: 0,
+
+  start() {
+    this.startTime = performance.now();
+  },
+
+  end(operation = 'unknown') {
+    this.endTime = performance.now();
+    this.lastLoadTime = this.endTime - this.startTime;
+    console.log(`User Management ${operation} took ${this.lastLoadTime.toFixed(2)}ms`);
+    return this.lastLoadTime;
+  }
+};
+
 document.addEventListener("DOMContentLoaded", async function () {
   // Wait for i18n to initialize
   await waitForI18n();
@@ -197,7 +231,6 @@ async function forceApplyTranslations() {
 let currentUsers = [];
 let currentPage = 1;
 const usersPerPage = 10;
-let totalUsers = 0;
 let currentFilters = {
   search: "",
   role: "all",
@@ -777,3 +810,420 @@ function showNotification(message, type = "info") {
     notification.classList.remove("show");
   }, 5000);
 }
+
+// Load sample users for demo mode when API is not available
+function loadSampleUsers() {
+  console.log("Loading sample users for demo mode");
+
+  const sampleUsers = [
+    {
+      id: "1",
+      name: "Admin User",
+      email: "admin@example.com",
+      role: "admin",
+      status: "active",
+      lastLogin: new Date().toISOString(),
+    },
+    {
+      id: "2",
+      name: "Manager User",
+      email: "manager@example.com",
+      role: "manager",
+      status: "active",
+      lastLogin: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+    },
+    {
+      id: "3",
+      name: "Staff User",
+      email: "staff@example.com",
+      role: "staff",
+      status: "active",
+      lastLogin: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+    },
+    {
+      id: "4",
+      name: "Inactive User",
+      email: "inactive@example.com",
+      role: "staff",
+      status: "inactive",
+      lastLogin: null,
+    }
+  ];
+
+  // Generate more sample users for pagination testing
+  for (let i = 5; i <= 50; i++) {
+    sampleUsers.push({
+      id: i.toString(),
+      name: `User ${i}`,
+      email: `user${i}@example.com`,
+      role: i % 3 === 0 ? "admin" : i % 2 === 0 ? "manager" : "staff",
+      status: i % 10 === 0 ? "inactive" : "active",
+      lastLogin: i % 5 === 0 ? null : new Date(Date.now() - Math.random() * 30 * 86400000).toISOString(),
+    });
+  }
+
+  currentUsers = sampleUsers;
+  totalUsers = sampleUsers.length;
+  updatePagination();
+  renderUsers();
+}
+
+// Enhanced pagination functions for efficient data handling
+
+// Enhanced loadUsers function with pagination support
+async function loadUsersWithPagination(page = 1, pageSize = userPageSize, searchTerm = '', filters = {}) {
+  if (isLoadingUsers) {
+    console.log("Users already loading, skipping duplicate request");
+    return;
+  }
+
+  isLoadingUsers = true;
+  userPerformanceMonitor.start();
+
+  try {
+    // Check cache first
+    const cacheKey = `users_${page}_${pageSize}_${searchTerm}_${JSON.stringify(filters)}`;
+    if (userCache.has(cacheKey)) {
+      console.log("Loading users from cache");
+      const cachedData = userCache.get(cacheKey);
+      users = cachedData.users;
+      totalUsers = cachedData.totalUsers;
+      totalUserPages = cachedData.totalUserPages;
+      currentUserPage = page;
+      renderUsersTable();
+      setupUserPagination();
+      return;
+    }
+
+    // Show loading state
+    showUsersLoading();
+
+    // Prepare pagination options
+    const options = {
+      page: page,
+      pageSize: pageSize,
+      filters: {
+        ...filters,
+        search: searchTerm || undefined
+      },
+      sort: {
+        field: "name",
+        order: "asc"
+      }
+    };
+
+    // Request paginated data from backend
+    const result = await window.api.getUsers(options);
+
+    // Handle response
+    if (result && result.items) {
+      // Server returned paginated format
+      users = result.items;
+      totalUsers = result.totalCount;
+      totalUserPages = result.totalPages;
+      currentUserPage = result.page;
+
+      // Cache the result
+      if (userCache.size >= maxUserCacheSize) {
+        // Remove oldest entry
+        const firstKey = userCache.keys().next().value;
+        userCache.delete(firstKey);
+      }
+      userCache.set(cacheKey, {
+        users: result.items,
+        totalUsers: result.totalCount,
+        totalUserPages: result.totalPages
+      });
+
+      renderUsersTable();
+    } else {
+      // Fallback for backward compatibility
+      users = result || [];
+      totalUsers = users.length;
+      totalUserPages = Math.ceil(totalUsers / pageSize);
+      currentUserPage = page;
+      renderUsersTable();
+    }
+
+    setupUserPagination();
+    userPerformanceMonitor.end('load users');
+
+  } catch (error) {
+    console.error("Error loading users:", error);
+    showUsersError(error.message);
+  } finally {
+    isLoadingUsers = false;
+  }
+}
+
+// Show loading state for users table
+function showUsersLoading() {
+  const tableBody = document.getElementById("users-table-body");
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <tr class="loading-row">
+        <td colspan="6" class="loading-cell">
+          <div class="loading-spinner"></div>
+          <span>${window.t("common.loading") || "Loading users..."}</span>
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// Show error state for users table
+function showUsersError(message) {
+  const tableBody = document.getElementById("users-table-body");
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <tr class="error-row">
+        <td colspan="6" class="error-cell">
+          <span>${window.t("userManager.errors.loadFailed") || "Failed to load users"}: ${message}</span>
+          <button onclick="loadUsersWithPagination(${currentUserPage})" class="btn btn-sm btn-primary">
+            ${window.t("common.retry") || "Retry"}
+          </button>
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// Render users table with efficient rendering
+function renderUsersTable() {
+  const tableBody = document.getElementById("users-table-body");
+  if (!tableBody) return;
+
+  // Clear existing content
+  tableBody.innerHTML = "";
+
+  if (!users || users.length === 0) {
+    tableBody.innerHTML = `
+      <tr class="empty-row">
+        <td colspan="6" class="empty-cell">
+          ${window.t("userManager.noUsersFound") || "No users found"}
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  // Use document fragment for efficient DOM manipulation
+  const fragment = document.createDocumentFragment();
+
+  users.forEach((user, index) => {
+    const row = document.createElement("tr");
+    row.className = "user-row";
+
+    if (user.status === "inactive") {
+      row.classList.add("inactive-user");
+    }
+
+    // Format last login
+    let lastLoginText = window.t("userManager.userNeverLoggedIn") || "Never";
+    if (user.lastLogin) {
+      const lastLogin = new Date(user.lastLogin);
+      lastLoginText = lastLogin.toLocaleDateString();
+    }
+
+    row.innerHTML = `
+      <td class="user-name">${escapeHtml(user.name || "")}</td>
+      <td class="user-email">${escapeHtml(user.email || "")}</td>
+      <td class="user-role">
+        <span class="role-badge role-${user.role || 'unknown'}">${window.t(`userManager.roles.${user.role}`) || user.role}</span>
+      </td>
+      <td class="user-status">
+        <span class="status-badge status-${user.status || 'unknown'}">${window.t(`userManager.status.${user.status}`) || user.status}</span>
+      </td>
+      <td class="user-last-login">${lastLoginText}</td>
+      <td class="user-actions">
+        <div class="action-buttons">
+          <button class="btn btn-sm btn-ghost edit-user-btn" data-id="${user.id}" title="${window.t("common.edit") || "Edit"}">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-danger delete-user-btn" data-id="${user.id}" title="${window.t("common.delete") || "Delete"}">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    `;
+
+    // Add event listeners
+    const editBtn = row.querySelector(".edit-user-btn");
+    const deleteBtn = row.querySelector(".delete-user-btn");
+
+    editBtn.addEventListener("click", () => handleEditUser(user.id));
+    deleteBtn.addEventListener("click", () => handleDeleteUser(user.id));
+
+    fragment.appendChild(row);
+  });
+
+  tableBody.appendChild(fragment);
+}
+
+// Setup user pagination controls
+function setupUserPagination() {
+  const paginationContainer = document.getElementById("user-pagination");
+  if (!paginationContainer) return;
+
+  paginationContainer.innerHTML = "";
+
+  if (totalUserPages <= 1) {
+    return; // No pagination needed
+  }
+
+  // Create pagination controls
+  const paginationControls = document.createElement("div");
+  paginationControls.className = "pagination-controls";
+
+  // Previous button
+  const prevButton = document.createElement("button");
+  prevButton.className = "btn pagination-btn";
+  prevButton.textContent = window.t("common.previous") || "« Previous";
+  prevButton.disabled = currentUserPage === 1;
+  prevButton.addEventListener("click", () => {
+    if (currentUserPage > 1) {
+      loadUsersWithPagination(currentUserPage - 1, userPageSize, lastUserSearchTerm);
+    }
+  });
+
+  // Next button
+  const nextButton = document.createElement("button");
+  nextButton.className = "btn pagination-btn";
+  nextButton.textContent = window.t("common.next") || "Next »";
+  nextButton.disabled = currentUserPage === totalUserPages;
+  nextButton.addEventListener("click", () => {
+    if (currentUserPage < totalUserPages) {
+      loadUsersWithPagination(currentUserPage + 1, userPageSize, lastUserSearchTerm);
+    }
+  });
+
+  // Page info
+  const pageInfo = document.createElement("span");
+  pageInfo.className = "page-info";
+  pageInfo.textContent = window.t("pagination.pageOf", {
+    current: currentUserPage,
+    total: totalUserPages
+  }) || `Page ${currentUserPage} of ${totalUserPages}`;
+
+  // Page size selector
+  const pageSizeSelector = document.createElement("select");
+  pageSizeSelector.className = "page-size-selector";
+  pageSizeSelector.addEventListener("change", (e) => {
+    const newPageSize = parseInt(e.target.value);
+    loadUsersWithPagination(1, newPageSize, lastUserSearchTerm);
+  });
+
+  [10, 25, 50, 100].forEach(size => {
+    const option = document.createElement("option");
+    option.value = size;
+    option.textContent = `${size} ${window.t("pagination.perPage") || "per page"}`;
+    option.selected = size === userPageSize;
+    pageSizeSelector.appendChild(option);
+  });
+
+  // User count info
+  const userCount = document.createElement("span");
+  userCount.className = "user-count";
+  const startUser = (currentUserPage - 1) * userPageSize + 1;
+  const endUser = Math.min(startUser + userPageSize - 1, totalUsers);
+  userCount.textContent = window.t("pagination.showing", {
+    shown: users.length,
+    total: totalUsers,
+    start: startUser,
+    end: endUser
+  }) || `Showing ${startUser}-${endUser} of ${totalUsers} users`;
+
+  // Assemble pagination
+  paginationControls.appendChild(prevButton);
+  paginationControls.appendChild(pageInfo);
+  paginationControls.appendChild(pageSizeSelector);
+  paginationControls.appendChild(nextButton);
+
+  const userCountContainer = document.createElement("div");
+  userCountContainer.className = "user-count-container";
+  userCountContainer.appendChild(userCount);
+
+  paginationContainer.appendChild(paginationControls);
+  paginationContainer.appendChild(userCountContainer);
+}
+
+// Handle user search with debouncing
+function handleUserSearch(searchTerm) {
+  clearTimeout(userSearchTimeout);
+
+  userSearchTimeout = setTimeout(() => {
+    lastUserSearchTerm = searchTerm;
+    currentUserPage = 1; // Reset to first page
+    loadUsersWithPagination(1, userPageSize, searchTerm);
+  }, 300);
+}
+
+// Handle edit user
+function handleEditUser(userId) {
+  console.log("Edit user:", userId);
+  showEditUserModal(userId);
+}
+
+// Handle delete user
+function handleDeleteUser(userId) {
+  console.log("Delete user:", userId);
+  showDeleteConfirmation(userId);
+}
+
+// Utility function to escape HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Export pagination utility functions for use in other modules
+window.PaginationUtils = {
+  setupPagination: setupUserPagination,
+  loadWithPagination: loadUsersWithPagination,
+  handleSearch: handleUserSearch,
+  escapeHtml: escapeHtml,
+
+  // Generic pagination setup function that can be used by other modules
+  createPaginationControls: function(currentPage, totalPages, onPageChange, options = {}) {
+    const {
+      pageSize = 25,
+      pageSizeOptions = [10, 25, 50, 100],
+      showPageSize = true,
+      showInfo = true,
+      totalItems = 0,
+      currentItems = 0
+    } = options;
+
+    const container = document.createElement("div");
+    container.className = "pagination-controls";
+
+    // Previous button
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "btn pagination-btn";
+    prevBtn.textContent = window.t("common.previous") || "« Previous";
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.onclick = () => onPageChange(currentPage - 1);
+
+    // Next button
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "btn pagination-btn";
+    nextBtn.textContent = window.t("common.next") || "Next »";
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.onclick = () => onPageChange(currentPage + 1);
+
+    // Page info
+    const pageInfo = document.createElement("span");
+    pageInfo.className = "page-info";
+    pageInfo.textContent = window.t("pagination.pageOf", {
+      current: currentPage,
+      total: totalPages
+    }) || `Page ${currentPage} of ${totalPages}`;
+
+    container.appendChild(prevBtn);
+    container.appendChild(pageInfo);
+    container.appendChild(nextBtn);
+
+    return container;
+  }
+};

@@ -1,6 +1,6 @@
-// reports.js - Advanced Reports Implementation
+// reports.js - Advanced Reports Implementation with Enhanced Pagination
 
-// Global variables for data storage
+// Global variables for data storage - Enhanced for better performance
 let invoices = [];
 let products = [];
 let filteredInvoices = [];
@@ -12,14 +12,157 @@ let salesChart = null;
 let currentChartView = "daily"; // Tracks the current chart view (daily, weekly, monthly)
 const currency = localStorage.getItem("currency") || "USD";
 const symbol = currency === "ILS" ? "₪" : "$";
+
+// Pagination variables for reports
+let currentInvoicePage = 1;
+let currentProductPage = 1;
+const invoicePageSize = 25; // Reduced for better performance
+const productPageSize = 25; // Reduced for better performance
+let totalInvoicePages = 1;
+let totalProductPages = 1;
+let totalInvoices = 0;
+let totalProducts = 0;
+let isLoadingInvoices = false;
+let isLoadingProducts = false;
+
+// Cache for report data with TTL
+const reportCache = new Map();
+const maxCacheSize = 50; // Reduced cache size
+const cacheTimeout = 3 * 60 * 1000; // 3 minutes for reports
+
+// Performance optimization variables
+let renderTimeout = null;
+let isGeneratingReports = false;
+const CHUNK_SIZE = 20; // Process data in chunks
+const BATCH_RENDER_SIZE = 50; // Render table rows in batches
+
+// Debounced functions for performance
+const debouncedGenerateReports = debounce(generateAllReports, 300);
+const debouncedUpdateChart = debounce(updateChart, 200);
+
+// Performance monitoring for reports
+const reportPerformanceMonitor = {
+  startTime: 0,
+  endTime: 0,
+  lastLoadTime: 0,
+
+  start() {
+    this.startTime = performance.now();
+  },
+
+  end(operation = "unknown") {
+    this.endTime = performance.now();
+    this.lastLoadTime = this.endTime - this.startTime;
+    if (this.lastLoadTime > 100) { // Only log slow operations
+      console.log(`Reports ${operation} took ${this.lastLoadTime.toFixed(2)}ms`);
+    }
+    return this.lastLoadTime;
+  },
+};
+
+// Debounced function to prevent excessive calls
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Cache management with TTL
+function getCachedReportData(key) {
+  const cached = reportCache.get(key);
+  if (cached && Date.now() - cached.timestamp < cacheTimeout) {
+    return cached.data;
+  }
+  reportCache.delete(key);
+  return null;
+}
+
+function setCachedReportData(key, data) {
+  // Clean old cache entries if we're at max size
+  if (reportCache.size >= maxCacheSize) {
+    const oldestKey = reportCache.keys().next().value;
+    reportCache.delete(oldestKey);
+  }
+
+  reportCache.set(key, {
+    data: data,
+    timestamp: Date.now()
+  });
+}
+
+// Async data processing for large datasets
+async function processDataInChunks(data, processor, chunkSize = CHUNK_SIZE) {
+  const results = [];
+
+  for (let i = 0; i < data.length; i += chunkSize) {
+    const chunk = data.slice(i, i + chunkSize);
+    const chunkResults = await new Promise(resolve => {
+      setTimeout(() => {
+        resolve(processor(chunk));
+      }, 0);
+    });
+    results.push(...chunkResults);
+
+    // Allow UI to update between chunks
+    if (i % (chunkSize * 5) === 0) {
+      await new Promise(resolve => setTimeout(resolve, 1));
+    }
+  }
+
+  return results;
+}
+
 // Use the global translation function instead of redefining it
 const getTranslation = function (key, params = {}) {
   return window.t ? window.t(key, params) : key;
 };
 
+// Loading screen functions
+function showLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  if (loadingScreen) {
+    loadingScreen.style.display = 'flex';
+    loadingScreen.classList.remove('fade-out');
+    
+    // Animate progress bar
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 2;
+      if (progressFill) progressFill.style.width = `${progress}%`;
+      if (progressText) progressText.textContent = `${progress}%`;
+      
+      if (progress >= 100) {
+        clearInterval(interval);
+      }
+    }, 200); // 10 seconds total (100 steps * 200ms)
+  }
+}
+
+function hideLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  if (loadingScreen) {
+    loadingScreen.classList.add('fade-out');
+    setTimeout(() => {
+      loadingScreen.style.display = 'none';
+    }, 500); // Wait for fade-out animation to complete
+  }
+}
+
 // Initialize the page
 document.addEventListener("DOMContentLoaded", async function () {
   try {
+    // Show loading screen immediately
+    showLoadingScreen();
+
     console.log("Initializing reports page...");
 
     // First validate user access
@@ -62,15 +205,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       // Initialize with current language and wait for it to complete
       await window.i18n
-        .init(language)
-        .then(() => {
-          // Apply translations to the page
-          window.i18n.updatePageContent();
-          console.log("Translations applied for language:", language);
-        })
-        .catch((error) => {
-          console.error("Error initializing i18n:", error);
-        });
+          .init(language)
+          .then(() => {
+            // Apply translations to the page
+            window.i18n.updatePageContent();
+            console.log("Translations applied for language:", language);
+          })
+          .catch((error) => {
+            console.error("Error initializing i18n:", error);
+          });
     } else {
       console.warn("i18n module not available");
     }
@@ -93,6 +236,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   } catch (error) {
     console.error("Error initializing reports page:", error);
     showError(getTranslation("reports.messages.initError"));
+  } finally {
+    // Hide loading screen after 5 seconds
+    setTimeout(() => {
+      hideLoadingScreen();
+    }, 10000);
   }
 });
 
@@ -113,13 +261,13 @@ async function loadInitialData() {
     products = allProducts || [];
 
     console.log(
-      `Loaded ${invoices.length} invoices and ${products.length} products`
+        `Loaded ${invoices.length} invoices and ${products.length} products`
     );
 
     // Update inventory badge in sidebar if LayoutManager is available
     if (window.LayoutManager) {
       const lowStockCount = products.filter(
-        (product) => product.stock <= 5
+          (product) => product.stock <= 5
       ).length;
       window.LayoutManager.updateInventoryBadge(lowStockCount);
     }
@@ -131,12 +279,12 @@ async function loadInitialData() {
     const today = new Date();
     dateRange.from = new Date(today.getFullYear(), today.getMonth(), 1);
     dateRange.to = new Date(
-      today.getFullYear(),
-      today.getMonth() + 1,
-      0,
-      23,
-      59,
-      59
+        today.getFullYear(),
+        today.getMonth() + 1,
+        0,
+        23,
+        59,
+        59
     );
 
     // Update date inputs
@@ -167,7 +315,7 @@ function applyDateFilter() {
   });
 
   console.log(
-    `Filtered invoices: ${filteredInvoices.length} of ${invoices.length}`
+      `Filtered invoices: ${filteredInvoices.length} of ${invoices.length}`
   );
 
   // Generate all reports with filtered data
@@ -271,45 +419,45 @@ function setupDateFilters() {
 
   // Apply filters button
   document
-    .getElementById("apply-filters")
-    .addEventListener("click", function () {
-      // Update date range from inputs
-      const from = dateFrom.valueAsDate;
-      const to = dateTo.valueAsDate;
+      .getElementById("apply-filters")
+      .addEventListener("click", function () {
+        // Update date range from inputs
+        const from = dateFrom.valueAsDate;
+        const to = dateTo.valueAsDate;
 
-      if (!from || !to) {
-        alert(getTranslation("reports.messages.invalidDates"));
-        return;
-      }
+        if (!from || !to) {
+          alert(getTranslation("reports.messages.invalidDates"));
+          return;
+        }
 
-      if (from > to) {
-        alert(getTranslation("reports.messages.startDateBeforeEnd"));
-        return;
-      }
+        if (from > to) {
+          alert(getTranslation("reports.messages.startDateBeforeEnd"));
+          return;
+        }
 
-      // Set global date range
-      dateRange.from = new Date(from);
-      dateRange.to = new Date(to);
-      // Set time to end of day for the end date
-      dateRange.to.setHours(23, 59, 59);
+        // Set global date range
+        dateRange.from = new Date(from);
+        dateRange.to = new Date(to);
+        // Set time to end of day for the end date
+        dateRange.to.setHours(23, 59, 59);
 
-      // Apply filter
-      applyDateFilter();
-    });
+        // Apply filter
+        applyDateFilter();
+      });
 
   // Export button
   document
-    .getElementById("export-report")
-    .addEventListener("click", function () {
-      exportReportData();
-    });
+      .getElementById("export-report")
+      .addEventListener("click", function () {
+        exportReportData();
+      });
 
   // Print button
   document
-    .getElementById("print-report")
-    .addEventListener("click", function () {
-      window.print();
-    });
+      .getElementById("print-report")
+      .addEventListener("click", function () {
+        window.print();
+      });
 
   console.log("Date filters setup complete");
 }
@@ -323,28 +471,28 @@ function getDateRangeFromPeriod(period) {
     case "today":
       from = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       to = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        23,
-        59,
-        59
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          23,
+          59,
+          59
       );
       break;
 
     case "yesterday":
       from = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - 1
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 1
       );
       to = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - 1,
-        23,
-        59,
-        59
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - 1,
+          23,
+          59,
+          59
       );
       break;
 
@@ -352,34 +500,34 @@ function getDateRangeFromPeriod(period) {
       // Start of week (Sunday)
       const dayOfWeek = today.getDay();
       from = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - dayOfWeek
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - dayOfWeek
       );
       to = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() + (6 - dayOfWeek),
-        23,
-        59,
-        59
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() + (6 - dayOfWeek),
+          23,
+          59,
+          59
       );
       break;
 
     case "last-week":
       const lastWeekDay = today.getDay();
       from = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - lastWeekDay - 7
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - lastWeekDay - 7
       );
       to = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - lastWeekDay - 1,
-        23,
-        59,
-        59
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate() - lastWeekDay - 1,
+          23,
+          59,
+          59
       );
       break;
 
@@ -409,7 +557,7 @@ function getDateRangeFromPeriod(period) {
 // Show loading state in all report sections
 function showLoading() {
   const loadingHTML = `<tr><td colspan="7" class="loading">${getTranslation(
-    "reports.messages.loading"
+      "reports.messages.loading"
   )}</td></tr>`;
   const elements = [
     "daily-sales-table",
@@ -452,12 +600,12 @@ function generateSalesSummary() {
 
   // Current period totals
   const totalSales = filteredInvoices.reduce(
-    (sum, invoice) => sum + (invoice.total || 0),
-    0
+      (sum, invoice) => sum + (invoice.total || 0),
+      0
   );
   const totalTransactions = filteredInvoices.length;
   const averageSale =
-    totalTransactions > 0 ? totalSales / totalTransactions : 0;
+      totalTransactions > 0 ? totalSales / totalTransactions : 0;
   const totalProfit = filteredInvoices.reduce((sum, invoice) => {
     const profit = invoice.profit || invoice.total - (invoice.totalCost || 0);
     return sum + profit;
@@ -476,12 +624,12 @@ function generateSalesSummary() {
 
   // Previous period totals
   const prevTotalSales = prevPeriodInvoices.reduce(
-    (sum, invoice) => sum + (invoice.total || 0),
-    0
+      (sum, invoice) => sum + (invoice.total || 0),
+      0
   );
   const prevTotalTransactions = prevPeriodInvoices.length;
   const prevAverageSale =
-    prevTotalTransactions > 0 ? prevTotalSales / prevTotalTransactions : 0;
+      prevTotalTransactions > 0 ? prevTotalSales / prevTotalTransactions : 0;
   const prevTotalProfit = prevPeriodInvoices.reduce((sum, invoice) => {
     const profit = invoice.profit || invoice.total - (invoice.totalCost || 0);
     return sum + profit;
@@ -489,33 +637,33 @@ function generateSalesSummary() {
 
   // Calculate trends
   const salesTrend =
-    prevTotalSales > 0
-      ? ((totalSales - prevTotalSales) / prevTotalSales) * 100
-      : 0;
+      prevTotalSales > 0
+          ? ((totalSales - prevTotalSales) / prevTotalSales) * 100
+          : 0;
   const transactionsTrend =
-    prevTotalTransactions > 0
-      ? ((totalTransactions - prevTotalTransactions) / prevTotalTransactions) *
-        100
-      : 0;
+      prevTotalTransactions > 0
+          ? ((totalTransactions - prevTotalTransactions) / prevTotalTransactions) *
+          100
+          : 0;
   const averageTrend =
-    prevAverageSale > 0
-      ? ((averageSale - prevAverageSale) / prevAverageSale) * 100
-      : 0;
+      prevAverageSale > 0
+          ? ((averageSale - prevAverageSale) / prevAverageSale) * 100
+          : 0;
   const profitTrend =
-    prevTotalProfit > 0
-      ? ((totalProfit - prevTotalProfit) / prevTotalProfit) * 100
-      : 0;
+      prevTotalProfit > 0
+          ? ((totalProfit - prevTotalProfit) / prevTotalProfit) * 100
+          : 0;
 
   // Update UI
   document.getElementById("total-sales").textContent = `${formatCurrency(
-    totalSales
+      totalSales
   )}`;
   document.getElementById("total-transactions").textContent = totalTransactions;
   document.getElementById("average-sale").textContent = `${formatCurrency(
-    averageSale
+      averageSale
   )}`;
   document.getElementById("total-profit").textContent = `${formatCurrency(
-    totalProfit
+      totalProfit
   )}`;
 
   // Update trends with formatting
@@ -528,12 +676,12 @@ function generateSalesSummary() {
     if (trend > 0) {
       el.className = "trend-up";
       el.innerHTML = `+${trend.toFixed(
-        1
+          1
       )}% <span data-i18n="reports.summary.vsPreviousPeriod">${vsPeriodText}</span>`;
     } else if (trend < 0) {
       el.className = "trend-down";
       el.innerHTML = `${trend.toFixed(
-        1
+          1
       )}% <span data-i18n="reports.summary.vsPreviousPeriod">${vsPeriodText}</span>`;
     } else {
       el.className = "";
@@ -559,7 +707,7 @@ function generateDailySalesReport() {
 
   if (filteredInvoices.length === 0) {
     tableElement.innerHTML = `<tr><td colspan="7" class="centered">${getTranslation(
-      "reports.messages.noSalesData"
+        "reports.messages.noSalesData"
     )}</td></tr>`;
     return;
   }
@@ -571,7 +719,7 @@ function generateDailySalesReport() {
     const date = new Date(invoice.date || invoice.createdAt);
     // Use YYYY-MM-DD format as the key for proper sorting
     const dateKey = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
+        date.getMonth() + 1
     ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     const formattedDate = formatDate(date); // Use our custom formatter
 
@@ -590,8 +738,8 @@ function generateDailySalesReport() {
     // Sum values
     salesByDate[dateKey].transactions += 1;
     salesByDate[dateKey].itemsSold += invoice.items.reduce(
-      (sum, item) => sum + item.quantity,
-      0
+        (sum, item) => sum + item.quantity,
+        0
     );
     salesByDate[dateKey].sales += invoice.total || 0;
     salesByDate[dateKey].cost += invoice.totalCost || 0;
@@ -625,8 +773,8 @@ function generateDailySalesReport() {
 
   // Add totals row
   const totalTransactions = salesData.reduce(
-    (sum, day) => sum + day.transactions,
-    0
+      (sum, day) => sum + day.transactions,
+      0
   );
   const totalItems = salesData.reduce((sum, day) => sum + day.itemsSold, 0);
   const totalSales = salesData.reduce((sum, day) => sum + day.sales, 0);
@@ -654,11 +802,7 @@ function generateDailySalesReport() {
     tableElement.setAttribute("dir", "rtl");
   }
 }
-function formatCurrency(amount) {
-  const currency = localStorage.getItem("currency") || "USD";
-  const symbol = currency === "ILS" ? "₪" : "$";
-  return `${symbol}${parseFloat(amount).toFixed(2)}`;
-}
+
 // Generate product sales report
 function generateProductSalesReport() {
   const tableElement = document.getElementById("product-sales-table");
@@ -671,7 +815,7 @@ function generateProductSalesReport() {
 
   if (filteredInvoices.length === 0) {
     tableElement.innerHTML = `<tr><td colspan="7" class="centered">${getTranslation(
-      "reports.messages.noSalesData"
+        "reports.messages.noSalesData"
     )}</td></tr>`;
     return;
   }
@@ -714,9 +858,9 @@ function generateProductSalesReport() {
 
       // Calculate profit if cost is available
       const itemCost =
-        (item.cost ||
-          (productMap[productId] ? productMap[productId].cost : 0)) *
-        item.quantity;
+          (item.cost ||
+              (productMap[productId] ? productMap[productId].cost : 0)) *
+          item.quantity;
       const itemProfit = itemTotal - itemCost;
       productSales[productId].profit += itemProfit;
     });
@@ -724,7 +868,7 @@ function generateProductSalesReport() {
 
   // Convert to array and sort by revenue (highest first)
   const productData = Object.values(productSales).sort(
-    (a, b) => b.revenue - a.revenue
+      (a, b) => b.revenue - a.revenue
   );
 
   // Generate table rows
@@ -732,7 +876,7 @@ function generateProductSalesReport() {
 
   productData.forEach((product) => {
     const margin =
-      product.revenue > 0 ? (product.profit / product.revenue) * 100 : 0;
+        product.revenue > 0 ? (product.profit / product.revenue) * 100 : 0;
 
     tableHTML += `
       <tr>
@@ -749,16 +893,16 @@ function generateProductSalesReport() {
 
   // Add totals row
   const totalQuantity = productData.reduce(
-    (sum, product) => sum + product.quantity,
-    0
+      (sum, product) => sum + product.quantity,
+      0
   );
   const totalRevenue = productData.reduce(
-    (sum, product) => sum + product.revenue,
-    0
+      (sum, product) => sum + product.revenue,
+      0
   );
   const totalProfit = productData.reduce(
-    (sum, product) => sum + product.profit,
-    0
+      (sum, product) => sum + product.profit,
+      0
   );
   const totalMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
@@ -793,7 +937,7 @@ function generateCategorySalesReport() {
 
   if (filteredInvoices.length === 0) {
     tableElement.innerHTML = `<tr><td colspan="5" class="centered">${getTranslation(
-      "reports.messages.noSalesData"
+        "reports.messages.noSalesData"
     )}</td></tr>`;
     return;
   }
@@ -828,7 +972,7 @@ function generateCategorySalesReport() {
 
   // Convert to array and sort by revenue (highest first)
   const categoryData = Object.values(categorySales).sort(
-    (a, b) => b.revenue - a.revenue
+      (a, b) => b.revenue - a.revenue
   );
 
   // Generate table rows
@@ -836,7 +980,7 @@ function generateCategorySalesReport() {
 
   categoryData.forEach((category) => {
     const margin =
-      category.revenue > 0 ? (category.profit / category.revenue) * 100 : 0;
+        category.revenue > 0 ? (category.profit / category.revenue) * 100 : 0;
 
     tableHTML += `
       <tr>
@@ -851,16 +995,16 @@ function generateCategorySalesReport() {
 
   // Add totals row
   const totalQuantity = categoryData.reduce(
-    (sum, category) => sum + category.quantity,
-    0
+      (sum, category) => sum + category.quantity,
+      0
   );
   const totalRevenue = categoryData.reduce(
-    (sum, category) => sum + category.revenue,
-    0
+      (sum, category) => sum + category.revenue,
+      0
   );
   const totalProfit = categoryData.reduce(
-    (sum, category) => sum + category.profit,
-    0
+      (sum, category) => sum + category.profit,
+      0
   );
   const totalMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
@@ -893,22 +1037,22 @@ function generateInventoryReport() {
   // Calculate inventory stats
   const totalProducts = products.length;
   const totalValue = products.reduce(
-    (sum, product) => sum + product.price * product.stock,
-    0
+      (sum, product) => sum + product.price * product.stock,
+      0
   );
   const totalCost = products.reduce(
-    (sum, product) => sum + (product.cost || 0) * product.stock,
-    0
+      (sum, product) => sum + (product.cost || 0) * product.stock,
+      0
   );
   const lowStockItems = products.filter((product) => product.stock <= 5).length;
 
   // Update inventory summary
   document.getElementById("total-products").textContent = totalProducts;
   document.getElementById("inventory-value").textContent = `${formatCurrency(
-    totalValue
+      totalValue
   )}`;
   document.getElementById("inventory-cost").textContent = `${formatCurrency(
-    totalCost
+      totalCost
   )}`;
   document.getElementById("low-stock-count").textContent = lowStockItems;
 
@@ -940,12 +1084,12 @@ function generateInventoryReport() {
 
     // Convert to array and sort by quantity sold (highest first)
     const topProducts = Object.values(productSales)
-      .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 5); // Top 5
+        .sort((a, b) => b.quantity - a.quantity)
+        .slice(0, 5); // Top 5
 
     if (topProducts.length === 0) {
       topSellingHTML = `<tr><td colspan="5" class="centered">${getTranslation(
-        "reports.messages.noSalesDataAvailable"
+          "reports.messages.noSalesDataAvailable"
       )}</td></tr>`;
     } else {
       topProducts.forEach((item) => {
@@ -980,13 +1124,13 @@ function generateInventoryReport() {
 
     // Get products with low stock and sort by stock level (lowest first)
     const lowStockProducts = products
-      .filter((product) => product.stock <= 5)
-      .sort((a, b) => a.stock - b.stock)
-      .slice(0, 10); // Top 10 lowest stock
+        .filter((product) => product.stock <= 5)
+        .sort((a, b) => a.stock - b.stock)
+        .slice(0, 10); // Top 10 lowest stock
 
     if (lowStockProducts.length === 0) {
       lowStockHTML = `<tr><td colspan="4" class="centered">${getTranslation(
-        "reports.messages.noLowStockProducts"
+          "reports.messages.noLowStockProducts"
       )}</td></tr>`;
     } else {
       lowStockProducts.forEach((product) => {
@@ -1084,7 +1228,7 @@ function createSalesChart() {
           align: isRTL ? "end" : "start",
           labels: {
             color: getComputedStyle(document.body).getPropertyValue(
-              "--text-primary"
+                "--text-primary"
             ),
             textAlign: isRTL ? "right" : "left",
           },
@@ -1093,16 +1237,16 @@ function createSalesChart() {
           mode: "index",
           intersect: false,
           backgroundColor: getComputedStyle(document.body).getPropertyValue(
-            "--base-100"
+              "--base-100"
           ),
           titleColor: getComputedStyle(document.body).getPropertyValue(
-            "--text-primary"
+              "--text-primary"
           ),
           bodyColor: getComputedStyle(document.body).getPropertyValue(
-            "--text-secondary"
+              "--text-secondary"
           ),
           borderColor: getComputedStyle(document.body).getPropertyValue(
-            "--primary"
+              "--primary"
           ),
           borderWidth: 1,
           callbacks: {
@@ -1126,7 +1270,7 @@ function createSalesChart() {
           },
           ticks: {
             color: getComputedStyle(document.body).getPropertyValue(
-              "--text-secondary"
+                "--text-secondary"
             ),
             align: isRTL ? "end" : "center",
           },
@@ -1140,7 +1284,7 @@ function createSalesChart() {
           position: isRTL ? "right" : "left",
           ticks: {
             color: getComputedStyle(document.body).getPropertyValue(
-              "--text-secondary"
+                "--text-secondary"
             ),
             callback: function (value) {
               return symbol + value.toFixed(0);
@@ -1208,19 +1352,19 @@ function exportReportData() {
     case "daily-sales":
       data = exportTableToCSV("daily-sales-table");
       filename = `daily_sales_report_${formatDateForFilename(
-        dateRange.from
+          dateRange.from
       )}_to_${formatDateForFilename(dateRange.to)}.csv`;
       break;
     case "product-sales":
       data = exportTableToCSV("product-sales-table");
       filename = `product_sales_report_${formatDateForFilename(
-        dateRange.from
+          dateRange.from
       )}_to_${formatDateForFilename(dateRange.to)}.csv`;
       break;
     case "category-sales":
       data = exportTableToCSV("category-sales-table");
       filename = `category_sales_report_${formatDateForFilename(
-        dateRange.from
+          dateRange.from
       )}_to_${formatDateForFilename(dateRange.to)}.csv`;
       break;
     default:
@@ -1275,8 +1419,8 @@ function exportTableToCSV(tableId) {
 // Helper function to format date for filenames
 function formatDateForFilename(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0"
+      2,
+      "0"
   )}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
@@ -1299,7 +1443,7 @@ function calculateInvoiceCosts() {
       invoice.items.forEach((item) => {
         // Get cost either from the item itself or from the product catalog
         const itemCost =
-          item.cost || (productMap[item.id] ? productMap[item.id].cost : 0);
+            item.cost || (productMap[item.id] ? productMap[item.id].cost : 0);
         totalCost += itemCost * item.quantity;
       });
 
@@ -1375,22 +1519,22 @@ function processChartData() {
     if (currentChartView === "daily") {
       // Group by day - use YYYY-MM-DD format
       key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-        2,
-        "0"
+          2,
+          "0"
       )}-${String(date.getDate()).padStart(2, "0")}`;
     } else if (currentChartView === "weekly") {
       // Group by week - calculate week number
       const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
       const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
       const weekNum = Math.ceil(
-        (pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7
+          (pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7
       );
       key = `Week ${weekNum}, ${date.getFullYear()}`;
     } else {
       // Group by month - use YYYY-MM format
       key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-        2,
-        "0"
+          2,
+          "0"
       )}`;
     }
 
@@ -1559,3 +1703,406 @@ if (window.addEventListener) {
     generateAllReports();
   });
 }
+
+// Enhanced pagination functions for reports handling large datasets
+
+// Load reports with advanced pagination
+async function loadReportsWithPagination(page = 1, limit = 50, offset = 0, filters = {}) {
+  if (isLoadingReports) {
+    console.log("Reports already loading, skipping duplicate request");
+    return;
+  }
+
+  isLoadingReports = true;
+  reportPerformanceMonitor.start();
+
+  try {
+    // Check cache first
+    const cacheKey = `reports_${page}_${limit}_${offset}_${JSON.stringify(filters)}`;
+    const cachedData = getCachedReportData(cacheKey);
+    if (cachedData) {
+      console.log("Loading reports from cache");
+      currentReports = cachedData.reports;
+      totalReports = cachedData.totalReports;
+      totalReportPages = cachedData.totalPages;
+      currentReportPage = page;
+      renderReportsTable();
+      setupReportsPagination();
+      return;
+    }
+
+    // Show loading state
+    showReportsLoading();
+
+    // Prepare pagination options with limit/offset
+    const options = {
+      page: page,
+      pageSize: limit,
+      offset: offset,
+      filters: {
+        ...filters,
+        dateRange: currentDateRange,
+        reportType: currentReportType
+      },
+      sort: {
+        field: "date",
+        order: "desc"
+      }
+    };
+
+    // Request paginated data from backend
+    const result = await window.api.getReports(options);
+
+    // Handle response
+    if (result && result.items) {
+      // Server returned paginated format
+      currentReports = result.items;
+      totalReports = result.totalCount;
+      totalReportPages = result.totalPages;
+      currentReportPage = result.page;
+
+      // Cache the result
+      setCachedReportData(cacheKey, {
+        reports: result.items,
+        totalReports: result.totalCount,
+        totalPages: result.totalPages,
+      });
+
+      renderReportsTable();
+    } else {
+      // Fallback for backward compatibility
+      currentReports = result || [];
+      totalReports = currentReports.length;
+      totalReportPages = Math.ceil(totalReports / limit);
+      currentReportPage = page;
+      renderReportsTable();
+    }
+
+    setupReportsPagination();
+    reportPerformanceMonitor.end('load reports with pagination');
+
+  } catch (error) {
+    console.error("Error loading reports:", error);
+    showReportsError(error.message);
+  } finally {
+    isLoadingReports = false;
+  }
+}
+
+// Global variables for enhanced reports pagination
+let currentReports = [];
+let currentReportPage = 1;
+let totalReportPages = 1;
+let totalReports = 0;
+let isLoadingReports = false;
+let currentDateRange = 'all';
+let currentReportType = 'all';
+let reportsSearchTimeout;
+
+// Show loading state for reports table
+function showReportsLoading() {
+  const container = document.getElementById("reports-content") || document.querySelector(".reports-container");
+  if (container) {
+    container.innerHTML = `
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <span>${window.t("reports.loading") || "Loading reports..."}</span>
+      </div>
+    `;
+  }
+}
+
+// Show error state for reports table
+function showReportsError(message) {
+  const container = document.getElementById("reports-content") || document.querySelector(".reports-container");
+  if (container) {
+    container.innerHTML = `
+      <div class="error-container">
+        <span>${window.t("reports.errors.loadFailed") || "Failed to load reports"}: ${message}</span>
+        <button onclick="loadReportsWithPagination(${currentReportPage})" class="btn btn-sm btn-primary">
+          ${window.t("common.retry") || "Retry"}
+        </button>
+      </div>
+    `;
+  }
+}
+
+// Enhanced pagination setup for reports
+function setupReportsPagination() {
+  let paginationContainer = document.getElementById("reports-pagination-container");
+  if (!paginationContainer) {
+    paginationContainer = document.createElement("div");
+    paginationContainer.id = "reports-pagination-container";
+    paginationContainer.className = "enhanced-pagination";
+
+    const reportsContainer = document.querySelector(".reports-container") || document.getElementById("reports-content");
+    if (reportsContainer) {
+      reportsContainer.appendChild(paginationContainer);
+    }
+  }
+
+  paginationContainer.innerHTML = "";
+
+  if (totalReportPages <= 1) {
+    return; // No pagination needed
+  }
+
+  // Create pagination controls container
+  const paginationControls = document.createElement("div");
+  paginationControls.className = "pagination-controls";
+
+  // First page button
+  const firstButton = document.createElement("button");
+  firstButton.className = "btn pagination-btn";
+  firstButton.textContent = "««";
+  firstButton.title = window.t("pagination.first") || "First";
+  firstButton.disabled = currentReportPage === 1;
+  firstButton.addEventListener("click", () => {
+    if (currentReportPage > 1) {
+      loadReportsWithPagination(1);
+    }
+  });
+
+  // Previous button
+  const prevButton = document.createElement("button");
+  prevButton.className = "btn pagination-btn";
+  prevButton.textContent = "‹";
+  prevButton.title = window.t("pagination.previous") || "Previous";
+  prevButton.disabled = currentReportPage === 1;
+  prevButton.addEventListener("click", () => {
+    if (currentReportPage > 1) {
+      loadReportsWithPagination(currentReportPage - 1);
+    }
+  });
+
+  // Page input for direct navigation
+  const pageInput = document.createElement("input");
+  pageInput.type = "number";
+  pageInput.min = "1";
+  pageInput.max = totalReportPages.toString();
+  pageInput.value = currentReportPage.toString();
+  pageInput.className = "page-input";
+  pageInput.addEventListener("change", (e) => {
+    const newPage = parseInt(e.target.value);
+    if (newPage >= 1 && newPage <= totalReportPages && newPage !== currentReportPage) {
+      loadReportsWithPagination(newPage);
+    }
+  });
+
+  // Page info
+  const pageInfo = document.createElement("span");
+  pageInfo.className = "page-info";
+  pageInfo.textContent = ` / ${totalReportPages}`;
+
+  // Next button
+  const nextButton = document.createElement("button");
+  nextButton.className = "btn pagination-btn";
+  nextButton.textContent = "›";
+  nextButton.title = window.t("pagination.next") || "Next";
+  nextButton.disabled = currentReportPage === totalReportPages;
+  nextButton.addEventListener("click", () => {
+    if (currentReportPage < totalReportPages) {
+      loadReportsWithPagination(currentReportPage + 1);
+    }
+  });
+
+  // Last page button
+  const lastButton = document.createElement("button");
+  lastButton.className = "btn pagination-btn";
+  lastButton.textContent = "»»";
+  lastButton.title = window.t("pagination.last") || "Last";
+  lastButton.disabled = currentReportPage === totalReportPages;
+  lastButton.addEventListener("click", () => {
+    if (currentReportPage < totalReportPages) {
+      loadReportsWithPagination(totalReportPages);
+    }
+  });
+
+  // Page size selector
+  const pageSizeSelector = document.createElement("select");
+  pageSizeSelector.className = "page-size-selector";
+  pageSizeSelector.addEventListener("change", (e) => {
+    const newPageSize = parseInt(e.target.value);
+    // Recalculate current page to maintain position
+    const currentItem = (currentReportPage - 1) * 50 + 1;
+    const newPage = Math.ceil(currentItem / newPageSize);
+    loadReportsWithPagination(newPage, newPageSize);
+  });
+
+  [25, 50, 100, 200].forEach(size => {
+    const option = document.createElement("option");
+    option.value = size;
+    option.textContent = `${size} ${window.t("pagination.perPage") || "per page"}`;
+    option.selected = size === 50;
+    pageSizeSelector.appendChild(option);
+  });
+
+  // Assemble pagination controls
+  paginationControls.appendChild(firstButton);
+  paginationControls.appendChild(prevButton);
+  paginationControls.appendChild(pageInput);
+  paginationControls.appendChild(pageInfo);
+  paginationControls.appendChild(nextButton);
+  paginationControls.appendChild(lastButton);
+  paginationControls.appendChild(pageSizeSelector);
+
+  // Report count info
+  const reportCount = document.createElement("div");
+  reportCount.className = "report-count";
+  const startReport = (currentReportPage - 1) * 50 + 1;
+  const endReport = Math.min(startReport + 50 - 1, totalReports);
+  reportCount.textContent = window.t("pagination.showing", {
+    shown: currentReports.length,
+    total: totalReports,
+    start: startReport,
+    end: endReport
+  }) || `Showing ${startReport}-${endReport} of ${totalReports} reports`;
+
+  // Assemble final pagination
+  paginationContainer.appendChild(paginationControls);
+  paginationContainer.appendChild(reportCount);
+}
+
+// Enhanced renderReportsTable function
+function renderReportsTable() {
+  const container = document.getElementById("reports-content") || document.querySelector(".reports-container");
+  if (!container) return;
+
+  // Clear existing content
+  container.innerHTML = "";
+
+  if (!currentReports || currentReports.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <p>${window.t("reports.noReportsFound") || "No reports found for the selected criteria"}</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Create table structure
+  const table = document.createElement("table");
+  table.className = "reports-table";
+
+  // Table header
+  const thead = document.createElement("thead");
+  thead.innerHTML = `
+    <tr>
+      <th>${window.t("reports.table.date") || "Date"}</th>
+      <th>${window.t("reports.table.type") || "Type"}</th>
+      <th>${window.t("reports.table.description") || "Description"}</th>
+      <th>${window.t("reports.table.amount") || "Amount"}</th>
+      <th>${window.t("reports.table.actions") || "Actions"}</th>
+    </tr>
+  `;
+  table.appendChild(thead);
+
+  // Table body
+  const tbody = document.createElement("tbody");
+  tbody.id = "reports-table-body";
+
+  // Use document fragment for efficient DOM manipulation
+  const fragment = document.createDocumentFragment();
+
+  currentReports.forEach((report, index) => {
+    const row = document.createElement("tr");
+    row.className = "report-row";
+
+    // Format date
+    const date = new Date(report.date || report.timestamp);
+    const formattedDate = date.toLocaleDateString();
+
+    // Format amount
+    const formattedAmount = formatCurrency(report.amount || 0);
+
+    row.innerHTML = `
+      <td class="report-date">${formattedDate}</td>
+      <td class="report-type">
+        <span class="type-badge type-${(report.type || 'unknown').toLowerCase()}">${report.type || 'Unknown'}</span>
+      </td>
+      <td class="report-description">${escapeHtml(report.description || report.title || '')}</td>
+      <td class="report-amount">${formattedAmount}</td>
+      <td class="report-actions">
+        <div class="action-buttons">
+          <button class="btn btn-sm btn-ghost view-report-btn" data-id="${report.id}" title="${window.t("common.view") || "View"}">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button class="btn btn-sm btn-primary export-report-btn" data-id="${report.id}" title="${window.t("common.export") || "Export"}">
+            <i class="fas fa-download"></i>
+          </button>
+        </div>
+      </td>
+    `;
+
+    // Add event listeners
+    const viewBtn = row.querySelector(".view-report-btn");
+    const exportBtn = row.querySelector(".export-report-btn");
+
+    viewBtn.addEventListener("click", () => handleViewReport(report.id));
+    exportBtn.addEventListener("click", () => handleExportReport(report.id));
+
+    fragment.appendChild(row);
+  });
+
+  tbody.appendChild(fragment);
+  table.appendChild(tbody);
+  container.appendChild(table);
+
+  // Setup pagination after table
+  setupReportsPagination();
+}
+
+// Handle report search with debouncing
+function handleReportsSearch(searchTerm, filterType = 'all') {
+  clearTimeout(reportsSearchTimeout);
+
+  reportsSearchTimeout = setTimeout(() => {
+    currentReportPage = 1; // Reset to first page
+    const filters = {};
+
+    if (searchTerm) {
+      filters.search = searchTerm;
+    }
+
+    if (filterType && filterType !== 'all') {
+      filters.type = filterType;
+    }
+
+    loadReportsWithPagination(1, 50, 0, filters);
+  }, 300);
+}
+
+// Handle view report
+function handleViewReport(reportId) {
+  console.log("View report:", reportId);
+  // Implement report viewing logic
+}
+
+// Handle export report
+function handleExportReport(reportId) {
+  console.log("Export report:", reportId);
+  // Implement report export logic
+}
+
+// Format currency for reports
+function formatCurrency(amount) {
+  const currency = localStorage.getItem("currency") || "USD";
+  const symbol = currency === "ILS" ? "₪" : "$";
+  return `${symbol}${parseFloat(amount || 0).toFixed(2)}`;
+}
+
+// Utility function to escape HTML
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Export reports pagination utilities
+window.ReportsPagination = {
+  loadWithPagination: loadReportsWithPagination,
+  setupPagination: setupReportsPagination,
+  handleSearch: handleReportsSearch,
+  renderTable: renderReportsTable
+};
+

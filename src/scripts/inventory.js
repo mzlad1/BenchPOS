@@ -6,10 +6,88 @@ let products = [];
 let editingProductId = null;
 let isOnline = false;
 let currentPage = 1;
-const pageSize = 10; // Number of products per page
+const pageSize = 25; // Reduced for better performance
 let totalPages = 1;
 let selectedProductIds = [];
 let searchTimeout;
+
+// Enhanced pagination variables for inventory
+let totalProducts = 0;
+let isLoadingProducts = false;
+let currentProductPageSize = 25; // Reduced default size
+
+// Cache for inventory data with TTL
+const inventoryCache = new Map();
+const maxCacheSize = 50; // Reduced cache size
+const cacheTimeout = 5 * 60 * 1000; // 5 minutes
+
+// Performance optimization variables
+let renderTimeout = null;
+let isRendering = false;
+const CHUNK_SIZE = 10; // Process products in chunks of 10
+
+// Virtual scrolling for large datasets
+let virtualScrollContainer = null;
+let visibleStartIndex = 0;
+let visibleEndIndex = 0;
+const VISIBLE_BUFFER = 5; // Number of extra items to render outside viewport
+
+// Performance monitoring for inventory
+const inventoryPerformanceMonitor = {
+  startTime: 0,
+  endTime: 0,
+  lastLoadTime: 0,
+
+  start() {
+    this.startTime = performance.now();
+  },
+
+  end(operation = "unknown") {
+    this.endTime = performance.now();
+    this.lastLoadTime = this.endTime - this.startTime;
+    if (this.lastLoadTime > 100) { // Only log slow operations
+      console.log(`Inventory ${operation} took ${this.lastLoadTime.toFixed(2)}ms`);
+    }
+    return this.lastLoadTime;
+  },
+};
+
+// Debounced function to prevent excessive calls
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Cache management with TTL
+function getCachedData(key) {
+  const cached = inventoryCache.get(key);
+  if (cached && Date.now() - cached.timestamp < cacheTimeout) {
+    return cached.data;
+  }
+  inventoryCache.delete(key);
+  return null;
+}
+
+function setCachedData(key, data) {
+  // Clean old cache entries if we're at max size
+  if (inventoryCache.size >= maxCacheSize) {
+    const oldestKey = inventoryCache.keys().next().value;
+    inventoryCache.delete(oldestKey);
+  }
+
+  inventoryCache.set(key, {
+    data: data,
+    timestamp: Date.now()
+  });
+}
+
 document.addEventListener("pageCacheCleared", resetInventoryState);
 function resetInventoryState() {
   console.log("Resetting inventory state variables");
@@ -24,6 +102,14 @@ function resetInventoryState() {
     clearTimeout(searchTimeout);
     searchTimeout = null;
   }
+
+  if (renderTimeout) {
+    clearTimeout(renderTimeout);
+    renderTimeout = null;
+  }
+
+  // Clear cache
+  inventoryCache.clear();
 
   // Clear the search field and results
   const searchField = document.getElementById("product-search");
@@ -43,19 +129,56 @@ function resetInventoryState() {
   // Reset bulk actions UI
   updateBulkActionsUI();
 }
+
+// Loading screen functions
+function showLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  if (loadingScreen) {
+    loadingScreen.style.display = 'flex';
+    loadingScreen.classList.remove('fade-out');
+    
+    // Animate progress bar
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 2;
+      if (progressFill) progressFill.style.width = `${progress}%`;
+      if (progressText) progressText.textContent = `${progress}%`;
+      
+      if (progress >= 100) {
+        clearInterval(interval);
+      }
+    }, 220); // 10 seconds total (100 steps * 200ms)
+  }
+}
+
+function hideLoadingScreen() {
+  const loadingScreen = document.getElementById('loading-screen');
+  if (loadingScreen) {
+    loadingScreen.classList.add('fade-out');
+    setTimeout(() => {
+      loadingScreen.style.display = 'none';
+    }, 1000); // Wait for fade-out animation to complete
+  }
+}
 // DOM Elements initialization
 document.addEventListener("DOMContentLoaded", () => {
+  // Show loading screen immediately
+  showLoadingScreen();
+
   // Initialize page
   initPage();
 
   // Event listeners
   document
-    .getElementById("add-product-form")
-    .addEventListener("submit", handleAddProduct);
+      .getElementById("add-product-form")
+      .addEventListener("submit", handleAddProduct);
 
   document.getElementById("add-new-btn").addEventListener("click", () => {
     document.getElementById("product-form-title").textContent = window.t(
-      "inventory.productForm.addTitle"
+        "inventory.productForm.addTitle"
     );
     document.getElementById("add-product-form").reset();
     document.getElementById("product-modal").style.display = "block";
@@ -78,29 +201,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add this to your DOMContentLoaded event listener
   document
-    .getElementById("products-table-body")
-    .addEventListener("click", (event) => {
-      if (event.target.classList.contains("edit-btn")) {
-        handleEditProduct(event);
-      } else if (event.target.classList.contains("delete-btn")) {
-        handleDeleteProduct(event);
-      }
-    });
+      .getElementById("products-table-body")
+      .addEventListener("click", (event) => {
+        if (event.target.classList.contains("edit-btn")) {
+          handleEditProduct(event);
+        } else if (event.target.classList.contains("delete-btn")) {
+          handleDeleteProduct(event);
+        }
+      });
   document
-    .getElementById("product-search")
-    .addEventListener("input", function () {
-      clearTimeout(searchTimeout);
-      document.getElementById("search-status").textContent =
-        window.t("inventory.searching") || "Searching...";
+      .getElementById("product-search")
+      .addEventListener("input", function () {
+        clearTimeout(searchTimeout);
+        document.getElementById("search-status").textContent =
+            window.t("inventory.searching") || "Searching...";
 
-      searchTimeout = setTimeout(() => {
+        searchTimeout = setTimeout(() => {
+          filterProducts();
+        }, 300); // 300ms delay
+      });
+
+  // Add event listener for search filter dropdown
+  document
+      .getElementById("search-filter")
+      .addEventListener("change", function () {
+        // Reset to first page when filter type changes
+        currentPage = 1;
         filterProducts();
-      }, 300); // 300ms delay
-    });
+      });
 
   document
-    .getElementById("clear-search")
-    .addEventListener("click", clearSearch);
+      .getElementById("clear-search")
+      .addEventListener("click", clearSearch);
 
   // Close modal when clicking outside
   window.addEventListener("click", (event) => {
@@ -134,7 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
           selectedProductIds.push(productId);
         } else if (!this.checked) {
           selectedProductIds = selectedProductIds.filter(
-            (id) => id !== productId
+              (id) => id !== productId
           );
         }
       });
@@ -145,23 +277,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Set up bulk action event listeners
   document
-    .getElementById("bulk-action-select")
-    .addEventListener("change", function () {
-      const applyButton = document.getElementById("apply-bulk-action");
-      applyButton.disabled = !this.value || selectedProductIds.length === 0;
-    });
+      .getElementById("bulk-action-select")
+      .addEventListener("change", function () {
+        const applyButton = document.getElementById("apply-bulk-action");
+        applyButton.disabled = !this.value || selectedProductIds.length === 0;
+      });
 
   document
-    .getElementById("apply-bulk-action")
-    .addEventListener("click", handleBulkAction);
+      .getElementById("apply-bulk-action")
+      .addEventListener("click", handleBulkAction);
 
   // Set up export/import listeners
   document
-    .getElementById("export-csv-btn")
-    .addEventListener("click", exportProductsToCSV);
+      .getElementById("export-csv-btn")
+      .addEventListener("click", exportProductsToCSV);
   document
-    .getElementById("import-csv-btn")
-    .addEventListener("click", showImportModal);
+      .getElementById("import-csv-btn")
+      .addEventListener("click", showImportModal);
 
   // Category modal listeners
   if (document.getElementById("new-category")) {
@@ -197,8 +329,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (document.getElementById("csv-file")) {
     document
-      .getElementById("csv-file")
-      .addEventListener("change", handleFileSelect);
+        .getElementById("csv-file")
+        .addEventListener("change", handleFileSelect);
   }
 
   // Listen for language changes
@@ -209,28 +341,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Initialize the page
 async function initPage() {
-  // Check permissions (this is now handled in the main HTML by LayoutManager)
-  resetInventoryState();
-  // Make sure elements exist before trying to use them
-  const currentDate = document.getElementById("current-date");
-  if (currentDate) {
-    const today = new Date();
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    };
-    currentDate.textContent = today.toLocaleDateString("en-US", options);
+  try {
+    // Check permissions (this is now handled in the main HTML by LayoutManager)
+    resetInventoryState();
+    // Make sure elements exist before trying to use them
+    const currentDate = document.getElementById("current-date");
+    if (currentDate) {
+      const today = new Date();
+      const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      };
+      currentDate.textContent = today.toLocaleDateString("en-US", options);
+    }
+
+    // Check online status (now handled by LayoutManager, but we'll keep this for inventory-specific functionality)
+    await checkConnectionStatus();
+
+    // Load products
+    await loadProducts();
+
+    window.LayoutManager.refreshInventoryBadge();
+  } finally {
+    // Hide loading screen after 11 seconds
+    setTimeout(() => {
+      hideLoadingScreen();
+    }, 11000);
   }
-
-  // Check online status (now handled by LayoutManager, but we'll keep this for inventory-specific functionality)
-  await checkConnectionStatus();
-
-  // Load products
-  await loadProducts();
-
-  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Update UI translations for dynamic elements
@@ -259,7 +398,7 @@ async function checkConnectionStatus() {
 
     // Enable/disable certain buttons based on connection
     const syncButtons = document.querySelectorAll(
-      "#sync-button, #sync-button-bottom"
+        "#sync-button, #sync-button-bottom"
     );
     if (syncButtons) {
       syncButtons.forEach((btn) => {
@@ -279,15 +418,15 @@ async function syncData() {
 
     // Disable sync buttons during sync
     const syncButtons = document.querySelectorAll(
-      "#sync-button, #sync-button-bottom"
+        "#sync-button, #sync-button-bottom"
     );
     if (syncButtons) {
       syncButtons.forEach((btn) => {
         btn.disabled = true;
         btn.innerHTML =
-          '<div class="btn-icon" style="animation: rotate 1s linear infinite;">🔄</div><span>' +
-          window.t("common.loading") +
-          "</span>";
+            '<div class="btn-icon" style="animation: rotate 1s linear infinite;">🔄</div><span>' +
+            window.t("common.loading") +
+            "</span>";
       });
     }
 
@@ -310,29 +449,29 @@ async function syncData() {
       syncButtons.forEach((btn) => {
         btn.disabled = false;
         btn.innerHTML =
-          '<div class="btn-icon">🔄</div><span>' +
-          window.t("common.sync") +
-          "</span>";
+            '<div class="btn-icon">🔄</div><span>' +
+            window.t("common.sync") +
+            "</span>";
       });
     }
   } catch (error) {
     console.error("Error syncing data:", error);
     showNotification(
-      window.t("inventory.notifications.syncError", { message: error.message }),
-      "error"
+        window.t("inventory.notifications.syncError", { message: error.message }),
+        "error"
     );
 
     // Re-enable sync buttons
     const syncButtons = document.querySelectorAll(
-      "#sync-button, #sync-button-bottom"
+        "#sync-button, #sync-button-bottom"
     );
     if (syncButtons) {
       syncButtons.forEach((btn) => {
         btn.disabled = false;
         btn.innerHTML =
-          '<div class="btn-icon">🔄</div><span>' +
-          window.t("common.sync") +
-          "</span>";
+            '<div class="btn-icon">🔄</div><span>' +
+            window.t("common.sync") +
+            "</span>";
       });
     }
   }
@@ -363,9 +502,9 @@ function showNotification(message, type = "info") {
 
   // Check if dark mode is active
   const isDarkMode =
-    document.body.classList.contains("dark-mode") ||
-    document.documentElement.classList.contains("dark-mode") ||
-    document.body.classList.contains("dark");
+      document.body.classList.contains("dark-mode") ||
+      document.documentElement.classList.contains("dark-mode") ||
+      document.body.classList.contains("dark");
 
   // Set base styles based on theme
   if (isDarkMode) {
@@ -381,21 +520,21 @@ function showNotification(message, type = "info") {
   // Set type styling with different colors for dark/light mode
   if (type === "success") {
     notification.style.borderLeftColor = isDarkMode
-      ? "#34d399"
-      : "var(--success-color)";
+        ? "#34d399"
+        : "var(--success-color)";
   } else if (type === "error") {
     notification.style.borderLeftColor = isDarkMode
-      ? "#f87171"
-      : "var(--danger-color)";
+        ? "#f87171"
+        : "var(--danger-color)";
   } else if (type === "warning") {
     notification.style.borderLeftColor = isDarkMode
-      ? "#fbbf24"
-      : "var(--warning-color)";
+        ? "#fbbf24"
+        : "var(--warning-color)";
   } else {
     // Default info style
     notification.style.borderLeftColor = isDarkMode
-      ? "#6366f1"
-      : "var(--primary-color)";
+        ? "#6366f1"
+        : "var(--primary-color)";
   }
 
   // Set content and show
@@ -413,32 +552,39 @@ function showNotification(message, type = "info") {
 // Load products from database
 // Modified section in the loadProducts function to ensure SKU sorting
 async function loadProducts() {
-  try {
-    console.log(
-      "Loading products for page:",
-      currentPage,
-      " page size:",
-      pageSize
-    );
+  await loadProductsWithPagination(currentPage, currentProductPageSize || pageSize);
+}
 
-    // Define pagination options
+// Enhanced pagination functions for inventory handling large datasets
+
+// Load products with advanced pagination
+async function loadProductsWithPagination(page = 1, limit = 50, offset = 0, filters = {}) {
+  if (isLoadingProducts) {
+    console.log("Products already loading, skipping duplicate request");
+    return;
+  }
+
+  isLoadingProducts = true;
+  inventoryPerformanceMonitor.start();
+
+  try {
+    // Prepare pagination options with limit/offset
     const options = {
-      page: currentPage,
-      pageSize: pageSize,
-      filters: {},
+      page: page,
+      pageSize: limit,
+      offset: offset,
+      filters: {
+        ...filters,
+      },
       sort: {
         field: "sku",
-        order: "asc",
-      },
-      // Always use global sort to ensure consistent SKU sorting
-      globalSort: true,
+        order: "asc"
+      }
     };
 
     // Get search term if any
     const searchElement = document.getElementById("product-search");
-    const searchTerm = searchElement
-      ? searchElement.value.toLowerCase().trim()
-      : "";
+    const searchTerm = searchElement ? searchElement.value.toLowerCase().trim() : "";
     const filterElement = document.getElementById("search-filter");
     const filterField = filterElement ? filterElement.value : "all";
 
@@ -446,275 +592,269 @@ async function loadProducts() {
     if (searchTerm) {
       if (filterField === "all") {
         options.filters.search = searchTerm;
+        console.log("Searching all fields for:", searchTerm);
       } else {
         options.filters[filterField] = searchTerm;
+        console.log(`Searching ${filterField} field for:`, searchTerm);
       }
     }
+
+    console.log("Search options being sent:", options);
+
+    // Check cache AFTER applying all filters (only for non-search queries)
+    let cacheKey = null;
+    if (!searchTerm) {
+      // Only cache non-search results
+      cacheKey = `products_${page}_${limit}_${offset}_${JSON.stringify(options.filters)}`;
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData) {
+        console.log("Loading products from cache with key:", cacheKey);
+        products = cachedData.products;
+        totalProducts = cachedData.totalProducts;
+        totalPages = cachedData.totalPages;
+        currentPage = page;
+        currentProductPageSize = limit;
+        renderProducts(products, true, totalProducts);
+        setupEnhancedPagination();
+        return;
+      }
+    } else {
+      console.log("Search term detected, skipping cache for fresh results");
+    }
+
+    // Show loading state
+    showProductsLoading();
 
     // Request paginated data from backend
     const result = await window.api.getProducts(options);
 
-    // Handle the new response format
+    // Handle response
     if (result && result.items) {
       // Server returned paginated format
       products = result.items;
+      totalProducts = result.totalCount;
       totalPages = result.totalPages;
       currentPage = result.page;
+      currentProductPageSize = limit;
 
-      // Always sort by SKU, regardless of server-side sorting
-      products.sort(compareSKU);
+      // Cache the result only for non-search queries
+      if (cacheKey && !searchTerm) {
+        setCachedData(cacheKey, {
+          products: result.items,
+          totalProducts: result.totalCount,
+          totalPages: result.totalPages,
+        });
+      }
 
-      // Pass only the items for rendering
-      renderProducts(products, true, result.totalCount);
+      renderProducts(products, true, totalProducts);
     } else {
-      // Fallback for backward compatibility if server didn't return paginated format
+      // Fallback for backward compatibility
       products = result || [];
-
-      // Always sort locally in this case since we have all products
-      products.sort(compareSKU);
-
+      totalProducts = products.length;
+      totalPages = Math.ceil(totalProducts / limit);
+      currentPage = page;
+      currentProductPageSize = limit;
       renderProducts(products);
     }
 
+    setupEnhancedPagination();
     updateProductStats();
+    inventoryPerformanceMonitor.end('load products with pagination');
 
-    // Update inventory badge in sidebar if LayoutManager is available
-    if (window.LayoutManager) {
-      // We need to make a separate call to get low stock count if we're paginating
-      const lowStockCount = await getLowStockCount();
-      window.LayoutManager.updateInventoryBadge(lowStockCount);
+    // Clear search status after successful load
+    const searchStatusElement = document.getElementById("search-status");
+    if (searchStatusElement) {
+      const searchElement = document.getElementById("product-search");
+      const searchTerm = searchElement ? searchElement.value.trim() : "";
+      
+      if (searchTerm) {
+        // Show search results info
+        searchStatusElement.textContent = 
+          `${window.t("inventory.searchResults") || "Search results"}: ${totalProducts} ${window.t("inventory.products") || "products"} ${window.t("inventory.found") || "found"}`;
+      } else {
+        searchStatusElement.textContent = "";
+      }
     }
+
   } catch (error) {
     console.error("Error loading products:", error);
-    document.getElementById("products-table-body").innerHTML =
-      '<tr><td colspan="9">' +
-      window.t("reports.messages.dataLoadError") +
-      "</td></tr>";
-    // Initialize empty products array to prevent further errors
-    products = [];
+    showProductsError(error.message);
+  } finally {
+    isLoadingProducts = false;
   }
-
-  window.LayoutManager.refreshInventoryBadge();
 }
 
-// Ensure any direct rendering also sorts by SKU first
-function renderProducts(productsToRender, isPaginated = false, totalCount = 0) {
+// Show loading state for products table
+function showProductsLoading() {
   const tableBody = document.getElementById("products-table-body");
-  tableBody.innerHTML = "";
-
-  if (!productsToRender || productsToRender.length === 0) {
-    // Empty state handling
-    tableBody.innerHTML =
-      '<tr><td colspan="9">' +
-      window.t("inventory.table.noProducts") +
-      "</td></tr>";
-
-    if (!isPaginated) {
-      currentPage = 1;
-      totalPages = 1;
-    }
-
-    setupPagination();
-    return;
-  }
-
-  // Always sort by SKU before rendering
-  productsToRender.sort(compareSKU);
-
-  // Use total count from server if provided, otherwise use local length
-  const effectiveTotalCount = isPaginated
-    ? totalCount
-    : productsToRender.length;
-
-  // If not paginated, calculate pagination locally
-  if (!isPaginated) {
-    totalPages = Math.ceil(effectiveTotalCount / pageSize);
-    if (currentPage > totalPages) {
-      currentPage = totalPages;
-    }
-
-    // Get current page products for client-side pagination
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, effectiveTotalCount);
-    productsToRender = productsToRender.slice(startIndex, endIndex);
-  }
-
-  // Rest of the renderProducts function remains the same
-  // Get search term and filter
-  const searchElement = document.getElementById("product-search");
-  const searchTerm = searchElement
-    ? searchElement.value.toLowerCase().trim()
-    : "";
-  const filterElement = document.getElementById("search-filter");
-  const filterField = filterElement ? filterElement.value : "all";
-
-  // Display a loading indicator for large datasets
-  if (
-    effectiveTotalCount > 1000 &&
-    !tableBody.querySelector(".loading-indicator")
-  ) {
-    const loadingRow = document.createElement("tr");
-    loadingRow.className = "loading-indicator";
-    loadingRow.innerHTML = `<td colspan="9">${
-      window.t("inventory.loading") || "Loading products..."
-    }</td>`;
-    tableBody.appendChild(loadingRow);
-
-    // Use setTimeout to prevent UI freezing
-    setTimeout(() => {
-      renderProductRows(productsToRender, tableBody, searchTerm, filterField);
-      tableBody.querySelector(".loading-indicator")?.remove();
-    }, 10);
-  } else {
-    renderProductRows(productsToRender, tableBody, searchTerm, filterField);
-  }
-
-  // Setup pagination controls
-  setupPagination(effectiveTotalCount);
-
-  // Update selection UI
-  updateSelectionState(productsToRender);
-
-  // Update bulk actions UI
-  updateBulkActionsUI();
-  window.LayoutManager.refreshInventoryBadge();
-}
-
-// Utility function to compare SKUs for sorting
-function compareSKU(a, b) {
-  const skuA = (a.sku || "").toString().toLowerCase();
-  const skuB = (b.sku || "").toString().toLowerCase();
-
-  // Try to compare as numbers if both SKUs are numeric
-  if (!isNaN(skuA) && !isNaN(skuB)) {
-    return parseFloat(skuA) - parseFloat(skuB);
-  }
-
-  // Otherwise compare as strings
-  return skuA.localeCompare(skuB);
-}
-
-async function getLowStockCount() {
-  try {
-    // This could be a specialized API call that just returns the count
-    // For now, we'll make a request with a filter
-    const options = {
-      filters: {
-        lowStock: true,
-      },
-    };
-
-    const result = await window.api.getProducts(options);
-
-    if (result && typeof result.totalCount === "number") {
-      return result.totalCount;
-    } else if (Array.isArray(result)) {
-      return result.filter((product) => product.stock <= 5).length;
-    }
-
-    return 0;
-  } catch (error) {
-    console.error("Error getting low stock count:", error);
-    return 0;
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="9" style="text-align: center; padding: 24px;">
+          <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <span>${window.t("inventory.loading") || "Loading products..."}</span>
+          </div>
+        </td>
+      </tr>
+    `;
   }
 }
 
-// Extract the row rendering logic to a separate function
-function renderProductRows(products, tableBody, searchTerm, filterField) {
-  products.forEach((product) => {
-    const row = document.createElement("tr");
+// Show error state for products table
+function showProductsError(message) {
+  const tableBody = document.getElementById("products-table-body");
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="9" style="text-align: center; padding: 24px;">
+          <div class="error-container">
+            <span>${window.t("inventory.errors.loadFailed") || "Failed to load products"}: ${message}</span>
+            <button onclick="loadProductsWithPagination(${currentPage}, ${currentProductPageSize})" class="btn btn-sm btn-primary" style="margin-top: 8px;">
+              ${window.t("common.retry") || "Retry"}
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+}
 
-    // Add checkbox column
-    const checkboxCell = document.createElement("td");
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "product-select";
-    checkbox.dataset.id = product.id;
-    checkbox.checked = selectedProductIds.includes(product.id);
-    checkbox.addEventListener("change", function () {
-      if (this.checked) {
-        if (!selectedProductIds.includes(product.id)) {
-          selectedProductIds.push(product.id);
-        }
-      } else {
-        selectedProductIds = selectedProductIds.filter(
-          (id) => id !== product.id
-        );
-      }
-      updateBulkActionsUI();
-    });
-    checkboxCell.appendChild(checkbox);
-    row.appendChild(checkboxCell);
+// Enhanced pagination setup for inventory
+function setupEnhancedPagination() {
+  let paginationContainer = document.getElementById("pagination-container");
+  if (!paginationContainer) {
+    paginationContainer = document.createElement("div");
+    paginationContainer.id = "pagination-container";
+    paginationContainer.className = "enhanced-pagination";
 
-    // SKU column - MOVED TO MATCH HTML ORDER
-    const skuCell = document.createElement("td");
-    skuCell.innerHTML = highlightSearchTerms(
-      product.sku || "",
-      filterField === "sku" || filterField === "all" ? searchTerm : ""
-    );
-    row.appendChild(skuCell);
-
-    // Name column - MOVED TO MATCH HTML ORDER
-    const nameCell = document.createElement("td");
-    nameCell.innerHTML = highlightSearchTerms(
-      product.name || "",
-      filterField === "name" || filterField === "all" ? searchTerm : ""
-    );
-    row.appendChild(nameCell);
-
-    // Category column
-    const categoryCell = document.createElement("td");
-    categoryCell.innerHTML = highlightSearchTerms(
-      product.category || "",
-      filterField === "category" || filterField === "all" ? searchTerm : ""
-    );
-    row.appendChild(categoryCell);
-
-    // Price column
-    const priceCell = document.createElement("td");
-    priceCell.textContent = formatCurrency(product.price || 0);
-    row.appendChild(priceCell);
-
-    // Cost column
-    const costCell = document.createElement("td");
-    costCell.textContent = formatCurrency(product.cost || 0);
-    row.appendChild(costCell);
-
-    // ADDED: Profit column
-    const profitCell = document.createElement("td");
-    const profit = calculateProfit(product);
-    profitCell.textContent = profit;
-    row.appendChild(profitCell);
-
-    // Stock column
-    const stockCell = document.createElement("td");
-    stockCell.textContent = product.stock || 0;
-    if ((product.stock || 0) <= 5) {
-      stockCell.className = "low-stock";
+    const tableContainer = document.querySelector(".table-container");
+    if (tableContainer) {
+      tableContainer.parentNode.insertBefore(paginationContainer, tableContainer.nextSibling);
     }
-    row.appendChild(stockCell);
+  }
 
-    // Actions column
-    const actionsCell = document.createElement("td");
-    actionsCell.className = "actions";
+  paginationContainer.innerHTML = "";
 
-    const editBtn = document.createElement("button");
-    editBtn.className = "btn btn-sm edit-btn";
-    editBtn.dataset.id = product.id;
-    editBtn.textContent = window.t("common.edit") || "Edit";
-    actionsCell.appendChild(editBtn);
+  if (totalPages <= 1) {
+    return; // No pagination needed
+  }
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "btn btn-sm btn-danger delete-btn";
-    deleteBtn.dataset.id = product.id;
-    deleteBtn.textContent = window.t("common.delete") || "Delete";
-    actionsCell.appendChild(deleteBtn);
+  // Create pagination controls container
+  const paginationControls = document.createElement("div");
+  paginationControls.className = "pagination-controls";
 
-    row.appendChild(actionsCell);
-
-    // Add the completed row to the table
-    tableBody.appendChild(row);
+  // First page button
+  const firstButton = document.createElement("button");
+  firstButton.className = "btn pagination-btn";
+  firstButton.textContent = "««";
+  firstButton.title = window.t("pagination.first") || "First";
+  firstButton.disabled = currentPage === 1;
+  firstButton.addEventListener("click", () => {
+    if (currentPage > 1) {
+      loadProductsWithPagination(1, currentProductPageSize);
+    }
   });
+
+  // Previous button
+  const prevButton = document.createElement("button");
+  prevButton.className = "btn pagination-btn";
+  prevButton.textContent = "‹";
+  prevButton.title = window.t("pagination.previous") || "Previous";
+  prevButton.disabled = currentPage === 1;
+  prevButton.addEventListener("click", () => {
+    if (currentPage > 1) {
+      loadProductsWithPagination(currentPage - 1, currentProductPageSize);
+    }
+  });
+
+  // Page input for direct navigation
+  const pageInput = document.createElement("input");
+  pageInput.type = "number";
+  pageInput.min = "1";
+  pageInput.max = totalPages.toString();
+  pageInput.value = currentPage.toString();
+  pageInput.className = "page-input";
+  pageInput.addEventListener("change", (e) => {
+    const newPage = parseInt(e.target.value);
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+      loadProductsWithPagination(newPage, currentProductPageSize);
+    }
+  });
+
+  // Page info
+  const pageInfo = document.createElement("span");
+  pageInfo.className = "page-info";
+  pageInfo.textContent = ` / ${totalPages}`;
+
+  // Next button
+  const nextButton = document.createElement("button");
+  nextButton.className = "btn pagination-btn";
+  nextButton.textContent = "›";
+  nextButton.title = window.t("pagination.next") || "Next";
+  nextButton.disabled = currentPage === totalPages;
+  nextButton.addEventListener("click", () => {
+    if (currentPage < totalPages) {
+      loadProductsWithPagination(currentPage + 1, currentProductPageSize);
+    }
+  });
+
+  // Last page button
+  const lastButton = document.createElement("button");
+  lastButton.className = "btn pagination-btn";
+  lastButton.textContent = "»»";
+  lastButton.title = window.t("pagination.last") || "Last";
+  lastButton.disabled = currentPage === totalPages;
+  lastButton.addEventListener("click", () => {
+    if (currentPage < totalPages) {
+      loadProductsWithPagination(totalPages, currentProductPageSize);
+    }
+  });
+
+  // Page size selector
+  const pageSizeSelector = document.createElement("select");
+  pageSizeSelector.className = "page-size-selector";
+  pageSizeSelector.addEventListener("change", (e) => {
+    const newPageSize = parseInt(e.target.value);
+    // Recalculate current page to maintain position
+    const currentItem = (currentPage - 1) * currentProductPageSize + 1;
+    const newPage = Math.ceil(currentItem / newPageSize);
+    currentProductPageSize = newPageSize;
+    loadProductsWithPagination(newPage, newPageSize);
+  });
+
+  [25, 50, 100, 200].forEach(size => {
+    const option = document.createElement("option");
+    option.value = size;
+    option.textContent = `${size} ${window.t("pagination.perPage") || "per page"}`;
+    option.selected = size === currentProductPageSize;
+    pageSizeSelector.appendChild(option);
+  });
+
+  // Assemble pagination controls
+  paginationControls.appendChild(firstButton);
+  paginationControls.appendChild(prevButton);
+  paginationControls.appendChild(pageInput);
+  paginationControls.appendChild(pageInfo);
+  paginationControls.appendChild(nextButton);
+  paginationControls.appendChild(lastButton);
+  paginationControls.appendChild(pageSizeSelector);
+
+  // Product count info
+  const productCount = document.createElement("div");
+  productCount.className = "product-count";
+  const startProduct = (currentPage - 1) * currentProductPageSize + 1;
+  const endProduct = Math.min(startProduct + currentProductPageSize - 1, totalProducts);
+  productCount.textContent = window.t("pagination.showing", {
+    shown: products.length,
+    total: totalProducts,
+    start: startProduct,
+    end: endProduct
+  }) || `Showing ${startProduct}-${endProduct} of ${totalProducts} products`;
+
+  // Assemble final pagination
+  paginationContainer.appendChild(paginationControls);
+  paginationContainer.appendChild(productCount);
 }
 
 // Update selection state based on visible products
@@ -722,12 +862,12 @@ function updateSelectionState(visibleProducts) {
   const selectAllCheckbox = document.getElementById("select-all-checkbox");
   if (selectAllCheckbox) {
     const allSelected =
-      visibleProducts.length > 0 &&
-      visibleProducts.every((p) => selectedProductIds.includes(p.id));
+        visibleProducts.length > 0 &&
+        visibleProducts.every((p) => selectedProductIds.includes(p.id));
     selectAllCheckbox.checked = allSelected;
     selectAllCheckbox.indeterminate =
-      !allSelected &&
-      visibleProducts.some((p) => selectedProductIds.includes(p.id));
+        !allSelected &&
+        visibleProducts.some((p) => selectedProductIds.includes(p.id));
   }
 }
 
@@ -743,17 +883,17 @@ function updateBulkActionsUI() {
   const bulkActionSelect = document.getElementById("bulk-action-select");
   const applyButton = document.getElementById("apply-bulk-action");
   const bulkActionsContainer = document.getElementById(
-    "bulk-actions-container"
+      "bulk-actions-container"
   );
 
   if (selectedCount) {
     const text =
-      window.t("inventory.bulkActions.selected", {
-        count: selectedProductIds.length,
-      }) ||
-      `${selectedProductIds.length} item${
-        selectedProductIds.length !== 1 ? "s" : ""
-      } selected`;
+        window.t("inventory.bulkActions.selected", {
+          count: selectedProductIds.length,
+        }) ||
+        `${selectedProductIds.length} item${
+            selectedProductIds.length !== 1 ? "s" : ""
+        } selected`;
     selectedCount.textContent = text;
   }
 
@@ -763,7 +903,7 @@ function updateBulkActionsUI() {
 
   if (applyButton) {
     applyButton.disabled =
-      selectedProductIds.length === 0 || !bulkActionSelect.value;
+        selectedProductIds.length === 0 || !bulkActionSelect.value;
   }
 
   // Show/hide the bulk actions container based on selection
@@ -786,7 +926,14 @@ function renderCurrentPage() {
 // Filter products based on search input
 function filterProducts() {
   currentPage = 1; // Reset to first page when filtering
-  loadProducts(); // Just call loadProducts which will now use the search term
+  
+  // Clear cache when searching to ensure fresh results
+  inventoryCache.clear();
+  console.log("Cache cleared for search");
+  
+  document.getElementById("search-status").textContent = 
+    window.t("inventory.searching") || "Searching...";
+  loadProductsWithPagination(currentPage, currentProductPageSize || pageSize);
 }
 
 // Clear the search field and reset the product list
@@ -795,9 +942,9 @@ function clearSearch() {
   document.getElementById("search-filter").value = "all";
   document.getElementById("search-status").textContent = "";
 
-  // Reset to first page
+  // Reset to first page and reload products
   currentPage = 1;
-  renderProducts(products);
+  loadProductsWithPagination(currentPage, currentProductPageSize || pageSize);
   window.LayoutManager.refreshInventoryBadge();
 }
 
@@ -872,9 +1019,9 @@ async function handleAddProduct(event) {
         try {
           logActivity("update", "product", productData.name, {
             text:
-              window.t("inventory.notifications.productUpdated", {
-                name: productData.name,
-              }) || `Updated product <strong>${productData.name}</strong>`,
+                window.t("inventory.notifications.productUpdated", {
+                  name: productData.name,
+                }) || `Updated product <strong>${productData.name}</strong>`,
             icon: "✏️",
             badge: "Update",
             badgeClass: "badge-info",
@@ -884,13 +1031,13 @@ async function handleAddProduct(event) {
         }
 
         showNotification(
-          window.t("inventory.notifications.productUpdated"),
-          "success"
+            window.t("inventory.notifications.productUpdated"),
+            "success"
         );
       } else {
         showNotification(
-          window.t("inventory.notifications.failedToUpdate"),
-          "error"
+            window.t("inventory.notifications.failedToUpdate"),
+            "error"
         );
       }
     } else {
@@ -908,17 +1055,17 @@ async function handleAddProduct(event) {
       // Log the add activity
       logActivity("add", "product", productData.name, {
         text:
-          window.t("inventory.notifications.productAdded", {
-            name: productData.name,
-          }) || `Added new product <strong>${productData.name}</strong>`,
+            window.t("inventory.notifications.productAdded", {
+              name: productData.name,
+            }) || `Added new product <strong>${productData.name}</strong>`,
         icon: "✚",
         badge: "New",
         badgeClass: "badge-success",
       });
 
       showNotification(
-        window.t("inventory.notifications.productAdded"),
-        "success"
+          window.t("inventory.notifications.productAdded"),
+          "success"
       );
     }
 
@@ -938,10 +1085,10 @@ async function handleAddProduct(event) {
   } catch (error) {
     console.error("Error saving product:", error);
     showNotification(
-      editingProductId
-        ? window.t("inventory.notifications.failedToUpdate")
-        : window.t("inventory.notifications.failedToAdd"),
-      "error"
+        editingProductId
+            ? window.t("inventory.notifications.failedToUpdate")
+            : window.t("inventory.notifications.failedToAdd"),
+        "error"
     );
   }
 
@@ -967,7 +1114,7 @@ function handleEditProduct(event) {
   // Set editing mode
   editingProductId = productId;
   document.getElementById("product-form-title").textContent = window.t(
-    "inventory.productForm.editTitle"
+      "inventory.productForm.editTitle"
   );
 
   // Show modal
@@ -994,9 +1141,9 @@ async function handleDeleteProduct(event) {
       // Log the deletion activity
       logActivity("delete", "product", productToDelete.name, {
         text:
-          window.t("inventory.notifications.productDeleted", {
-            name: productToDelete.name,
-          }) || `Deleted product <strong>${productToDelete.name}</strong>`,
+            window.t("inventory.notifications.productDeleted", {
+              name: productToDelete.name,
+            }) || `Deleted product <strong>${productToDelete.name}</strong>`,
         icon: "🗑️",
         badge: "Delete",
         badgeClass: "badge-danger",
@@ -1016,20 +1163,20 @@ async function handleDeleteProduct(event) {
       }
 
       showNotification(
-        window.t("inventory.notifications.productDeleted"),
-        "success"
+          window.t("inventory.notifications.productDeleted"),
+          "success"
       );
     } else {
       showNotification(
-        window.t("inventory.notifications.failedToDelete"),
-        "error"
+          window.t("inventory.notifications.failedToDelete"),
+          "error"
       );
     }
   } catch (error) {
     console.error("Error deleting product:", error);
     showNotification(
-      window.t("inventory.notifications.failedToDelete"),
-      "error"
+        window.t("inventory.notifications.failedToDelete"),
+        "error"
     );
   }
 
@@ -1044,11 +1191,11 @@ async function handleBulkAction() {
   switch (action) {
     case "delete":
       if (
-        confirm(
-          window.t("inventory.confirmations.bulkDelete", {
-            count: selectedProductIds.length,
-          })
-        )
+          confirm(
+              window.t("inventory.confirmations.bulkDelete", {
+                count: selectedProductIds.length,
+              })
+          )
       ) {
         await bulkDeleteProducts();
       }
@@ -1075,7 +1222,7 @@ async function bulkDeleteProducts() {
 
     // Get product names for logging before deletion
     const productsToDelete = products.filter((p) =>
-      selectedProductIds.includes(p.id)
+        selectedProductIds.includes(p.id)
     );
     const productNames = productsToDelete.map((p) => p.name).join(", ");
 
@@ -1087,11 +1234,11 @@ async function bulkDeleteProducts() {
     // Log the bulk deletion activity
     logActivity("delete", "products", "Multiple products", {
       text:
-        window.t("inventory.notifications.bulkDeleteSuccess", {
-          count: selectedProductIds.length,
-          names: productNames,
-        }) ||
-        `Deleted ${selectedProductIds.length} products: <strong>${productNames}</strong>`,
+          window.t("inventory.notifications.bulkDeleteSuccess", {
+            count: selectedProductIds.length,
+            names: productNames,
+          }) ||
+          `Deleted ${selectedProductIds.length} products: <strong>${productNames}</strong>`,
       icon: "🗑️",
       badge: "Bulk Delete",
       badgeClass: "badge-danger",
@@ -1118,16 +1265,16 @@ async function bulkDeleteProducts() {
     }
 
     showNotification(
-      window.t("inventory.notifications.bulkDeleteSuccess", {
-        count: previousLength,
-      }),
-      "success"
+        window.t("inventory.notifications.bulkDeleteSuccess", {
+          count: previousLength,
+        }),
+        "success"
     );
   } catch (error) {
     console.error("Error in bulk delete:", error);
     showNotification(
-      window.t("inventory.notifications.failedToDelete"),
-      "error"
+        window.t("inventory.notifications.failedToDelete"),
+        "error"
     );
   }
 
@@ -1139,9 +1286,9 @@ function showCategoryChangeModal() {
   // Get unique categories from products
   const uniqueCategories = [
     ...new Set(
-      products.map(
-        (p) => p.category || window.t("common.none") || "Uncategorized"
-      )
+        products.map(
+            (p) => p.category || window.t("common.none") || "Uncategorized"
+        )
     ),
   ];
 
@@ -1167,7 +1314,7 @@ function showCategoryChangeModal() {
   const newOption = document.createElement("option");
   newOption.value = "new";
   newOption.textContent =
-    window.t("inventory.categoryModal.addNew") || "+ Add New Category";
+      window.t("inventory.categoryModal.addNew") || "+ Add New Category";
   categorySelect.appendChild(newOption);
 
   // Hide the "new category" input
@@ -1175,91 +1322,91 @@ function showCategoryChangeModal() {
 
   // Set up the save button
   document.getElementById("save-category").addEventListener(
-    "click",
-    async () => {
-      let newCategory = document.getElementById("new-category").value;
-      if (newCategory === "new") {
-        newCategory = document.getElementById("new-category-name").value.trim();
-        if (!newCategory) {
-          showNotification(
-            window.t("inventory.notifications.categoryRequired"),
-            "error"
-          );
-          return;
-        }
-      }
-
-      try {
-        // Show loading state
-        const saveButton = document.getElementById("save-category");
-        saveButton.textContent = window.t("common.loading") || "Updating...";
-        saveButton.disabled = true;
-
-        // Get product names for logging
-        const productsToUpdate = products.filter((p) =>
-          selectedProductIds.includes(p.id)
-        );
-        const productNames = productsToUpdate.map((p) => p.name).join(", ");
-
-        // Update each product
-        for (const productId of selectedProductIds) {
-          const product = products.find((p) => p.id === productId);
-          if (product) {
-            await window.api.updateProduct({
-              ...product,
-              category: newCategory,
-            });
-
-            // Update in local array
-            product.category = newCategory;
+      "click",
+      async () => {
+        let newCategory = document.getElementById("new-category").value;
+        if (newCategory === "new") {
+          newCategory = document.getElementById("new-category-name").value.trim();
+          if (!newCategory) {
+            showNotification(
+                window.t("inventory.notifications.categoryRequired"),
+                "error"
+            );
+            return;
           }
         }
 
-        // Log the category update activity
-        logActivity("update", "products", "Multiple products", {
-          text:
-            window.t("inventory.notifications.bulkCategorySuccess", {
-              count: selectedProductIds.length,
-              category: newCategory,
-            }) ||
-            `Updated category to <strong>${newCategory}</strong> for ${selectedProductIds.length} products`,
-          icon: "📂",
-          badge: "Category",
-          badgeClass: "badge-info",
-        });
+        try {
+          // Show loading state
+          const saveButton = document.getElementById("save-category");
+          saveButton.textContent = window.t("common.loading") || "Updating...";
+          saveButton.disabled = true;
 
-        // Close modal
-        modal.style.display = "none";
+          // Get product names for logging
+          const productsToUpdate = products.filter((p) =>
+              selectedProductIds.includes(p.id)
+          );
+          const productNames = productsToUpdate.map((p) => p.name).join(", ");
 
-        // Re-render products
-        renderProducts(products);
+          // Update each product
+          for (const productId of selectedProductIds) {
+            const product = products.find((p) => p.id === productId);
+            if (product) {
+              await window.api.updateProduct({
+                ...product,
+                category: newCategory,
+              });
 
-        // If we're online, try to sync
-        if (isOnline && window.api.syncData) {
-          syncData();
+              // Update in local array
+              product.category = newCategory;
+            }
+          }
+
+          // Log the category update activity
+          logActivity("update", "products", "Multiple products", {
+            text:
+                window.t("inventory.notifications.bulkCategorySuccess", {
+                  count: selectedProductIds.length,
+                  category: newCategory,
+                }) ||
+                `Updated category to <strong>${newCategory}</strong> for ${selectedProductIds.length} products`,
+            icon: "📂",
+            badge: "Category",
+            badgeClass: "badge-info",
+          });
+
+          // Close modal
+          modal.style.display = "none";
+
+          // Re-render products
+          renderProducts(products);
+
+          // If we're online, try to sync
+          if (isOnline && window.api.syncData) {
+            syncData();
+          }
+
+          showNotification(
+              window.t("inventory.notifications.bulkCategorySuccess", {
+                count: selectedProductIds.length,
+              }),
+              "success"
+          );
+        } catch (error) {
+          console.error("Error updating categories:", error);
+          showNotification(
+              window.t("inventory.notifications.failedToUpdate"),
+              "error"
+          );
+        } finally {
+          // Reset save button
+          const saveButton = document.getElementById("save-category");
+          saveButton.textContent =
+              window.t("inventory.categoryModal.apply") || "Apply";
+          saveButton.disabled = false;
         }
-
-        showNotification(
-          window.t("inventory.notifications.bulkCategorySuccess", {
-            count: selectedProductIds.length,
-          }),
-          "success"
-        );
-      } catch (error) {
-        console.error("Error updating categories:", error);
-        showNotification(
-          window.t("inventory.notifications.failedToUpdate"),
-          "error"
-        );
-      } finally {
-        // Reset save button
-        const saveButton = document.getElementById("save-category");
-        saveButton.textContent =
-          window.t("inventory.categoryModal.apply") || "Apply";
-        saveButton.disabled = false;
-      }
-    },
-    { once: true }
+      },
+      { once: true }
   );
 
   // Show the modal
@@ -1279,122 +1426,122 @@ function showStockUpdateModal() {
 
   // Set up the save button
   document.getElementById("save-stock").addEventListener(
-    "click",
-    async () => {
-      const method = document.getElementById("stock-update-method").value;
-      const value = parseInt(document.getElementById("stock-value").value) || 0;
+      "click",
+      async () => {
+        const method = document.getElementById("stock-update-method").value;
+        const value = parseInt(document.getElementById("stock-value").value) || 0;
 
-      if (value < 0) {
-        showNotification(
-          window.t("inventory.notifications.nonnegativeValue"),
-          "error"
-        );
-        return;
-      }
-
-      try {
-        // Show loading state
-        const saveButton = document.getElementById("save-stock");
-        saveButton.textContent = window.t("common.loading") || "Updating...";
-        saveButton.disabled = true;
-
-        // Get product names for logging
-        const productsToUpdate = products.filter((p) =>
-          selectedProductIds.includes(p.id)
-        );
-        const productNames = productsToUpdate.map((p) => p.name).join(", ");
-
-        // Get action text for the log
-        let actionText = "";
-        switch (method) {
-          case "set":
-            actionText =
-              window.t("inventory.stockModal.methods.set") + " " + value;
-            break;
-          case "add":
-            actionText =
-              window.t("inventory.stockModal.methods.add") + " " + value;
-            break;
-          case "subtract":
-            actionText =
-              window.t("inventory.stockModal.methods.subtract") + " " + value;
-            break;
+        if (value < 0) {
+          showNotification(
+              window.t("inventory.notifications.nonnegativeValue"),
+              "error"
+          );
+          return;
         }
 
-        // Update each product
-        for (const productId of selectedProductIds) {
-          const product = products.find((p) => p.id === productId);
-          if (product) {
-            let newStock = product.stock;
+        try {
+          // Show loading state
+          const saveButton = document.getElementById("save-stock");
+          saveButton.textContent = window.t("common.loading") || "Updating...";
+          saveButton.disabled = true;
 
-            switch (method) {
-              case "set":
-                newStock = value;
-                break;
-              case "add":
-                newStock += value;
-                break;
-              case "subtract":
-                newStock = Math.max(0, newStock - value);
-                break;
-            }
+          // Get product names for logging
+          const productsToUpdate = products.filter((p) =>
+              selectedProductIds.includes(p.id)
+          );
+          const productNames = productsToUpdate.map((p) => p.name).join(", ");
 
-            await window.api.updateProduct({
-              ...product,
-              stock: newStock,
-            });
-
-            // Update in local array
-            product.stock = newStock;
+          // Get action text for the log
+          let actionText = "";
+          switch (method) {
+            case "set":
+              actionText =
+                  window.t("inventory.stockModal.methods.set") + " " + value;
+              break;
+            case "add":
+              actionText =
+                  window.t("inventory.stockModal.methods.add") + " " + value;
+              break;
+            case "subtract":
+              actionText =
+                  window.t("inventory.stockModal.methods.subtract") + " " + value;
+              break;
           }
+
+          // Update each product
+          for (const productId of selectedProductIds) {
+            const product = products.find((p) => p.id === productId);
+            if (product) {
+              let newStock = product.stock;
+
+              switch (method) {
+                case "set":
+                  newStock = value;
+                  break;
+                case "add":
+                  newStock += value;
+                  break;
+                case "subtract":
+                  newStock = Math.max(0, newStock - value);
+                  break;
+              }
+
+              await window.api.updateProduct({
+                ...product,
+                stock: newStock,
+              });
+
+              // Update in local array
+              product.stock = newStock;
+            }
+          }
+
+          // Log the stock update activity
+          logActivity("update", "products", "Multiple products", {
+            text:
+                window.t("inventory.notifications.bulkStockSuccess", {
+                  count: selectedProductIds.length,
+                  action: actionText,
+                }) ||
+                `Stock ${actionText} for ${selectedProductIds.length} products`,
+            icon: "📦",
+            badge: "Stock",
+            badgeClass: "badge-info",
+          });
+
+          // Close modal
+          modal.style.display = "none";
+
+          // Re-render products
+          renderProducts(products);
+          updateProductStats();
+
+          // If we're online, try to sync
+          if (isOnline && window.api.syncData) {
+            syncData();
+          }
+
+          showNotification(
+              window.t("inventory.notifications.bulkStockSuccess", {
+                count: selectedProductIds.length,
+              }),
+              "success"
+          );
+        } catch (error) {
+          console.error("Error updating stock:", error);
+          showNotification(
+              window.t("inventory.notifications.failedToUpdate"),
+              "error"
+          );
+        } finally {
+          // Reset save button
+          const saveButton = document.getElementById("save-stock");
+          saveButton.textContent =
+              window.t("inventory.stockModal.apply") || "Apply";
+          saveButton.disabled = false;
         }
-
-        // Log the stock update activity
-        logActivity("update", "products", "Multiple products", {
-          text:
-            window.t("inventory.notifications.bulkStockSuccess", {
-              count: selectedProductIds.length,
-              action: actionText,
-            }) ||
-            `Stock ${actionText} for ${selectedProductIds.length} products`,
-          icon: "📦",
-          badge: "Stock",
-          badgeClass: "badge-info",
-        });
-
-        // Close modal
-        modal.style.display = "none";
-
-        // Re-render products
-        renderProducts(products);
-        updateProductStats();
-
-        // If we're online, try to sync
-        if (isOnline && window.api.syncData) {
-          syncData();
-        }
-
-        showNotification(
-          window.t("inventory.notifications.bulkStockSuccess", {
-            count: selectedProductIds.length,
-          }),
-          "success"
-        );
-      } catch (error) {
-        console.error("Error updating stock:", error);
-        showNotification(
-          window.t("inventory.notifications.failedToUpdate"),
-          "error"
-        );
-      } finally {
-        // Reset save button
-        const saveButton = document.getElementById("save-stock");
-        saveButton.textContent =
-          window.t("inventory.stockModal.apply") || "Apply";
-        saveButton.disabled = false;
-      }
-    },
-    { once: true }
+      },
+      { once: true }
   );
 
   // Show modal
@@ -1407,8 +1554,8 @@ function exportProductsToCSV() {
   try {
     if (products.length === 0) {
       showNotification(
-        window.t("inventory.notifications.noProductsExport"),
-        "warning"
+          window.t("inventory.notifications.noProductsExport"),
+          "warning"
       );
       return;
     }
@@ -1426,15 +1573,15 @@ function exportProductsToCSV() {
       };
 
       csvContent +=
-        [
-          formatCSVField(product.id),
-          formatCSVField(product.sku),
-          formatCSVField(product.name),
-          formatCSVField(product.category),
-          formatCSVField(product.price),
-          formatCSVField(product.cost),
-          formatCSVField(product.stock),
-        ].join(",") + "\n";
+          [
+            formatCSVField(product.id),
+            formatCSVField(product.sku),
+            formatCSVField(product.name),
+            formatCSVField(product.category),
+            formatCSVField(product.price),
+            formatCSVField(product.cost),
+            formatCSVField(product.stock),
+          ].join(",") + "\n";
     });
 
     // Create download link
@@ -1443,8 +1590,8 @@ function exportProductsToCSV() {
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute(
-      "download",
-      `inventory_export_${new Date().toISOString().slice(0, 10)}.csv`
+        "download",
+        `inventory_export_${new Date().toISOString().slice(0, 10)}.csv`
     );
     link.style.visibility = "hidden";
 
@@ -1455,10 +1602,10 @@ function exportProductsToCSV() {
 
     // Show success message
     showNotification(
-      window.t("inventory.notifications.exportSuccess", {
-        count: products.length,
-      }),
-      "success"
+        window.t("inventory.notifications.exportSuccess", {
+          count: products.length,
+        }),
+        "success"
     );
   } catch (error) {
     console.error("Error exporting to CSV:", error);
@@ -1503,11 +1650,11 @@ function handleFileSelect(event) {
 
       // Add event listener for import button
       document.getElementById("process-import").addEventListener(
-        "click",
-        () => {
-          processCSVImport(csvData);
-        },
-        { once: true }
+          "click",
+          () => {
+            processCSVImport(csvData);
+          },
+          { once: true }
       );
     } catch (error) {
       console.error("Error reading CSV:", error);
@@ -1530,7 +1677,7 @@ function previewCSVData(csvData) {
 
   // Create preview table
   let tableHTML =
-    '<table class="preview-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;"><thead><tr>';
+      '<table class="preview-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;"><thead><tr>';
 
   // Add headers
   headers.forEach((header) => {
@@ -1555,12 +1702,12 @@ function previewCSVData(csvData) {
 
   // Show total rows
   const totalDataRows = lines.filter(
-    (line, index) => index > 0 && line.trim()
+      (line, index) => index > 0 && line.trim()
   ).length;
   tableHTML +=
-    `<p style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-secondary);">` +
-    window.t("inventory.importModal.totalRows", { count: totalDataRows }) +
-    `</p>`;
+      `<p style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-secondary);">` +
+      window.t("inventory.importModal.totalRows", { count: totalDataRows }) +
+      `</p>`;
 
   previewEl.innerHTML = tableHTML;
 }
@@ -1603,14 +1750,14 @@ async function processCSVImport(csvData) {
 
     // Check required headers
     const missingHeaders = requiredHeaders.filter(
-      (header) => !(header in headerIndexes)
+        (header) => !(header in headerIndexes)
     );
     if (missingHeaders.length > 0) {
       showNotification(
-        window.t("inventory.notifications.missingColumns", {
-          columns: missingHeaders.join(", "),
-        }),
-        "error"
+          window.t("inventory.notifications.missingColumns", {
+            columns: missingHeaders.join(", "),
+          }),
+          "error"
       );
       return;
     }
@@ -1730,12 +1877,12 @@ async function processCSVImport(csvData) {
 
     // Show result
     showNotification(
-      window.t("inventory.notifications.importComplete", {
-        added: addedCount,
-        updated: updatedCount,
-        errors: errorCount,
-      }),
-      errorCount > 0 ? "warning" : "success"
+        window.t("inventory.notifications.importComplete", {
+          added: addedCount,
+          updated: updatedCount,
+          errors: errorCount,
+        }),
+        errorCount > 0 ? "warning" : "success"
     );
   } catch (error) {
     console.error("Error importing CSV:", error);
@@ -1745,7 +1892,7 @@ async function processCSVImport(csvData) {
     const processButton = document.getElementById("process-import");
     if (processButton) {
       processButton.textContent =
-        window.t("inventory.importModal.import") || "Import Products";
+          window.t("inventory.importModal.import") || "Import Products";
       processButton.disabled = false;
     }
   }
@@ -1755,100 +1902,151 @@ async function processCSVImport(csvData) {
 
 // Add pagination
 function setupPagination(totalCount = 0) {
-  // If totalCount is provided, use it to calculate totalPages
+  // Update total counts if provided
   if (totalCount > 0) {
-    totalPages = Math.ceil(totalCount / pageSize);
+    totalProducts = totalCount;
+    totalPages = Math.ceil(totalProducts / (currentProductPageSize || pageSize));
   }
 
-  // Get pagination container (or create it if it doesn't exist)
-  let paginationContainer = document.getElementById("pagination-container");
-  if (!paginationContainer) {
-    paginationContainer = document.createElement("div");
-    paginationContainer.id = "pagination-container";
-    paginationContainer.className = "pagination";
+  // Use the enhanced pagination
+  setupEnhancedPagination();
+}
 
-    // Add it after the table-container
-    const tableContainer = document.querySelector(".table-container");
-    tableContainer.parentNode.insertBefore(
-      paginationContainer,
-      tableContainer.nextSibling
+// Utility function to compare SKUs for sorting
+function compareSKU(a, b) {
+  const skuA = (a.sku || "").toString().toLowerCase();
+  const skuB = (b.sku || "").toString().toLowerCase();
+
+  // Try to compare as numbers if both SKUs are numeric
+  if (!isNaN(skuA) && !isNaN(skuB)) {
+    return parseFloat(skuA) - parseFloat(skuB);
+  }
+
+  // Otherwise compare as strings
+  return skuA.localeCompare(skuB);
+}
+
+async function getLowStockCount() {
+  try {
+    // This could be a specialized API call that just returns the count
+    // For now, we'll make a request with a filter
+    const options = {
+      filters: {
+        lowStock: true,
+      },
+    };
+
+    const result = await window.api.getProducts(options);
+
+    if (result && typeof result.totalCount === "number") {
+      return result.totalCount;
+    } else if (Array.isArray(result)) {
+      return result.filter((product) => product.stock <= 5).length;
+    }
+
+    return 0;
+  } catch (error) {
+    console.error("Error getting low stock count:", error);
+    return 0;
+  }
+}
+
+// Extract the row rendering logic to a separate function
+function renderProductRows(products, tableBody, searchTerm, filterField) {
+  products.forEach((product) => {
+    const row = document.createElement("tr");
+
+    // Add checkbox column
+    const checkboxCell = document.createElement("td");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "product-select";
+    checkbox.dataset.id = product.id;
+    checkbox.checked = selectedProductIds.includes(product.id);
+    checkbox.addEventListener("change", function () {
+      if (this.checked) {
+        if (!selectedProductIds.includes(product.id)) {
+          selectedProductIds.push(product.id);
+        }
+      } else {
+        selectedProductIds = selectedProductIds.filter(
+            (id) => id !== product.id
+        );
+      }
+      updateBulkActionsUI();
+    });
+    checkboxCell.appendChild(checkbox);
+    row.appendChild(checkboxCell);
+
+    // SKU column - MOVED TO MATCH HTML ORDER
+    const skuCell = document.createElement("td");
+    skuCell.innerHTML = highlightSearchTerms(
+        product.sku || "",
+        filterField === "sku" || filterField === "all" ? searchTerm : ""
     );
-  }
+    row.appendChild(skuCell);
 
-  // Clear any existing pagination controls
-  paginationContainer.innerHTML = "";
+    // Name column - MOVED TO MATCH HTML ORDER
+    const nameCell = document.createElement("td");
+    nameCell.innerHTML = highlightSearchTerms(
+        product.name || "",
+        filterField === "name" || filterField === "all" ? searchTerm : ""
+    );
+    row.appendChild(nameCell);
 
-  // Create pagination controls
-  const paginationControls = document.createElement("div");
-  paginationControls.className = "pagination-controls";
+    // Category column
+    const categoryCell = document.createElement("td");
+    categoryCell.innerHTML = highlightSearchTerms(
+        product.category || "",
+        filterField === "category" || filterField === "all" ? searchTerm : ""
+    );
+    row.appendChild(categoryCell);
 
-  // Previous button
-  const prevButton = document.createElement("button");
-  prevButton.className = "btn pagination-btn";
-  prevButton.textContent =
-    window.t("inventory.pagination.previous") || "« Previous";
-  prevButton.disabled = currentPage === 1;
-  prevButton.addEventListener("click", () => {
-    if (currentPage > 1) {
-      currentPage--;
-      loadProducts(); // Changed from renderCurrentPage to loadProducts for server pagination
+    // Price column
+    const priceCell = document.createElement("td");
+    priceCell.textContent = formatCurrency(product.price || 0);
+    row.appendChild(priceCell);
+
+    // Cost column
+    const costCell = document.createElement("td");
+    costCell.textContent = formatCurrency(product.cost || 0);
+    row.appendChild(costCell);
+
+    // ADDED: Profit column
+    const profitCell = document.createElement("td");
+    const profit = calculateProfit(product);
+    profitCell.textContent = profit;
+    row.appendChild(profitCell);
+
+    // Stock column
+    const stockCell = document.createElement("td");
+    stockCell.textContent = product.stock || 0;
+    if ((product.stock || 0) <= 5) {
+      stockCell.className = "low-stock";
     }
+    row.appendChild(stockCell);
+
+    // Actions column
+    const actionsCell = document.createElement("td");
+    actionsCell.className = "actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "btn btn-sm edit-btn";
+    editBtn.dataset.id = product.id;
+    editBtn.textContent = window.t("common.edit") || "Edit";
+    actionsCell.appendChild(editBtn);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "btn btn-sm btn-danger delete-btn";
+    deleteBtn.dataset.id = product.id;
+    deleteBtn.textContent = window.t("common.delete") || "Delete";
+    actionsCell.appendChild(deleteBtn);
+
+    row.appendChild(actionsCell);
+
+    // Add the completed row to the table
+    tableBody.appendChild(row);
   });
-
-  // Next button
-  const nextButton = document.createElement("button");
-  nextButton.className = "btn pagination-btn";
-  nextButton.textContent = window.t("inventory.pagination.next") || "Next »";
-  nextButton.disabled = currentPage === totalPages || totalPages === 0;
-  nextButton.addEventListener("click", () => {
-    if (currentPage < totalPages) {
-      currentPage++;
-      loadProducts(); // Changed from renderCurrentPage to loadProducts for server pagination
-    }
-  });
-
-  // Page info
-  const pageInfo = document.createElement("span");
-  pageInfo.className = "page-info";
-  pageInfo.textContent =
-    window.t("inventory.pagination.page", {
-      current: currentPage,
-      total: totalPages,
-    }) || `Page ${currentPage} of ${totalPages}`;
-
-  // Add page selector for larger data sets
-  const pageSelector = document.createElement("select");
-  pageSelector.className = "page-selector";
-  pageSelector.addEventListener("change", (e) => {
-    currentPage = parseInt(e.target.value);
-    loadProducts(); // Changed from renderCurrentPage to loadProducts for server pagination
-  });
-
-  for (let i = 1; i <= totalPages; i++) {
-    const option = document.createElement("option");
-    option.value = i;
-    option.textContent =
-      window
-        .t("inventory.pagination.page", {
-          current: i,
-          total: totalPages,
-        })
-        .replace(` ${totalPages}`, "") || `Page ${i}`;
-    option.selected = i === currentPage;
-    pageSelector.appendChild(option);
-  }
-
-  // Assemble pagination controls
-  paginationControls.appendChild(prevButton);
-  paginationControls.appendChild(pageInfo);
-
-  if (totalPages > 2) {
-    paginationControls.appendChild(pageSelector);
-  }
-
-  paginationControls.appendChild(nextButton);
-  paginationContainer.appendChild(paginationControls);
-  window.LayoutManager.refreshInventoryBadge();
 }
 
 // Calculate profit for a product
@@ -1863,81 +2061,86 @@ function calculateProfit(product) {
 
 // Update product statistics
 function updateProductStats() {
-  // This function now needs to make additional API calls to get aggregate stats
-  // Or you could add these stats to the response of the getProducts API
+  // Use debouncing to avoid too many stats updates
+  clearTimeout(window.statsUpdateTimeout);
+  window.statsUpdateTimeout = setTimeout(async () => {
+    try {
+      console.log("Updating product stats...");
+      const stats = await getTotalProductStats();
+      
+      // Update UI elements
+      const totalProductsEl = document.getElementById("total-products");
+      const inventoryValueEl = document.getElementById("inventory-value");
+      const lowStockCountEl = document.getElementById("low-stock-count");
 
-  // For now, we'll show stats for the current page only
-  const pageProducts = products.length;
-  const pageValue = products.reduce(
-    (sum, product) => sum + product.price * product.stock,
-    0
-  );
-  const pageLowStock = products.filter((product) => product.stock <= 5).length;
-
-  // Try to get total counts asynchronously
-  getTotalProductStats()
-    .then((stats) => {
-      document.getElementById("total-products").textContent =
-        stats.totalProducts;
-      document.getElementById("inventory-value").textContent = formatCurrency(
-        stats.totalValue
-      );
-      document.getElementById("low-stock-count").textContent =
-        stats.lowStockCount;
+      if (totalProductsEl) totalProductsEl.textContent = stats.totalProducts;
+      if (inventoryValueEl) inventoryValueEl.textContent = formatCurrency(stats.totalValue);
+      if (lowStockCountEl) lowStockCountEl.textContent = stats.lowStockCount;
 
       // Update badge in sidebar if LayoutManager is available
       if (window.LayoutManager) {
         window.LayoutManager.updateInventoryBadge(stats.lowStockCount);
       }
-    })
-    .catch((error) => {
-      console.error("Error getting total stats:", error);
-      // Fallback to page stats
-      document.getElementById("total-products").textContent = pageProducts;
-      document.getElementById("inventory-value").textContent =
-        formatCurrency(pageValue);
-      document.getElementById("low-stock-count").textContent = pageLowStock;
-    });
+
+      console.log("Stats updated successfully:", stats);
+    } catch (error) {
+      console.error("Error updating stats:", error);
+      // Fallback to page-level stats
+      const pageProducts = products.length;
+      const pageValue = products.reduce((sum, p) => sum + (p.price || 0) * (p.stock || 0), 0);
+      const pageLowStock = products.filter((p) => (p.stock || 0) <= 5).length;
+
+      const totalProductsEl = document.getElementById("total-products");
+      const inventoryValueEl = document.getElementById("inventory-value");
+      const lowStockCountEl = document.getElementById("low-stock-count");
+
+      if (totalProductsEl) totalProductsEl.textContent = pageProducts;
+      if (inventoryValueEl) inventoryValueEl.textContent = formatCurrency(pageValue);
+      if (lowStockCountEl) lowStockCountEl.textContent = pageLowStock;
+    }
+  }, 300); // 300ms debounce
 }
 async function getTotalProductStats() {
   try {
-    // This would ideally be a specialized API endpoint that returns just the stats
-    // For now, we'll make a request with a special option
-    const options = {
+    console.log("Getting product stats...");
+    
+    // First try to get stats using the dedicated stats API
+    const statsResult = await window.api.getProducts({
       stats: true,
-    };
-
-    const result = await window.api.getProducts(options);
-
-    if (result && result.stats) {
-      return result.stats;
-    }
-
-    // Fallback: If the API doesn't support stats,
-    // we'll need to load all products once to get accurate counts
-    const allProducts = await window.api.getProducts({
-      page: 1,
-      pageSize: 1000000,
+      statsOnly: true
     });
 
-    const products = Array.isArray(allProducts)
-      ? allProducts
-      : allProducts && allProducts.items
-      ? allProducts.items
-      : [];
+    if (statsResult && statsResult.stats) {
+      console.log("Got stats from dedicated API:", statsResult.stats);
+      return statsResult.stats;
+    }
 
+    // Second attempt: Try getting paginated results with stats
+    const paginatedResult = await window.api.getProducts({
+      page: 1,
+      pageSize: 25, // Use reasonable page size
+      stats: true
+    });
+
+    if (paginatedResult && paginatedResult.stats) {
+      console.log("Got stats from paginated API:", paginatedResult.stats);
+      return paginatedResult.stats;
+    }
+
+    // Final fallback: Use current loaded products for estimates
+    console.log("Using current products for stats estimation");
     return {
-      totalProducts: products.length,
-      totalValue: products.reduce((sum, p) => sum + p.price * p.stock, 0),
-      lowStockCount: products.filter((p) => p.stock <= 5).length,
+      totalProducts: totalProducts || products.length,
+      totalValue: products.reduce((sum, p) => sum + (p.price || 0) * (p.stock || 0), 0),
+      lowStockCount: products.filter((p) => (p.stock || 0) <= 5).length,
     };
   } catch (error) {
     console.error("Error getting product stats:", error);
-    // Return default values
+    // Return safe default values
     return {
-      totalProducts: products.length,
-      totalValue: products.reduce((sum, p) => sum + p.price * p.stock, 0),
-      lowStockCount: products.filter((p) => p.stock <= 5).length,
+      totalProducts: totalProducts || products.length,
+      totalValue: products.reduce((sum, p) => sum + (p.price || 0) * (p.stock || 0), 0),
+      lowStockCount: products.filter((p) => (p.stock || 0) <= 5).length,
     };
   }
 }
@@ -1954,9 +2157,9 @@ function highlightSearchTerms(text, searchTerm) {
   const endIndex = startIndex + lcSearchTerm.length;
 
   return (
-    text.substring(0, startIndex) +
-    `<span class="highlight">${text.substring(startIndex, endIndex)}</span>` +
-    text.substring(endIndex)
+      text.substring(0, startIndex) +
+      `<span class="highlight">${text.substring(startIndex, endIndex)}</span>` +
+      text.substring(endIndex)
   );
 }
 
@@ -2002,4 +2205,87 @@ function logActivity(action, itemType, itemName, additionalInfo = {}) {
     console.error("Error logging activity:", error);
     return false;
   }
+}
+
+// Ensure any direct rendering also sorts by SKU first
+function renderProducts(productsToRender, isPaginated = false, totalCount = 0) {
+  const tableBody = document.getElementById("products-table-body");
+  if (!tableBody) return;
+
+  // Clear loading spinner if present
+  tableBody.innerHTML = "";
+
+  if (!productsToRender || productsToRender.length === 0) {
+    // Empty state handling
+    tableBody.innerHTML =
+        '<tr><td colspan="9" style="text-align: center; padding: 24px;">' +
+        (window.t("inventory.table.noProducts") || "No products found") +
+        "</td></tr>";
+
+    if (!isPaginated) {
+      currentPage = 1;
+      totalPages = 1;
+      totalProducts = 0;
+    }
+
+    setupEnhancedPagination();
+    return;
+  }
+
+  // Always sort by SKU before rendering
+  productsToRender.sort(compareSKU);
+
+  // Use total count from server if provided, otherwise use local length
+  totalProducts = isPaginated ? totalCount : productsToRender.length;
+
+  // If not paginated, calculate pagination locally
+  if (!isPaginated) {
+    totalPages = Math.ceil(totalProducts / (currentProductPageSize || pageSize));
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    // Get current page products for client-side pagination
+    const startIndex = (currentPage - 1) * (currentProductPageSize || pageSize);
+    const endIndex = Math.min(startIndex + (currentProductPageSize || pageSize), totalProducts);
+    productsToRender = productsToRender.slice(startIndex, endIndex);
+  } else {
+    // For server-side pagination, recalculate totalPages
+    totalPages = Math.ceil(totalProducts / (currentProductPageSize || pageSize));
+  }
+
+  // Get search term and filter for highlighting
+  const searchElement = document.getElementById("product-search");
+  const searchTerm = searchElement ? searchElement.value.toLowerCase().trim() : "";
+  const filterElement = document.getElementById("search-filter");
+  const filterField = filterElement ? filterElement.value : "all";
+
+  // Display a loading indicator for large datasets
+  if (totalProducts > 1000 && !tableBody.querySelector(".loading-indicator")) {
+    const loadingRow = document.createElement("tr");
+    loadingRow.className = "loading-indicator";
+    loadingRow.innerHTML = `<td colspan="9" style="text-align: center; padding: 24px;">${
+        window.t("inventory.loading") || "Loading products..."
+    }</td>`;
+    tableBody.appendChild(loadingRow);
+
+    // Use setTimeout to prevent UI freezing
+    setTimeout(() => {
+      renderProductRows(productsToRender, tableBody, searchTerm, filterField);
+      const loadingIndicator = tableBody.querySelector(".loading-indicator");
+      if (loadingIndicator) {
+        loadingIndicator.remove();
+      }
+      setupEnhancedPagination();
+      updateSelectionState(productsToRender);
+      updateBulkActionsUI();
+    }, 10);
+  } else {
+    renderProductRows(productsToRender, tableBody, searchTerm, filterField);
+    setupEnhancedPagination();
+    updateSelectionState(productsToRender);
+    updateBulkActionsUI();
+  }
+
+  window.LayoutManager.refreshInventoryBadge();
 }

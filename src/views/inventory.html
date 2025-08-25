@@ -12,8 +12,26 @@
     <!-- Global Styles (shared across pages) -->
     <link rel="stylesheet" href="../styles/global.css" />
     <link rel="stylesheet" href="../styles/inverntory.css" />
+    <link rel="stylesheet" href="../styles/performance-enhancements.css" />
   </head>
   <body class="light-mode">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <h2 data-i18n="inventory.loading.title">Loading Inventory</h2>
+        <p data-i18n="inventory.loading.message">
+          Please wait while we load your products...
+        </p>
+        <div class="loading-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <span class="progress-text" id="progress-text">0%</span>
+        </div>
+      </div>
+    </div>
+
     <div class="app-container">
       <!-- Sidebar Container (will be populated by layout.js) -->
       <div id="sidebar-container"></div>

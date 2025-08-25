@@ -803,6 +803,81 @@ if (!localStore.has("products")) {
 setupIpcHandlers();
 
 function setupIpcHandlers() {
+  // Authentication handlers
+  ipcMain.handle("login-user", async (event, credentials) => {
+    try {
+      console.log("Main process: Handling login-user");
+      if (authService && typeof authService.loginUser === "function") {
+        return await authService.loginUser(credentials);
+      } else {
+        console.error("Auth service not available");
+        return {
+          success: false,
+          message: "Authentication service not available",
+        };
+      }
+    } catch (error) {
+      console.error("Error in login-user handler:", error);
+      return {
+        success: false,
+        message: "Login failed: " + error.message,
+      };
+    }
+  });
+
+  ipcMain.handle("get-current-user", async () => {
+    try {
+      console.log("Main process: Handling get-current-user");
+      if (authService && typeof authService.getCurrentUser === "function") {
+        return await authService.getCurrentUser();
+      } else {
+        console.error("Auth service not available");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error in get-current-user handler:", error);
+      return null;
+    }
+  });
+
+  ipcMain.handle("register-user", async (event, userData) => {
+    try {
+      console.log("Main process: Handling register-user");
+      if (authService && typeof authService.registerUser === "function") {
+        return await authService.registerUser(userData);
+      } else {
+        console.error("Auth service not available");
+        return {
+          success: false,
+          message: "Authentication service not available",
+        };
+      }
+    } catch (error) {
+      console.error("Error in register-user handler:", error);
+      return {
+        success: false,
+        message: "Registration failed: " + error.message,
+      };
+    }
+  });
+
+  ipcMain.handle("logout-user", async () => {
+    try {
+      console.log("Main process: Handling logout-user");
+      if (authService && typeof authService.logoutUser === "function") {
+        return await authService.logoutUser();
+      } else {
+        return { success: true }; // Fallback for logout
+      }
+    } catch (error) {
+      console.error("Error in logout-user handler:", error);
+      return {
+        success: false,
+        message: "Logout failed: " + error.message,
+      };
+    }
+  });
+
   // Online status and sync handlers
   ipcMain.handle("restore-session", async () => {
     return await authService.restoreSession();
@@ -1139,28 +1214,129 @@ function setupIpcHandlers() {
             return allProducts;
           }
 
-          // Pass the sort option to Firebase paged products method
-          const result = await firebaseService.getPagedProducts(
-            "products",
-            page,
-            pageSize,
-            filters,
-            sort // Make sure your Firebase service accepts this parameter
-          );
+          // Use proper pagination with Firebase
+          const paginationOptions = {
+            limit: pageSize,
+            offset: (page - 1) * pageSize,
+            sortBy: sort.field || "sku",
+            sortOrder: sort.order || "asc",
+            filters: []
+          };
 
-          // If the result doesn't have the items property, format it properly
-          if (result && !result.items && Array.isArray(result)) {
+          // Add search filters to Firebase query
+          if (filters.search || filters.sku || filters.name || filters.category) {
+            // For search, we'll need to get all and filter locally since Firebase has limited text search
+            const allProducts = await firebaseService.getAll("products");
+            
+            if (Array.isArray(allProducts)) {
+              // Apply search filter locally
+              let filteredProducts = allProducts;
+
+              if (filters.search) {
+                // Search across all fields
+                filteredProducts = allProducts.filter(p => 
+                  (p.name && p.name.toLowerCase().includes(filters.search.toLowerCase())) ||
+                  (p.sku && p.sku.toLowerCase().includes(filters.search.toLowerCase())) ||
+                  (p.category && p.category.toLowerCase().includes(filters.search.toLowerCase()))
+                );
+              } else if (filters.sku) {
+                // Search only in SKU field
+                filteredProducts = allProducts.filter(p => 
+                  p.sku && p.sku.toLowerCase().includes(filters.sku.toLowerCase())
+                );
+              } else if (filters.name) {
+                // Search only in name field
+                filteredProducts = allProducts.filter(p => 
+                  p.name && p.name.toLowerCase().includes(filters.name.toLowerCase())
+                );
+              } else if (filters.category) {
+                // Search only in category field
+                filteredProducts = allProducts.filter(p => 
+                  p.category && p.category.toLowerCase().includes(filters.category.toLowerCase())
+                );
+              }
+
+              // Apply sorting
+              filteredProducts.sort((a, b) => {
+                const fieldA = (a[sort.field] || "").toString().toLowerCase();
+                const fieldB = (b[sort.field] || "").toString().toLowerCase();
+
+                if (sort.field === "sku" && !isNaN(fieldA) && !isNaN(fieldB)) {
+                  return sort.order === "asc" 
+                    ? parseFloat(fieldA) - parseFloat(fieldB)
+                    : parseFloat(fieldB) - parseFloat(fieldA);
+                }
+
+                return sort.order === "asc" 
+                  ? fieldA.localeCompare(fieldB)
+                  : fieldB.localeCompare(fieldA);
+              });
+
+              // Apply pagination
+              const startIdx = (page - 1) * pageSize;
+              const endIdx = startIdx + pageSize;
+              const paginatedProducts = filteredProducts.slice(startIdx, endIdx);
+
+              return {
+                items: paginatedProducts,
+                totalCount: filteredProducts.length,
+                page: page,
+                totalPages: Math.ceil(filteredProducts.length / pageSize),
+              };
+            }
+          } else {
+            // Use Firebase pagination for non-search queries
+            const result = await firebaseService.getPaginated("products", paginationOptions);
+            
+            if (result && result.items) {
+              return {
+                items: result.items,
+                totalCount: result.total || result.items.length,
+                page: page,
+                totalPages: Math.ceil((result.total || result.items.length) / pageSize),
+              };
+            }
+          }
+
+          // Fallback: get all and paginate locally
+          const allProducts = await firebaseService.getAll("products");
+          
+          if (Array.isArray(allProducts)) {
+            // Apply sorting
+            allProducts.sort((a, b) => {
+              const fieldA = (a[sort.field] || "").toString().toLowerCase();
+              const fieldB = (b[sort.field] || "").toString().toLowerCase();
+
+              if (sort.field === "sku" && !isNaN(fieldA) && !isNaN(fieldB)) {
+                return sort.order === "asc" 
+                  ? parseFloat(fieldA) - parseFloat(fieldB)
+                  : parseFloat(fieldB) - parseFloat(fieldA);
+              }
+
+              return sort.order === "asc" 
+                ? fieldA.localeCompare(fieldB)
+                : fieldB.localeCompare(fieldA);
+            });
+
+            // Apply pagination
+            const startIdx = (page - 1) * pageSize;
+            const endIdx = startIdx + pageSize;
+            const paginatedProducts = allProducts.slice(startIdx, endIdx);
+
             return {
-              items: result,
-              totalCount: result.length,
+              items: paginatedProducts,
+              totalCount: allProducts.length,
               page: page,
-              totalPages: Math.ceil(
-                result.length / (pageSize || result.length)
-              ),
+              totalPages: Math.ceil(allProducts.length / pageSize),
             };
           }
 
-          return result;
+          return {
+            items: [],
+            totalCount: 0,
+            page: page,
+            totalPages: 0,
+          };
         } catch (firebaseError) {
           console.error(
             "Firebase error, falling back to local storage:",
@@ -1439,169 +1615,104 @@ function setupIpcHandlers() {
     }
   });
 
-  ipcMain.handle("get-invoices", async () => {
+  ipcMain.handle("get-invoices", async (event, options = {}) => {
     try {
-      if (firebaseService && typeof firebaseService.getAll === "function") {
-        return await firebaseService.getAll("invoices");
+      // Check if pagination options are provided
+      if (options.limit || options.offset) {
+        // Use pagination
+        if (firebaseService && typeof firebaseService.getPaginated === "function") {
+          return await firebaseService.getPaginated("invoices", options);
+        } else {
+          throw new Error("Firebase service not available");
+        }
       } else {
-        throw new Error("Firebase service not available");
+        // Use traditional getAll for backward compatibility
+        if (firebaseService && typeof firebaseService.getAll === "function") {
+          return await firebaseService.getAll("invoices");
+        } else {
+          throw new Error("Firebase service not available");
+        }
       }
     } catch (error) {
       console.log("Using local storage for get-invoices:", error.message);
-      return localStore.get("invoices") || [];
+
+      // Fallback to local storage with pagination
+      const localInvoices = localStore.get("invoices") || [];
+
+      if (options.limit || options.offset) {
+        const { limit = 50, offset = 0, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+
+        // Sort invoices
+        const sortedInvoices = localInvoices.sort((a, b) => {
+          const aValue = a[sortBy] || '';
+          const bValue = b[sortBy] || '';
+
+          if (sortOrder === 'desc') {
+            return bValue > aValue ? 1 : bValue < aValue ? -1 : 0;
+          } else {
+            return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+          }
+        });
+
+        // Apply pagination
+        const paginatedInvoices = sortedInvoices.slice(offset, offset + limit);
+
+        return {
+          items: paginatedInvoices,
+          total: localInvoices.length,
+          hasMore: offset + limit < localInvoices.length,
+          currentOffset: offset,
+          currentLimit: limit
+        };
+      } else {
+        return localInvoices;
+      }
     }
   });
 
-  ipcMain.handle("update-invoice", async (event, invoice) => {
+  // Add dedicated paginated invoices handler
+  ipcMain.handle("get-invoices-paginated", async (event, options = {}) => {
     try {
-      if (firebaseService && typeof firebaseService.update === "function") {
-        return await firebaseService.update("invoices", invoice);
+      if (firebaseService && typeof firebaseService.getPaginatedFromFirebase === "function") {
+        return await firebaseService.getPaginatedFromFirebase("invoices", options);
+      } else if (firebaseService && typeof firebaseService.getPaginated === "function") {
+        return await firebaseService.getPaginated("invoices", options);
       } else {
         throw new Error("Firebase service not available");
       }
     } catch (error) {
-      console.log("Using local storage for update-invoice:", error.message);
+      console.log("Using local storage for get-invoices-paginated:", error.message);
 
-      // Fallback to local storage
-      const invoices = localStore.get("invoices") || [];
-      const index = invoices.findIndex((inv) => inv.id === invoice.id);
+      // Fallback to local storage pagination
+      const localInvoices = localStore.get("invoices") || [];
+      const { limit = 50, offset = 0, sortBy = 'createdAt', sortOrder = 'desc' } = options;
 
-      if (index !== -1) {
-        invoices[index] = {
-          ...invoices[index],
-          ...invoice,
-          updatedAt: new Date().toISOString(),
-        };
+      // Sort invoices
+      const sortedInvoices = localInvoices.sort((a, b) => {
+        const aValue = a[sortBy] || '';
+        const bValue = b[sortBy] || '';
 
-        localStore.set("invoices", invoices);
-        return true;
-      }
+        if (sortOrder === 'desc') {
+          return bValue > aValue ? 1 : bValue < aValue ? -1 : 0;
+        } else {
+          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+        }
+      });
 
-      return false;
-    }
-  });
+      // Apply pagination
+      const paginatedInvoices = sortedInvoices.slice(offset, offset + limit);
 
-  // Authentication handlers
-  ipcMain.handle("login-user", async (event, credentials) => {
-    try {
-      // Log the login attempt with redacted password
-      console.log(
-        `Login attempt for: ${credentials.email}, online: ${isOnline}`
-      );
-
-      // Add online status to credentials
-      credentials.isOnline = isOnline;
-
-      const result = await authService.loginUser(credentials);
-
-      // Log the result (without sensitive data)
-      console.log(
-        `Login result success: ${result.success}, message: ${
-          result.message || "No message"
-        }`
-      );
-
-      if (result.success) {
-        // After successful login, check for unsynced data
-        setTimeout(() => {
-          checkForUnsyncedDataAfterLogin();
-        }, 2000); // Give time for the window to load
-      } else {
-        console.warn("Login failed:", result.message);
-      }
-
-      return result;
-    } catch (error) {
-      console.error("Error during login:", error);
-      // Return the actual error message to help with debugging
       return {
-        success: false,
-        message: `Authentication error: ${error.message}`,
+        items: paginatedInvoices,
+        total: localInvoices.length,
+        hasMore: offset + limit < localInvoices.length,
+        currentOffset: offset,
+        currentLimit: limit
       };
     }
   });
 
-  ipcMain.handle("register-user", async (event, userData) => {
-    try {
-      return await authService.registerUser(userData);
-    } catch (error) {
-      console.error("Error during registration:", error);
-      return { success: false, message: "Registration error" };
-    }
-  });
-
-  ipcMain.handle("get-current-user", () => {
-    try {
-      return authService.getCurrentUser();
-    } catch (error) {
-      console.error("Error getting current user:", error);
-      return null;
-    }
-  });
-
-  ipcMain.handle("logout-user", async () => {
-    try {
-      return await authService.logoutUser();
-    } catch (error) {
-      console.error("Error during logout:", error);
-      return { success: false, message: "Logout error" };
-    }
-  });
-
-  ipcMain.handle("check-permission", (event, permission) => {
-    try {
-      return authService.checkPermission(permission);
-    } catch (error) {
-      console.error("Error checking permission:", error);
-      return false;
-    }
-  });
-
-  // Receipt printing
-  ipcMain.handle("print-receipt", async (event, invoiceData) => {
-    const receiptPath = path.join(
-      app.getPath("temp"),
-      `receipt-${invoiceData.id}.pdf`
-    );
-
-    const printWindow = new BrowserWindow({
-      width: 400,
-      height: 600,
-      show: false,
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        preload: path.join(__dirname, "preload.js"),
-      },
-    });
-
-    await printWindow.loadFile(
-      path.join(__dirname, "views/receipt-template.html")
-    );
-    await printWindow.webContents.executeJavaScript(`
-      document.getElementById('receipt-container').innerHTML = ${JSON.stringify(
-        invoiceData.receiptHtml
-      )};
-    `);
-
-    const pdfData = await printWindow.webContents.printToPDF({
-      printBackground: true,
-      pageSize: "A4",
-      margins: {
-        top: 20,
-        bottom: 20,
-        left: 20,
-        right: 20,
-      },
-    });
-
-    fs.writeFileSync(receiptPath, pdfData);
-    printWindow.close();
-
-    return receiptPath;
-  });
-
-  ipcMain.handle("get-users", async (event, filters) => {
+  ipcMain.handle("get-users", async (event, filters = {}) => {
     console.log("Main process received filters:", filters);
 
     // Default filters to an empty object if undefined or null
@@ -1611,6 +1722,40 @@ function setupIpcHandlers() {
     }
 
     try {
+      // Check if pagination options are provided
+      if (filters.limit || filters.offset) {
+        // Use pagination with Firebase
+        if (firebaseService && typeof firebaseService.getPaginatedFromFirebase === "function") {
+          const options = {
+            limit: filters.limit || 50,
+            offset: filters.offset || 0,
+            sortBy: filters.sortBy || 'createdAt',
+            sortOrder: filters.sortOrder || 'desc',
+            filters: []
+          };
+
+          // Convert filters to Firebase filter format
+          if (filters.roleFilter) {
+            options.filters.push({
+              field: 'role',
+              operator: '==',
+              value: filters.roleFilter
+            });
+          }
+
+          if (filters.statusFilter) {
+            options.filters.push({
+              field: 'status',
+              operator: '==',
+              value: filters.statusFilter
+            });
+          }
+
+          return await firebaseService.getPaginatedFromFirebase("users", options);
+        }
+      }
+
+      // Original Firebase query logic for backward compatibility
       // Create a base collection reference using modular syntax
       let usersQuery = collection(db, "users");
 
@@ -1636,84 +1781,160 @@ function setupIpcHandlers() {
       }));
 
       console.log(`Found ${users.length} users matching criteria`);
+
+      // If pagination was requested, apply it locally as fallback
+      if (filters.limit || filters.offset) {
+        const { limit = 50, offset = 0, sortBy = 'createdAt', sortOrder = 'desc' } = filters;
+
+        // Sort users
+        const sortedUsers = users.sort((a, b) => {
+          const aValue = a[sortBy] || '';
+          const bValue = b[sortBy] || '';
+
+          if (sortOrder === 'desc') {
+            return bValue > aValue ? 1 : bValue < aValue ? -1 : 0;
+          } else {
+            return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+          }
+        });
+
+        // Apply pagination
+        const paginatedUsers = sortedUsers.slice(offset, offset + limit);
+
+        return {
+          items: paginatedUsers,
+          total: users.length,
+          hasMore: offset + limit < users.length,
+          currentOffset: offset,
+          currentLimit: limit
+        };
+      }
+
       return users;
     } catch (error) {
       console.error("Error fetching users:", error);
       throw error;
     }
   });
-
-  ipcMain.handle("test-firebase-auth", async (event, credentials) => {
-    console.log("Testing direct Firebase auth with:", credentials.email);
+ipcMain.handle("update-invoice", async (event, invoice) => {
     try {
-      // Get Firebase auth directly
-      const { auth } = require("./services/firebase-core");
-      const { signInWithEmailAndPassword } = require("firebase/auth");
-
-      // Attempt direct Firebase login
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        credentials.email,
-        credentials.password
-      );
-      console.log("Firebase auth SUCCESS:", userCredential.user.email);
-
-      return {
-        success: true,
-        user: {
-          email: userCredential.user.email,
-          uid: userCredential.user.uid,
-        },
-      };
+      if (firebaseService && typeof firebaseService.update === "function") {
+        return await firebaseService.update("invoices", invoice.id, invoice);
+      } else {
+        throw new Error("Firebase service not available");
+      }
     } catch (error) {
-      console.error("Firebase auth FAILED:", error.code, error.message);
-      return {
-        success: false,
-        code: error.code,
-        message: error.message,
-      };
+      console.log("Using local storage for update-invoice:", error.message);
+
+      // Fallback to local storage
+      const invoices = localStore.get("invoices") || [];
+      const invoiceIndex = invoices.findIndex(inv => inv.id === invoice.id);
+      
+      if (invoiceIndex !== -1) {
+        // Update the invoice
+        invoices[invoiceIndex] = {
+          ...invoices[invoiceIndex],
+          ...invoice,
+          lastModified: new Date().toISOString()
+        };
+        localStore.set("invoices", invoices);
+        return true;
+      } else {
+        throw new Error(`Invoice with id ${invoice.id} not found`);
+      }
     }
   });
-
-  ipcMain.handle("test-firebase-direct-auth", async (event, credentials) => {
+  // Add dedicated paginated users handler
+  ipcMain.handle("get-users-paginated", async (event, options = {}) => {
     try {
-      console.log("Testing direct Firebase auth");
+      if (firebaseService && typeof firebaseService.getPaginatedFromFirebase === "function") {
+        const paginationOptions = {
+          limit: options.limit || 50,
+          offset: options.offset || 0,
+          sortBy: options.sortBy || 'createdAt',
+          sortOrder: options.sortOrder || 'desc',
+          filters: []
+        };
 
-      const { auth } = require("./services/firebase-core");
-      const { signInWithEmailAndPassword } = require("firebase/auth");
+        // Convert filters to Firebase filter format
+        if (options.roleFilter) {
+          paginationOptions.filters.push({
+            field: 'role',
+            operator: '==',
+            value: options.roleFilter
+          });
+        }
 
-      console.log("Auth object available:", !!auth);
+        if (options.statusFilter) {
+          paginationOptions.filters.push({
+            field: 'status',
+            operator: '==',
+            value: options.statusFilter
+          });
+        }
 
-      // Make sure Firebase is initialized
-      if (!auth) {
+        return await firebaseService.getPaginatedFromFirebase("users", paginationOptions);
+      } else {
+        throw new Error("Firebase pagination service not available");
+      }
+    } catch (error) {
+      console.log("Using fallback for get-users-paginated:", error.message);
+
+      // Fallback implementation - this would typically use local storage or direct Firebase queries
+      try {
+        const { limit = 50, offset = 0, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+
+        // Create a base collection reference
+        let usersQuery = collection(db, "users");
+
+        // Apply filters
+        if (options.roleFilter) {
+          usersQuery = query(usersQuery, where("role", "==", options.roleFilter));
+        }
+
+        if (options.statusFilter) {
+          usersQuery = query(usersQuery, where("status", "==", options.statusFilter));
+        }
+
+        // Execute the query
+        const snapshot = await getDocs(usersQuery);
+        const allUsers = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Sort users
+        const sortedUsers = allUsers.sort((a, b) => {
+          const aValue = a[sortBy] || '';
+          const bValue = b[sortBy] || '';
+
+          if (sortOrder === 'desc') {
+            return bValue > aValue ? 1 : bValue < aValue ? -1 : 0;
+          } else {
+            return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+          }
+        });
+
+        // Apply pagination
+        const paginatedUsers = sortedUsers.slice(offset, offset + limit);
+
         return {
-          success: false,
-          message: "Firebase auth is not initialized",
+          items: paginatedUsers,
+          total: allUsers.length,
+          hasMore: offset + limit < allUsers.length,
+          currentOffset: offset,
+          currentLimit: limit
+        };
+      } catch (fallbackError) {
+        console.error("Fallback pagination also failed:", fallbackError);
+        return {
+          items: [],
+          total: 0,
+          hasMore: false,
+          currentOffset: 0,
+          currentLimit: limit || 50
         };
       }
-
-      console.log("Attempting direct sign in with:", credentials.email);
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        credentials.email,
-        credentials.password
-      );
-
-      console.log("Direct auth succeeded for:", userCredential.user.email);
-      return {
-        success: true,
-        user: {
-          email: userCredential.user.email,
-          uid: userCredential.user.uid,
-        },
-      };
-    } catch (error) {
-      console.error("Direct auth error:", error);
-      return {
-        success: false,
-        code: error.code,
-        message: error.message,
-      };
     }
   });
 }

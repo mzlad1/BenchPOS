@@ -558,6 +558,10 @@
     }
   },
   "reports": {
+      "loading": {
+      "title": "Loading Reports", 
+      "message": "Please wait while we prepare your reports..."
+    },
     "title": "Reports",
     "controls": {
       "dateRange": "Date Range",
@@ -792,6 +796,10 @@
   },
   "inventory": {
     "title": "Inventory",
+    "loading": {
+      "title": "Loading Inventory",
+      "message": "Please wait while we load your inventory data..."
+    },
     "stats": {
       "totalProducts": "Total Products",
       "inventoryValue": "Inventory Value",

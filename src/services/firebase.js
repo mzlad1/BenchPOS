@@ -41,6 +41,9 @@ const {
   deleteDoc,
   query,
   where,
+  orderBy,
+  limit,
+  startAfter,
   onSnapshot,
   enableIndexedDbPersistence,
   CACHE_SIZE_UNLIMITED,
@@ -395,173 +398,114 @@ const getAll = async (collectionName) => {
   }
 };
 
-// Get a single item by ID
-const getById = async (collectionName, id) => {
+// Get paginated items from a collection
+const getPaginated = async (collectionName, options = {}) => {
   try {
-    const items = localStore.get(collectionName) || [];
-    return items.find((item) => item.id === id);
-  } catch (error) {
-    console.error(`Error getting ${collectionName} item:`, error);
-    return null;
-  }
-};
+    const { limit = 50, offset = 0, sortBy = 'createdAt', sortOrder = 'desc' } = options;
 
-// Add a new item
-const add = async (collectionName, item) => {
-  try {
-    // Ensure item has ID and timestamps
-    const newItem = {
-      ...item,
-      id: item.id || Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    const items = localStore.get(collectionName) || [];
+
+    // Sort items
+    const sortedItems = items.sort((a, b) => {
+      const aValue = a[sortBy] || '';
+      const bValue = b[sortBy] || '';
+
+      if (sortOrder === 'desc') {
+        return bValue > aValue ? 1 : bValue < aValue ? -1 : 0;
+      } else {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      }
+    });
+
+    // Apply pagination
+    const paginatedItems = sortedItems.slice(offset, offset + limit);
+
+    return {
+      items: paginatedItems,
+      total: items.length,
+      hasMore: offset + limit < items.length,
+      currentOffset: offset,
+      currentLimit: limit
     };
-
-    // Add to local storage
-    const items = localStore.get(collectionName) || [];
-    items.push(newItem);
-    localStore.set(collectionName, items);
-
-    // If online and Firebase initialized, add to Firestore
-    if (isOnline && firebaseInitialized) {
-      try {
-        await setDoc(doc(db, collectionName, newItem.id), newItem);
-      } catch (firestoreError) {
-        console.error(
-          `Error adding to Firestore: ${collectionName}/${newItem.id}`,
-          firestoreError
-        );
-        // Still return success since we saved locally
-      }
-    }
-
-    return newItem.id;
   } catch (error) {
-    console.error(`Error adding ${collectionName} item:`, error);
-    throw error;
-  }
-};
-
-// Update an existing item
-const update = async (collectionName, item) => {
-  try {
-    // Ensure item has timestamp
-    const updatedItem = {
-      ...item,
-      updatedAt: new Date().toISOString(),
+    console.error(`Error getting paginated ${collectionName}:`, error);
+    return {
+      items: [],
+      total: 0,
+      hasMore: false,
+      currentOffset: offset,
+      currentLimit: limit
     };
-
-    // Update in local storage
-    const items = localStore.get(collectionName) || [];
-    const index = items.findIndex((i) => i.id === item.id);
-
-    if (index >= 0) {
-      items[index] = updatedItem;
-      localStore.set(collectionName, items);
-
-      // If online and Firebase initialized, update in Firestore
-      if (isOnline && firebaseInitialized) {
-        await setDoc(doc(db, collectionName, updatedItem.id), updatedItem);
-      }
-
-      return true;
-    }
-
-    return false;
-  } catch (error) {
-    console.error(`Error updating ${collectionName} item:`, error);
-    return false;
   }
 };
 
-// Delete an item
-const remove = async (collectionName, id) => {
+// Get paginated items from Firebase with advanced filtering
+const getPaginatedFromFirebase = async (collectionName, options = {}) => {
+  if (!firebaseInitialized || !isOnline) {
+    // Fallback to local pagination
+    return getPaginated(collectionName, options);
+  }
+
   try {
-    // Remove from local storage
-    const items = localStore.get(collectionName) || [];
-    const newItems = items.filter((item) => item.id !== id);
+    const {
+      limit = 50,
+      offset = 0,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      filters = []
+    } = options;
 
-    if (newItems.length !== items.length) {
-      localStore.set(collectionName, newItems);
+    let baseQuery = collection(db, collectionName);
 
-      // If online and Firebase initialized, remove from Firestore
-      if (isOnline && firebaseInitialized) {
-        await deleteDoc(doc(db, collectionName, id));
+    // Apply filters
+    filters.forEach(filter => {
+      if (filter.field && filter.operator && filter.value !== undefined) {
+        baseQuery = query(baseQuery, where(filter.field, filter.operator, filter.value));
       }
+    });
 
-      return true;
+    // Apply sorting and pagination
+    if (sortBy) {
+      baseQuery = query(baseQuery, orderBy(sortBy, sortOrder));
     }
 
-    return false;
-  } catch (error) {
-    console.error(`Error removing ${collectionName} item:`, error);
-    return false;
-  }
-};
+    // Apply pagination using limit and startAfter for better performance
+    baseQuery = query(baseQuery, limit(limit));
 
-// Create invoice with special handling for product stock
-const createInvoice = async (invoice) => {
-  try {
-    // Ensure invoice has ID and timestamps
-    const newInvoice = {
-      ...invoice,
-      id: invoice.id || Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: invoice.status || "completed",
+    if (offset > 0) {
+      // For offset-based pagination, we need to fetch and skip items
+      // This is less efficient but necessary for offset-based pagination
+      const skipQuery = query(collection(db, collectionName), orderBy(sortBy, sortOrder), limit(offset));
+      const skipSnapshot = await getDocs(skipQuery);
+
+      if (!skipSnapshot.empty) {
+        const lastVisible = skipSnapshot.docs[skipSnapshot.docs.length - 1];
+        baseQuery = query(baseQuery, startAfter(lastVisible));
+      }
+    }
+
+    const snapshot = await getDocs(baseQuery);
+    const items = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Get total count for hasMore calculation
+    const totalQuery = query(collection(db, collectionName));
+    const totalSnapshot = await getDocs(totalQuery);
+    const total = totalSnapshot.size;
+
+    return {
+      items,
+      total,
+      hasMore: offset + limit < total,
+      currentOffset: offset,
+      currentLimit: limit
     };
-
-    // Add to local storage
-    const invoices = localStore.get("invoices") || [];
-    invoices.push(newInvoice);
-    localStore.set("invoices", invoices);
-
-    // Update product stock
-    if (invoice.items && invoice.items.length > 0) {
-      const products = localStore.get("products") || [];
-
-      invoice.items.forEach((item) => {
-        const productIndex = products.findIndex((p) => p.id === item.id);
-        if (productIndex !== -1) {
-          // Check if this is a refund (price < 0 or isRefund flag)
-          const isRefund = item.price < 0 || item.isRefund === true;
-
-          if (isRefund) {
-            // For refunds, INCREASE the stock (return items to inventory)
-            products[productIndex].stock += item.quantity;
-          } else {
-            // For sales, DECREASE the stock
-            products[productIndex].stock -= item.quantity;
-            if (products[productIndex].stock < 0) {
-              products[productIndex].stock = 0;
-            }
-          }
-
-          products[productIndex].updatedAt = new Date().toISOString();
-        }
-      });
-
-      localStore.set("products", products);
-
-      // If online and Firebase initialized, update products in Firestore
-      if (isOnline && firebaseInitialized) {
-        for (const product of products.filter((p) =>
-          invoice.items.some((item) => item.id === p.id)
-        )) {
-          await setDoc(doc(db, "products", product.id), product);
-        }
-      }
-    }
-
-    // If online and Firebase initialized, add to Firestore
-    if (isOnline && firebaseInitialized) {
-      await setDoc(doc(db, "invoices", newInvoice.id), newInvoice);
-    }
-
-    return newInvoice.id;
   } catch (error) {
-    console.error(`Error creating invoice:`, error);
-    return null;
+    console.error(`Error getting paginated ${collectionName} from Firebase:`, error);
+    // Fallback to local pagination
+    return getPaginated(collectionName, options);
   }
 };
 
@@ -591,12 +535,126 @@ const subscribeToCollection = (collectionName, callback) => {
   }
 };
 
+// Get a single item by ID
+const getById = async (collectionName, id) => {
+  try {
+    const items = localStore.get(collectionName) || [];
+    return items.find((item) => item.id === id);
+  } catch (error) {
+    console.error(`Error getting ${collectionName} item:`, error);
+    return null;
+  }
+};
+
+// Add a new item
+const add = async (collectionName, item) => {
+  try {
+    // Ensure item has ID and timestamps
+    const newItem = {
+      ...item,
+      id: item.id || Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Add to local storage
+    const items = localStore.get(collectionName) || [];
+    items.push(newItem);
+    localStore.set(collectionName, items);
+
+    return newItem.id;
+  } catch (error) {
+    console.error(`Error adding ${collectionName} item:`, error);
+    return null;
+  }
+};
+
+// Update an existing item
+const update = async (collectionName, item) => {
+  try {
+    const items = localStore.get(collectionName) || [];
+    const index = items.findIndex((i) => i.id === item.id);
+
+    if (index !== -1) {
+      items[index] = {
+        ...items[index],
+        ...item,
+        updatedAt: new Date().toISOString(),
+      };
+      localStore.set(collectionName, items);
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error(`Error updating ${collectionName} item:`, error);
+    return false;
+  }
+};
+
+// Remove an item
+const remove = async (collectionName, id) => {
+  try {
+    const items = localStore.get(collectionName) || [];
+    const newItems = items.filter((item) => item.id !== id);
+
+    if (newItems.length !== items.length) {
+      localStore.set(collectionName, newItems);
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error(`Error removing ${collectionName} item:`, error);
+    return false;
+  }
+};
+
+// Create invoice with stock management
+const createInvoice = async (invoice) => {
+  try {
+    const newInvoice = {
+      ...invoice,
+      id: invoice.id || Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Add to invoices
+    const invoices = localStore.get("invoices") || [];
+    invoices.push(newInvoice);
+    localStore.set("invoices", invoices);
+
+    // Update product stock if items exist
+    if (invoice.items && invoice.items.length > 0) {
+      const products = localStore.get("products") || [];
+
+      invoice.items.forEach((item) => {
+        const productIndex = products.findIndex((p) => p.id === item.id);
+        if (productIndex !== -1) {
+          products[productIndex].stock = Math.max(0, (products[productIndex].stock || 0) - (item.quantity || 0));
+          products[productIndex].updatedAt = new Date().toISOString();
+        }
+      });
+
+      localStore.set("products", products);
+    }
+
+    return newInvoice.id;
+  } catch (error) {
+    console.error("Error creating invoice:", error);
+    return null;
+  }
+};
+
 module.exports = {
   initializeFirebase,
   updateOnlineStatus,
   registerSyncListener,
   syncData,
   getAll,
+  getPaginated,
+  getPaginatedFromFirebase,
   getById,
   add,
   update,

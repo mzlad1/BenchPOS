@@ -13,8 +13,24 @@
     <title data-i18n="reports.title">Reports - BenchPOS</title>
     <link rel="stylesheet" href="../styles/global.css" />
     <link rel="stylesheet" href="../styles/report.css" />
+    <link rel="stylesheet" href="../styles/performance-enhancements.css" />
   </head>
   <body class="light-mode">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <h2 data-i18n="reports.loading.title">Loading Reports</h2>
+        <p data-i18n="reports.loading.message">Please wait while we prepare your reports...</p>
+        <div class="loading-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <span class="progress-text" id="progress-text">0%</span>
+        </div>
+      </div>
+    </div>
+
     <div class="app-container">
       <!-- Sidebar Container (will be populated by layout.js) -->
       <div id="sidebar-container"></div>
