@@ -191,11 +191,11 @@ function getTranslation(key, defaultText) {
  * @param {string} themeColor - Theme color in hex
  * @return {string} HTML for the text-based logo
  */
-function generateTextLogo(companyName, tagline, themeColor) {
+function generateTextLogo(companyName, tagline) {
   return `
     <div style="text-align: center; margin-bottom: 10px;">
-      <div style="font-size: 24px; font-weight: bold; color: ${themeColor};">${companyName}</div>
-      <div style="font-size: 12px; color: #666;">${
+      <div style="font-size: 24px; font-weight: bold; color: #000;">${companyName}</div>
+      <div style="font-size: 12px; color: #000;">${
         tagline || "Retail Solutions"
       }</div>
     </div>
@@ -207,12 +207,11 @@ function generateTextLogo(companyName, tagline, themeColor) {
  * @return {string} CSS styles for receipts
  */
 function updateReceiptStyles() {
-  // Get theme color and language from localStorage
-  const themeColor = localStorage.getItem("receiptTheme") || "#3d5a80";
+  // Get language from localStorage
   const language = localStorage.getItem("language") || "en";
   const isRTL = language === "ar";
 
-  // Base styles
+  // Base styles - ONLY BLACK
   let styles = `
   .professional-receipt {
     font-family: ${
@@ -224,7 +223,7 @@ function updateReceiptStyles() {
     margin: 0 auto;
     padding: 10px;
     font-size: 12px;
-    color: #333;
+    color: #000;
     background-color: white;
   }
   
@@ -249,12 +248,13 @@ function updateReceiptStyles() {
     margin: 8px 0;
     padding: 3px;
     border-radius: 4px;
-    background-color: #f0f0f0;
+    background-color: #f8f8f8;
   }
   
   .receipt-type.refund {
-    background-color: #ffeeee;
-    color: #d32f2f;
+    background-color: #f8f8f8;
+    color: #000;
+    border: 1px solid #000;
   }
   
   /* Info Section */
@@ -279,7 +279,7 @@ function updateReceiptStyles() {
   }
   
   .receipt-divider {
-    border-bottom: 1px dashed #aaa;
+    border-bottom: 1px dashed #000;
     margin: 10px 0;
   }
   
@@ -295,12 +295,12 @@ function updateReceiptStyles() {
   }
   
   .receipt-items th {
-    border-bottom: 1px solid ${themeColor};
+    border-bottom: 1px solid #000;
     font-size: 11px;
   }
   
   .receipt-items tbody tr:last-child td {
-    border-bottom: 1px dashed #aaa;
+    border-bottom: 1px dashed #000;
     padding-bottom: 8px;
   }
   
@@ -315,7 +315,7 @@ function updateReceiptStyles() {
   .strikethrough {
     text-decoration: line-through;
     font-size: 10px;
-    color: #777;
+    color: #000;
   }
   
   /* Summary Section */
@@ -329,11 +329,11 @@ function updateReceiptStyles() {
     font-size: 14px;
     padding-top: 8px;
     padding-bottom: 8px;
-    color: ${themeColor};
+    color: #000;
   }
   
   .discount-value {
-    color: #d32f2f;
+    color: #000;
   }
   
   .bold {
@@ -371,7 +371,7 @@ function updateReceiptStyles() {
     font-size: 12px;
     font-weight: bold;
     margin: 10px 0 5px;
-    color: ${themeColor};
+    color: #000;
   }
   
   .return-policy, .support {
@@ -392,46 +392,9 @@ function updateReceiptStyles() {
   .software-credit {
     margin-top: 15px;
     font-size: 9px;
-    color: #999;
+    color: #000;
   }
-  
-  /* Refund Receipt */
-  .refund-receipt {
-    background-color: #fff9f9;
-  }
-  
-  .refund-receipt .receipt-divider {
-    border-color: #ffcccc;
-  }
-  
-  /* RTL specific adjustments */
-  [dir="rtl"] .receipt-items th:first-child,
-  [dir="rtl"] .receipt-items td:first-child {
-    text-align: right;
-  }
-  
-  [dir="rtl"] .receipt-items th:last-child,
-  [dir="rtl"] .receipt-items td:last-child {
-    text-align: left;
-  }
-  
-  @media print {
-    .professional-receipt {
-      max-width: 100%;
-    }
-    
-    body {
-      margin: 0;
-      padding: 0;
-    }
-    
-    /* Add Amiri font for Arabic printing */
-    @font-face {
-      font-family: 'Amiri';
-      src: url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
-    }
-  }
-`;
+  `;
 
   return styles;
 }
